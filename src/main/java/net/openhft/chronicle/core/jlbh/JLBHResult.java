@@ -1,6 +1,7 @@
 package net.openhft.chronicle.core.jlbh;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.List;
@@ -38,10 +39,10 @@ public interface JLBHResult {
         @NotNull
         Duration get99thPercentile();
 
-        @NotNull
+        @Nullable
         Duration get999thPercentile();
 
-        @NotNull
+        @Nullable
         Duration get9999thPercentile();
 
         @NotNull

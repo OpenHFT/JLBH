@@ -1,6 +1,7 @@
 package net.openhft.chronicle.core.jlbh;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.EnumMap;
@@ -69,13 +70,13 @@ class ImmutableRunResult implements JLBHResult.RunResult {
     }
 
     @Override
-    @NotNull
+    @Nullable
     public Duration get999thPercentile() {
         return percentiles.get(PERCENTILE_99_9TH);
     }
 
     @Override
-    @NotNull
+    @Nullable
     public Duration get9999thPercentile() {
         return percentiles.get(PERCENTILE_99_99TH);
     }
