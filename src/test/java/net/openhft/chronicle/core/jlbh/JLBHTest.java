@@ -68,9 +68,9 @@ public class JLBHTest {
         assertThat(summaryOfEachRun.get(1), not(equalTo(lastRunSummary)));
         assertEquals(lastRunSummary, summaryOfEachRun.get(2));
 
-        assertEquals(true, resultConsumer.get().probe("A").isPresent());
-        assertEquals(true, resultConsumer.get().probe("B").isPresent());
-        assertEquals(false, resultConsumer.get().probe("C").isPresent());
+        assertTrue(resultConsumer.get().probe("A").isPresent());
+        assertTrue(resultConsumer.get().probe("B").isPresent());
+        assertFalse(resultConsumer.get().probe("C").isPresent());
 
         final JLBHResult.RunResult probeALastRunSummary = resultConsumer.get().probe("A").get().summaryOfLastRun();
         assertEquals(5_106L, probeALastRunSummary.get50thPercentile().toNanos(), 20);
