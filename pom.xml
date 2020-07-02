@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>jlbh</artifactId>
-    <version>1.19.40</version>
+    <version>1.19.41-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
     <description>Java Latency Benchmark Harness</description>
     <packaging>jar</packaging>
@@ -201,7 +201,7 @@
         <url>scm:git:git@github.com:OpenHFT/JLBH.git</url>
         <connection>scm:git:git@github.com:OpenHFT/JLBH.git</connection>
         <developerConnection>scm:git:git@github.com:OpenHFT/JLBH.git</developerConnection>
-        <tag>jlbh-1.19.40</tag>
+        <tag>master</tag>
     </scm>
 
 </project>
