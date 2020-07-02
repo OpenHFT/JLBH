@@ -9,7 +9,7 @@ import java.io.PrintStream;
 
 import static net.openhft.chronicle.core.jlbh.JLBHDeterministicFixtures.*;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class JLBHIntegrationTest {
@@ -48,8 +48,8 @@ public class JLBHIntegrationTest {
         assertThat(stdOut, containsString("Run time: "));
         String actual = withoutNonDeterministicFields(stdOut);
         String expected = withoutNonDeterministicFields(predictableTaskExpectedResult());
-        //Assert.assertEquals(expected,actual);
-        assertThat(actual, equalTo(expected));
+
+        assertEquals(expected, actual);
     }
 
     private void redirectSystemOut() {
