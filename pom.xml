@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>jlbh</artifactId>
-    <version>1.19.42-SNAPSHOT</version>
+    <version>1.20.0-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
     <description>Java Latency Benchmark Harness</description>
     <packaging>jar</packaging>
@@ -44,7 +44,7 @@
 		<dependency>
                 <groupId>net.openhft</groupId>
                 <artifactId>chronicle-bom</artifactId>
-                <version>2.19.293</version>
+            <version>2.20-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
