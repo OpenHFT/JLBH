@@ -37,10 +37,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Java Latency Benchmark Harness
- * The harness is intended to be used for benchmarks where co-ordinated omission is an issue.
- * Typically these would be of the producer/consumer nature where the start time for the benchmark
- * may be on a different thread than the end time.
+ * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically these would be
+ * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
  * <p></p>
  * This tool was inspired by JMH.
  */
@@ -81,16 +79,23 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Use this constructor if you want to test the latencies in more automated fashion.
-     * The result is passed to the result consumer after the JLBH::start method returns.
-     * You can create you own consumer, or use provided JLBHResultConsumer::newThreadSafeInstance()
-     * that allows you to retrieve the result even if the JLBH has been executed in a different thread.
+     * Use this constructor if you want to test the latencies in more automated fashion. The result is passed to the result consumer after the
+     * JLBH::start method returns. You can create you own consumer, or use provided JLBHResultConsumer::newThreadSafeInstance() that allows you to
+     * retrieve the result even if the JLBH has been executed in a different thread.
      *
      * @param jlbhOptions    Options to run the benchmark
      * @param printStream    Used to print text output. Use System.out to show the result on you standard out (e.g. screen)
      * @param resultConsumer If provided, accepts the result data to be retrieved after the latencies have been measured
      */
     public JLBH(@NotNull JLBHOptions jlbhOptions, @NotNull PrintStream printStream, Consumer<JLBHResult> resultConsumer) {
+
+        final String resourceTracing = System.getProperty("jvm.resource.tracing");
+
+        if (resourceTracing != null && (resourceTracing.isEmpty() || Boolean.parseBoolean(resourceTracing))) {
+            System.out.println("***** WARNING : JLBH can not be run if jvm.resource.tracing=" + resourceTracing + ", please remove all \"jvm.resource.tracing\" is this will corrupt your stats *****");
+            System.exit(-1);
+        }
+
         this.jlbhOptions = jlbhOptions;
         this.printStream = printStream;
         this.resultConsumer = resultConsumer;
