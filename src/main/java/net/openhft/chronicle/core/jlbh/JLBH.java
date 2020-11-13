@@ -92,7 +92,7 @@ public class JLBH implements NanoSampler {
         final String resourceTracing = System.getProperty("jvm.resource.tracing");
 
         if (resourceTracing != null && (resourceTracing.isEmpty() || Boolean.parseBoolean(resourceTracing))) {
-            System.out.println("***** WARNING : JLBH can not be run if jvm.resource.tracing=" + resourceTracing + ", please remove all \"jvm.resource.tracing\" is this will corrupt your stats *****");
+            System.out.println("***** WARNING : JLBH can not be run if jvm.resource.tracing=" + resourceTracing + ", please remove all \"jvm.resource.tracing\" as this will corrupt your stats *****");
             System.exit(-1);
         }
 
