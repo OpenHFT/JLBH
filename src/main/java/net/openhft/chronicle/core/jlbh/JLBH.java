@@ -562,5 +562,4 @@ public class JLBH implements NanoSampler {
             return busy;
         }
     }
-
 }
