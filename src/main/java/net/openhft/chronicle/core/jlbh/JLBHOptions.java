@@ -89,9 +89,16 @@ public class JLBHOptions {
      * (i.e. accounting for co-ordinated omission) or whether the the start time is just
      * the a factor of the throughput (i.e. not accounting for co-ordinated omission).
      *
-     * @param accountForCoordinatedOmmission defaults to true
+     * @param accountForCoordinatedOmission defaults to true
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
+    @NotNull
+    public JLBHOptions accountForCoordinatedOmission(boolean accountForCoordinatedOmission) {
+        this.accountForCoordinatedOmission = accountForCoordinatedOmission;
+        return this;
+    }
+
+    @Deprecated(/* to be removed in x.23 */)
     @NotNull
     public JLBHOptions accountForCoordinatedOmmission(boolean accountForCoordinatedOmmission) {
         this.accountForCoordinatedOmission = accountForCoordinatedOmmission;
