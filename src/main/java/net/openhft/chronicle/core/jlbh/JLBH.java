@@ -48,6 +48,7 @@ public class JLBH implements NanoSampler {
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();
     // wait time between invocations in nanoseconds
     private final long latencyBetweenTasks;
+    private final LatencyDistributor latencyDistributor;
     @NotNull
     private final JLBHOptions jlbhOptions;
     @NotNull
@@ -103,6 +104,7 @@ public class JLBH implements NanoSampler {
         latencyBetweenTasks = jlbhOptions.throughputTimeUnit.toNanos(1) / jlbhOptions.throughput;
         percentileRuns = new ArrayList<>();
         additionalPercentileRuns = new TreeMap<>();
+        latencyDistributor = jlbhOptions.latencyDistributor;
     }
 
     /**
@@ -148,24 +150,27 @@ public class JLBH implements NanoSampler {
                         warmupComplete(warmupStart);
                         runStart = System.currentTimeMillis();
                         startTimeNs = System.nanoTime();
-                    } else if (jlbhOptions.accountForCoordinatedOmission) {
-                        startTimeNs += latencyBetweenTasks;
-                        long millis = (startTimeNs - System.nanoTime()) / 1000000 - 2;
-                        if (millis > 0) {
-                            Jvm.pause(millis);
-                        }
-                        Jvm.busyWaitUntil(startTimeNs);
-
                     } else {
-                        if (latencyBetweenTasks > 2e6) {
-                            long end = System.nanoTime() + latencyBetweenTasks;
-                            Jvm.pause(latencyBetweenTasks / 1_000_000 - 1);
-                            // account for jitter in Thread.sleep() and wait until a fixed point in time
-                            Jvm.busyWaitUntil(end);
+                        final long latencyBetweenTasks = latencyDistributor.apply(this.latencyBetweenTasks);
+                        if (jlbhOptions.accountForCoordinatedOmission) {
+                            startTimeNs += latencyBetweenTasks;
+                            long millis = (startTimeNs - System.nanoTime()) / 1000000 - 2;
+                            if (millis > 0) {
+                                Jvm.pause(millis);
+                            }
+                            Jvm.busyWaitUntil(startTimeNs);
+
                         } else {
-                            Jvm.busyWaitMicros(latencyBetweenTasks / 1000);
+                            if (latencyBetweenTasks > 2e6) {
+                                long end = System.nanoTime() + latencyBetweenTasks;
+                                Jvm.pause(latencyBetweenTasks / 1_000_000 - 1);
+                                // account for jitter in Thread.sleep() and wait until a fixed point in time
+                                Jvm.busyWaitUntil(end);
+                            } else {
+                                Jvm.busyWaitMicros(latencyBetweenTasks / 1000);
+                            }
+                            startTimeNs = System.nanoTime();
                         }
-                        startTimeNs = System.nanoTime();
                     }
 
                     if ((interruptCheckThrottle = (interruptCheckThrottle + 1) & interruptCheckThrottleMask) == 0
@@ -253,7 +258,7 @@ public class JLBH implements NanoSampler {
         percentileRuns.add(endToEndHistogram.getPercentiles());
 
         printStream.println("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") --------------------------------------------------------");
-        printStream.println("Run time: " + totalRunTime / 1000.0 + "s");
+        printStream.println("Run time: " + totalRunTime / 1000.0 + "s, distribution: " +latencyDistributor);
         printStream.println("Correcting for co-ordinated:" + jlbhOptions.accountForCoordinatedOmission);
         printStream.println("Target throughput:" + jlbhOptions.throughput + "/" + timeUnitToString(jlbhOptions.throughputTimeUnit) + " = 1 message every " + (latencyBetweenTasks / 1000) + "us");
         printStream.printf("%-48s", String.format("End to End: (%,d)", endToEndHistogram.totalCount()));

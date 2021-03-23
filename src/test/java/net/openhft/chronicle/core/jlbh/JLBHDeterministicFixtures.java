@@ -10,7 +10,7 @@ public class JLBHDeterministicFixtures {
     static final int RUNS = 3;
     private final static String expectedOutput = "Warm up complete ...\n" +
             "-------------------------------- BENCHMARK RESULTS (RUN 1) --------------------------------------------------------\n" +
-            "Run time: ...\n" +
+            "Run time: ...s, distribution: NORMAL\n" +
             "Correcting for co-ordinated:true\n" +
             "Target throughput:1000000/s = 1 message every 1us\n" +
             "End to End: (9,000)                             50/90 99/99.9 99.99 - worst was 8.08 / 11.68  12.45 / 12.58  12.58 - 12.58\n" +
@@ -19,7 +19,7 @@ public class JLBHDeterministicFixtures {
             "OS Jitter ...\n" +
             "-------------------------------------------------------------------------------------------------------------------\n" +
             "-------------------------------- BENCHMARK RESULTS (RUN 2) --------------------------------------------------------\n" +
-            "Run time: ...\n" +
+            "Run time: ...s, distribution: NORMAL\n" +
             "Correcting for co-ordinated:true\n" +
             "Target throughput:1000000/s = 1 message every 1us\n" +
             "End to End: (9,000)                             50/90 99/99.9 99.99 - worst was 8.08 / 11.68  12.45 / 12.58  12.58 - 12.58\n" +
@@ -28,7 +28,7 @@ public class JLBHDeterministicFixtures {
             "OS Jitter ...\n" +
             "-------------------------------------------------------------------------------------------------------------------\n" +
             "-------------------------------- BENCHMARK RESULTS (RUN 3) --------------------------------------------------------\n" +
-            "Run time: ...\n" +
+            "Run time: ...s, distribution: NORMAL\n" +
             "Correcting for co-ordinated:true\n" +
             "Target throughput:1000000/s = 1 message every 1us\n" +
             "End to End: (9,000)                             50/90 99/99.9 99.99 - worst was 6.10 / 9.70  10.53 / 10.59  10.59 - 10.59\n" +
@@ -77,7 +77,7 @@ public class JLBHDeterministicFixtures {
         return content
                 .replaceAll("Warm up complete \\(\\d+ iterations took .+s\\)", "Warm up complete ...")
                 .replaceAll("OS Jitter .+", "OS Jitter ...")
-                .replaceAll("Run time: .+s", "Run time: ...")
+                .replaceAll("Run time: .+s,", "Run time: ...s,")
                 .replaceAll("\r", "");
     }
 
