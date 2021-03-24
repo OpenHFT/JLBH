@@ -32,7 +32,7 @@ public class JLBHIntegrationTest {
     }
 
     @Test
-    public void shouldMeasureLatency() throws Exception {
+    public void shouldMeasureLatency() {
         // given
         redirectSystemOut();
         final JLBH jlbh = new JLBH(options());
