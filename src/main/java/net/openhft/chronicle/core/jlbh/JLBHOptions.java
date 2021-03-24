@@ -100,9 +100,8 @@ public class JLBHOptions {
 
     @Deprecated(/* to be removed in x.23 */)
     @NotNull
-    public JLBHOptions accountForCoordinatedOmmission(boolean accountForCoordinatedOmmission) {
-        this.accountForCoordinatedOmission = accountForCoordinatedOmmission;
-        return this;
+    public JLBHOptions accountForCoordinatedOmmission(boolean accountForCoordinatedOmission) {
+        return accountForCoordinatedOmission(accountForCoordinatedOmission);
     }
 
     /**

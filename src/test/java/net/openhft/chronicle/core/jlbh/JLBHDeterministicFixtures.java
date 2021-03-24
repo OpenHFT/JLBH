@@ -62,10 +62,8 @@ public class JLBHDeterministicFixtures {
         return new JLBHOptions()
                 .warmUpIterations(WARM_UP_ITERATIONS)
                 .iterations(ITERATIONS)
-                .throughput(THROUGHPUT)
-                .accountForCoordinatedOmmission(true)
-                .runs(RUNS)
-                .accountForCoordinatedOmmission(true)
+                .throughput(THROUGHPUT).accountForCoordinatedOmission(true)
+                .runs(RUNS).accountForCoordinatedOmission(true)
                 .jlbhTask(new PredictableJLBHTask());
     }
 

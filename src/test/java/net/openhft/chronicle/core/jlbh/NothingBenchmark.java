@@ -12,8 +12,7 @@ public class NothingBenchmark implements JLBHTask {
                 .iterations(iterations)
                 .throughput(5, SECONDS)
                 .runs(3)
-                .recordOSJitter(true)
-                .accountForCoordinatedOmmission(true)
+                .recordOSJitter(true).accountForCoordinatedOmission(true)
                 .jlbhTask(new NothingBenchmark());
         new JLBH(lth).start();
     }

@@ -32,10 +32,8 @@ public class ExampleJLBHMain implements JLBHTask {
         @NotNull JLBHOptions jlbhOptions = new JLBHOptions()
                 .warmUpIterations(Jvm.compileThreshold() * 2)
                 .iterations(10_000_001)
-                .throughput(2000_000)
-                .accountForCoordinatedOmmission(true)
-                .runs(2)
-                .accountForCoordinatedOmmission(true)
+                .throughput(2000_000).accountForCoordinatedOmission(true)
+                .runs(2).accountForCoordinatedOmission(true)
                 .jlbhTask(new ExampleJLBHMain());
         new JLBH(jlbhOptions).start();
     }
