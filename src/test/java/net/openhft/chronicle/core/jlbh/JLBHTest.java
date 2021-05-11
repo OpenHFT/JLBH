@@ -1,15 +1,13 @@
 package net.openhft.chronicle.core.jlbh;
 
 import org.jetbrains.annotations.NotNull;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.time.Duration;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static net.openhft.chronicle.core.jlbh.JLBHDeterministicFixtures.*;
 import static net.openhft.chronicle.core.jlbh.JLBHResult.RunResult.Percentile.*;
@@ -111,8 +109,35 @@ public class JLBHTest {
         assertEquals(4, probeBLastRunSummary.percentiles().size());
     }
 
-    private Set<Duration> percentilesUniqueLatenciesIn(JLBHResult.RunResult summaryA) {
-        return new HashSet<>(summaryA.percentiles().values());
+    @Test
+    public void teamCityHelper() {
+        // given
+        final JLBHResultConsumer resultConsumer = resultConsumer();
+        JLBHOptions jlbhOptions = options().jlbhTask(new PredictableJLBHTaskDifferentShape()).iterations(ITERATIONS * 2);
+        final JLBH jlbh = new JLBH(jlbhOptions, printStream(), resultConsumer);
+
+        // when
+        jlbh.start();
+
+        // then
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final PrintStream printStream = new PrintStream(baos)) {
+            TeamCityHelper.teamCityStatsLastRun("prefix", jlbh, jlbhOptions.iterations, printStream);
+        }
+        Assert.assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5' value='8.072']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.9' value='11.664']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.99' value='12.464']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.997' value='12.528']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.1.0' value='12.56']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.5' value='7.064']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.9' value='10.672']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.99' value='11.472']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.997' value='11.536']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.1.0' value='11.568']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.0.5' value='0.100125']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.0.9' value='0.100125']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.0.99' value='0.100125']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.1.0' value='0.100125']\n", baos.toString().replace("\r", ""));
     }
 
     @NotNull
