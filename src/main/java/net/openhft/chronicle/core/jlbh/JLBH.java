@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -64,7 +65,7 @@ public class JLBH implements NanoSampler {
     private Histogram endToEndHistogram = createHistogram();
     @NotNull
     private Histogram osJitterHistogram = createHistogram();
-    private volatile long noResultsReturned;
+    private AtomicLong noResultsReturned = new AtomicLong();
     @NotNull
     private AtomicBoolean warmUpComplete = new AtomicBoolean(false);
     //Use non-atomic when so thread synchronisation is necessary
@@ -205,7 +206,7 @@ public class JLBH implements NanoSampler {
     private void warmupComplete(long warmupStart) {
         while (!warmUpComplete.get()) {
             Jvm.pause(2000);
-            printStream.println("Complete: " + noResultsReturned);
+            printStream.println("Complete: " + noResultsReturned.get());
             if (testThread.isInterrupted()) {
                 return;
             }
@@ -281,7 +282,7 @@ public class JLBH implements NanoSampler {
         }
         printStream.println("-------------------------------------------------------------------------------------------------------------------");
 
-        noResultsReturned = 0;
+        noResultsReturned.set(0);
         endToEndHistogram.reset();
         additionHistograms.values().forEach(Histogram::reset);
         osJitterMonitor.reset();
@@ -294,8 +295,9 @@ public class JLBH implements NanoSampler {
         while (true) {
             Jvm.pause(TimeUnit.SECONDS.toMillis(10));
 
-            if (previousSampleCount < noResultsReturned) {
-                previousSampleCount = noResultsReturned;
+            long sampleCount = noResultsReturned.get();
+            if (previousSampleCount < sampleCount) {
+                previousSampleCount = sampleCount;
                 previousSampleTime = System.currentTimeMillis();
             } else {
                 if (previousSampleTime < (System.currentTimeMillis() - jlbhOptions.timeout)) {
@@ -457,12 +459,12 @@ public class JLBH implements NanoSampler {
     }
 
     public void sample(long nanoTime) {
-        noResultsReturned++;
-        if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
+        long sampleCount = noResultsReturned.incrementAndGet();
+        if (sampleCount < jlbhOptions.warmUpIterations && !warmedUp) {
             endToEndHistogram.sample(nanoTime);
             return;
         }
-        if (noResultsReturned == jlbhOptions.warmUpIterations && !warmedUp) {
+        if (sampleCount == jlbhOptions.warmUpIterations && !warmedUp) {
             warmedUp = true;
             endToEndHistogram.reset();
             if (additionHistograms.size() > 0) {
