@@ -18,6 +18,19 @@
 
 package net.openhft.chronicle.core.jlbh;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import net.openhft.chronicle.core.Jvm;
@@ -26,16 +39,6 @@ import net.openhft.chronicle.core.util.Histogram;
 import net.openhft.chronicle.core.util.NanoSampler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.*;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically these would be
@@ -62,7 +65,7 @@ public class JLBH implements NanoSampler {
     @NotNull
     private final OSJitterMonitor osJitterMonitor = new OSJitterMonitor();
     @NotNull
-    private Histogram endToEndHistogram = createHistogram();
+    private final TSHistogram endToEndHistogram = new TSHistogram();
     @NotNull
     private Histogram osJitterHistogram = createHistogram();
     private AtomicLong noResultsReturned = new AtomicLong();
@@ -256,14 +259,16 @@ public class JLBH implements NanoSampler {
 
         long totalRunTime = System.currentTimeMillis() - runStart;
 
-        percentileRuns.add(endToEndHistogram.getPercentiles());
+        final Histogram endToEndHistogramSnapshot = this.endToEndHistogram.snapshot();
+
+        percentileRuns.add(endToEndHistogramSnapshot.getPercentiles());
 
         printStream.println("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") --------------------------------------------------------");
         printStream.println("Run time: " + totalRunTime / 1000.0 + "s, distribution: " +latencyDistributor);
         printStream.println("Correcting for co-ordinated:" + jlbhOptions.accountForCoordinatedOmission);
         printStream.println("Target throughput:" + jlbhOptions.throughput + "/" + timeUnitToString(jlbhOptions.throughputTimeUnit) + " = 1 message every " + (latencyBetweenTasks / 1000) + "us");
-        printStream.printf("%-48s", String.format("End to End: (%,d)", endToEndHistogram.totalCount()));
-        printStream.println(endToEndHistogram.toMicrosFormat());
+        printStream.printf("%-48s", String.format("End to End: (%,d)", endToEndHistogramSnapshot.totalCount()));
+        printStream.println(endToEndHistogramSnapshot.toMicrosFormat());
 
         if (additionHistograms.size() > 0) {
             additionHistograms.forEach((key, value) -> {
