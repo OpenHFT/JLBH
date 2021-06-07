@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
  * This tool was inspired by JMH.
  */
 @SuppressWarnings("unused")
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 public class JLBH implements NanoSampler {
     private static final Double[] NO_DOUBLES = {};
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();

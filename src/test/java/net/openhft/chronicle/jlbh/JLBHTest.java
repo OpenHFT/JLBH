@@ -1,4 +1,4 @@
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-import static net.openhft.chronicle.core.jlbh.JLBHDeterministicFixtures.*;
-import static net.openhft.chronicle.core.jlbh.JLBHResult.RunResult.Percentile.*;
+import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
+import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 

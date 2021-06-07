@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,6 @@ import java.util.List;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 class ImmutableProbeResult implements JLBHResult.ProbeResult {
 
     @NotNull

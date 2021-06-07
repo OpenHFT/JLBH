@@ -16,12 +16,11 @@
  * limitations under the License.
  *
  */
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 public interface JLBHResultConsumer extends Consumer<JLBHResult>, Supplier<JLBHResult> {
 
     /**

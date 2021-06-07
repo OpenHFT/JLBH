@@ -1,4 +1,4 @@
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import org.junit.After;
 import org.junit.Before;
@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static net.openhft.chronicle.core.jlbh.JLBHDeterministicFixtures.*;
+import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;

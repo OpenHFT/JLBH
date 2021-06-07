@@ -1,8 +1,7 @@
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 public enum LatencyDistributors implements LatencyDistributor {
     NORMAL {
         @Override

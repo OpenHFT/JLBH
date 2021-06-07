@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import static java.util.Collections.unmodifiableMap;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 class ImmutableJLBHResult implements JLBHResult {
 
     @NotNull

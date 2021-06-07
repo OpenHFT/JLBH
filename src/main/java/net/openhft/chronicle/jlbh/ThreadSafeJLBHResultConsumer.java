@@ -16,9 +16,8 @@
  * limitations under the License.
  *
  */
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 final class ThreadSafeJLBHResultConsumer implements JLBHResultConsumer {
 
     // the assumption is that the JLBHResult is immutable

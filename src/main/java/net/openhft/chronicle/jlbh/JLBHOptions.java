@@ -17,7 +17,7 @@
  *
  */
 
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
@@ -30,7 +30,6 @@ import java.util.function.Supplier;
 /**
  * Data structure to store the options to pass into the JLBH constructor
  */
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 public class JLBHOptions {
     int throughput = 10_000;
 

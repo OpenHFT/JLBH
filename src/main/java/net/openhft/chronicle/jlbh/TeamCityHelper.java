@@ -1,4 +1,4 @@
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.util.Histogram;
 import org.jetbrains.annotations.NotNull;
@@ -7,7 +7,6 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 public class TeamCityHelper {
 
     /**

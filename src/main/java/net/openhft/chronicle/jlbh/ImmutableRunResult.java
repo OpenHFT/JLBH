@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,9 +27,8 @@ import java.util.Map;
 
 import static java.time.temporal.ChronoUnit.NANOS;
 import static java.util.Collections.unmodifiableMap;
-import static net.openhft.chronicle.core.jlbh.JLBHResult.RunResult.Percentile.*;
+import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 class ImmutableRunResult implements JLBHResult.RunResult {
 
     private final Map<Percentile, Duration> percentiles;

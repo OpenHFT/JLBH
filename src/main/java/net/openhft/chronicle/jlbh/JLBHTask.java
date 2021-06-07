@@ -16,12 +16,11 @@
  * limitations under the License.
  */
 
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 /**
  * Interface for tasks using the JLBH framework.
  */
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
 public interface JLBHTask {
     /**
      * This method is called before the benchmark is started.

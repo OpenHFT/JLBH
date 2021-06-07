@@ -1,4 +1,4 @@
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import java.util.concurrent.locks.LockSupport;
 

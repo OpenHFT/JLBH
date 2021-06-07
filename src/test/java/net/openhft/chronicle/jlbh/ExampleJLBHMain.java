@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package net.openhft.chronicle.core.jlbh;
+package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.Jvm;
 import org.jetbrains.annotations.NotNull;
