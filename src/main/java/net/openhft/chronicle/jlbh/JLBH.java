@@ -142,14 +142,21 @@ public class JLBH implements NanoSampler {
             for (int run = 0; run < jlbhOptions.runs && !abortTestRun.get(); run++) {
 
                 long runStart = System.currentTimeMillis();
-                long startTimeNs = System.nanoTime();
+                long startTimeNs = System.nanoTime(), lastPrint = startTimeNs;
 
                 for (int i = 0; i < jlbhOptions.iterations; i++) {
+
+                    if (i % 8 == 0 && i % 1000 == 0 && startTimeNs > lastPrint + 5_000_000_000L) {
+                        System.out.printf("... run %,d  out of %,d%n", i, jlbhOptions.iterations);
+                        lastPrint = startTimeNs;
+                        startTimeNs = System.nanoTime();
+                    }
 
                     if (i == 0 && run == 0) {
                         warmupComplete(warmupStart);
                         runStart = System.currentTimeMillis();
                         startTimeNs = System.nanoTime();
+
                     } else {
                         final long latencyBetweenTasks = latencyDistributor.apply(this.latencyBetweenTasks);
                         if (jlbhOptions.accountForCoordinatedOmission) {
@@ -258,7 +265,7 @@ public class JLBH implements NanoSampler {
         percentileRuns.add(endToEndHistogram.getPercentiles());
 
         printStream.println("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") --------------------------------------------------------");
-        printStream.println("Run time: " + totalRunTime / 1000.0 + "s, distribution: " +latencyDistributor);
+        printStream.println("Run time: " + totalRunTime / 1000.0 + "s, distribution: " + latencyDistributor);
         printStream.println("Correcting for co-ordinated:" + jlbhOptions.accountForCoordinatedOmission);
         printStream.println("Target throughput:" + jlbhOptions.throughput + "/" + timeUnitToString(jlbhOptions.throughputTimeUnit) + " = 1 message every " + (latencyBetweenTasks / 1000) + "us");
         printStream.printf("%-48s", String.format("End to End: (%,d)", endToEndHistogram.totalCount()));
