@@ -9,6 +9,11 @@ import java.util.Map;
 
 public class TeamCityHelper {
 
+    public static void histo(@NotNull String name, @NotNull Histogram histo, @NotNull PrintStream printStream) {
+        double[] percentages = Histogram.percentilesFor(histo.totalCount());
+        printPercentiles(name, printStream, percentages, histo.getPercentiles());
+    }
+
     /**
      * prints out stats for the last run in a TeamCity friendly manner
      */
@@ -22,6 +27,10 @@ public class TeamCityHelper {
 
     private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, @NotNull double[] percentages, @NotNull List<double[]> valuesList) {
         double[] values = valuesList.get(valuesList.size() - 1);
+        printPercentiles(s, printStream, percentages, values);
+    }
+
+    private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, @NotNull double[] percentages, double[] values) {
         if (percentages.length != values.length) {
             percentages = shortenArray(percentages, values.length);
         }
