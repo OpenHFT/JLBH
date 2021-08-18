@@ -7,10 +7,7 @@ import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.threads.MediumEventLoop;
 import net.openhft.chronicle.threads.Pauser;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -277,6 +274,50 @@ public class JLBHTest {
                 runCompleteIterations);
         assertEquals(1, completeCount.get());
         assertEquals(warmUpIterations + (runs * iterations), completeIterations.get());
+    }
+
+
+    @Test
+    public void gnuplotHelper() {
+        // given
+        final JLBHResultConsumer resultConsumer = resultConsumer();
+        JLBHOptions jlbhOptions = options().jlbhTask(new PredictableJLBHTaskDifferentShape()).iterations(ITERATIONS * 2);
+        final JLBH jlbh = new JLBH(jlbhOptions, printStream(), resultConsumer);
+
+        // when
+        jlbh.start();
+
+        // then
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final PrintStream printStream = new PrintStream(baos)) {
+            GnuplotHelper.printRuns("prefix", jlbh, jlbhOptions.iterations, printStream);
+        }
+        Assert.assertEquals("set terminal pngcairo size 1024,480\n" +
+                "set output \"prefix.png\"\n" +
+                "set title \"prefix\"\n" +
+                "set logscale y\n" +
+                "set ylabel \"latency MICROSECONDS\"\n" +
+                "set key outside\n" +
+                "set xtics (\"0.5\" 0, \"0.9\" 1, \"0.99\" 2, \"0.997\" 3, \"1.0\" 4)\n" +
+                "\n" +
+                "$data << EOD\n" +
+                "0 8 5 8 7 4 7 0 0 0 \n" +
+                "1 11 10 11 10 9 10 0 0 0 \n" +
+                "2 12 12 12 11 11 11 0 0 0 \n" +
+                "3 12 12 12 11 11 11 - - - \n" +
+                "4 12 12 12 11 11 11 0 0 0 \n" +
+                "EOD\n" +
+                "\n" +
+                "plot \\\n" +
+                "\"$data\" using 1:2 with lines lw 4 dt 1 lc rgb \"coral\" title \"e2e run1\",\\\n" +
+                "\"$data\" using 1:3 with lines lw 3 dt 1 lc rgb \"forest-green\" title \"e2e run2\",\\\n" +
+                "\"$data\" using 1:4 with lines lw 2 dt 1 lc rgb \"royalblue\" title \"e2e run3\",\\\n" +
+                "\"$data\" using 1:5 with lines lw 4 dt 2 lc rgb \"coral\" title \"A run1\",\\\n" +
+                "\"$data\" using 1:6 with lines lw 3 dt 2 lc rgb \"forest-green\" title \"A run2\",\\\n" +
+                "\"$data\" using 1:7 with lines lw 2 dt 2 lc rgb \"royalblue\" title \"A run3\",\\\n" +
+                "\"$data\" using 1:8 with lines lw 4 dt 3 lc rgb \"coral\" title \"B run1\",\\\n" +
+                "\"$data\" using 1:9 with lines lw 3 dt 3 lc rgb \"forest-green\" title \"B run2\",\\\n" +
+                "\"$data\" using 1:10 with lines lw 2 dt 3 lc rgb \"royalblue\" title \"B run3\"\n", baos.toString().replace("\r", ""));
     }
 
     @NotNull

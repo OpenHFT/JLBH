@@ -551,6 +551,14 @@ public class JLBH implements NanoSampler {
         return new Histogram();
     }
 
+    public Histogram endToEndHistogram() {
+        return endToEndHistogram;
+    }
+
+    public SortedMap<String, Histogram> additionHistograms() {
+        return additionHistograms;
+    }
+
     private final class OSJitterMonitor extends Thread {
         final AtomicBoolean reset = new AtomicBoolean(false);
 
