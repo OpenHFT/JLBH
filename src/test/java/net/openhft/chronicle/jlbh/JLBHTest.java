@@ -7,7 +7,10 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
@@ -138,6 +141,77 @@ public class JLBHTest {
                 "##teamcity[buildStatisticValue key='prefix.B.0.9' value='0.100125']\n" +
                 "##teamcity[buildStatisticValue key='prefix.B.0.99' value='0.100125']\n" +
                 "##teamcity[buildStatisticValue key='prefix.B.1.0' value='0.100125']\n", baos.toString().replace("\r", ""));
+    }
+
+    @Test
+    public void shouldCallAllLifecycleMethods() {
+        AtomicInteger initCount = new AtomicInteger(0);
+        AtomicInteger runCount = new AtomicInteger(0);
+
+        AtomicInteger warmedUpCount = new AtomicInteger(0);
+        AtomicInteger warmedUpIterations = new AtomicInteger(0);
+
+        AtomicInteger runCompleteCount = new AtomicInteger(0);
+        List<Integer> runCompleteIterations = new ArrayList<>();
+
+        AtomicInteger completeCount = new AtomicInteger(0);
+        AtomicInteger completeIterations = new AtomicInteger(0);
+
+        JLBHTask task = new JLBHTask() {
+
+            private JLBH jlbh;
+
+            @Override
+            public void init(JLBH jlbh) {
+                initCount.incrementAndGet();
+                this.jlbh = jlbh;
+            }
+
+            @Override
+            public void run(long startTimeNS) {
+                runCount.incrementAndGet();
+                jlbh.sampleNanos(System.nanoTime() - startTimeNS);
+            }
+
+            @Override
+            public void warmedUp() {
+                warmedUpCount.incrementAndGet();
+                warmedUpIterations.set(runCount.get());
+            }
+
+            @Override
+            public void runComplete() {
+                runCompleteCount.incrementAndGet();
+                runCompleteIterations.add(runCount.get());
+            }
+
+            @Override
+            public void complete() {
+                completeCount.incrementAndGet();
+                completeIterations.set(runCount.get());
+            }
+        };
+
+        final int warmUpIterations = 10;
+        final int iterations = 10;
+        final int runs = 2;
+        new JLBH(new JLBHOptions()
+                .warmUpIterations(warmUpIterations)
+                .iterations(iterations)
+                .runs(runs)
+                .jlbhTask(task)).start();
+        assertEquals(1, initCount.get());
+        assertEquals(warmUpIterations + (runs * iterations), runCount.get());
+        assertEquals(1, warmedUpCount.get());
+        assertEquals(warmUpIterations, warmedUpIterations.get());
+        assertEquals(runs, runCompleteCount.get());
+        assertEquals(
+                Arrays.asList(
+                        warmUpIterations + iterations,
+                        warmUpIterations + 2 * iterations),
+                runCompleteIterations);
+        assertEquals(1, completeCount.get());
+        assertEquals(warmUpIterations + (runs * iterations), completeIterations.get());
     }
 
     @NotNull

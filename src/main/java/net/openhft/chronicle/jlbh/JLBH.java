@@ -292,6 +292,7 @@ public class JLBH implements NanoSampler {
         endToEndHistogram.reset();
         additionHistograms.values().forEach(Histogram::reset);
         osJitterMonitor.reset();
+        jlbhOptions.jlbhTask.runComplete();
     }
 
     private void checkSampleTimeout() {
