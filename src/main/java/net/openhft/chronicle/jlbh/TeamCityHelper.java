@@ -17,7 +17,7 @@ public class TeamCityHelper {
     /**
      * prints out stats for the last run in a TeamCity friendly manner
      */
-    public static void teamCityStatsLastRun(@NotNull String prefix, @NotNull JLBH jlbh, int iterations, @NotNull PrintStream printStream) {
+    public static void teamCityStatsLastRun(@NotNull String prefix, @NotNull JLBH jlbh, long iterations, @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(iterations);
         printPercentiles(prefix + ".end-to-end", printStream, percentages, jlbh.percentileRuns());
         for (Map.Entry<String, List<double[]>> entry : jlbh.additionalPercentileRuns().entrySet()) {

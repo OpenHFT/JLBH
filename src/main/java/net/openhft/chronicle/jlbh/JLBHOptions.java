@@ -41,7 +41,7 @@ public class JLBHOptions {
     boolean recordOSJitter = true;
     int warmUpIterations = Jvm.compileThreshold() * 6 / 5;
     int runs = 3;
-    int iterations = 100_000;
+    long iterations = 100_000;
     JLBHTask jlbhTask;
     int pauseAfterWarmupMS = 0;
     @NotNull
@@ -161,6 +161,12 @@ public class JLBHOptions {
      */
     @NotNull
     public JLBHOptions iterations(int iterations) {
+        this.iterations = iterations;
+        return this;
+    }
+
+    @NotNull
+    public JLBHOptions iterations(long iterations) {
         this.iterations = iterations;
         return this;
     }

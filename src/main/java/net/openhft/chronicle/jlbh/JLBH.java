@@ -144,10 +144,19 @@ public class JLBH implements NanoSampler {
                 long runStart = System.currentTimeMillis();
                 long startTimeNs = System.nanoTime(), lastPrint = startTimeNs;
 
-                for (int i = 0; i < jlbhOptions.iterations; i++) {
+                final long iterations = jlbhOptions.iterations;
+                final long length = iterations > 200_000_000 ? 60_000_000_000L
+                        : iterations > 50_000_000 ? 20_000_000_000L
+                        : iterations > 10_000_000 ? 10_000_000_000L
+                        : 5_000_000_000L;
+                long mod;
+                for (mod = 1000; mod <= iterations / 200; mod *= 10) {
+                }
 
-                    if (i % 8 == 0 && i % 1000 == 0 && startTimeNs > lastPrint + 5_000_000_000L) {
-                        System.out.printf("... run %,d  out of %,d%n", i, jlbhOptions.iterations);
+                for (int i = 0; i < iterations; i++) {
+
+                    if (i % 16 == 0 && i % mod == 0 && startTimeNs > lastPrint + length) {
+                        System.out.printf("... run %,d out of %,d%n", i, iterations);
                         lastPrint = startTimeNs;
                         startTimeNs = System.nanoTime();
                     }
@@ -173,10 +182,16 @@ public class JLBH implements NanoSampler {
                                 Jvm.pause(latencyBetweenTasks / 1_000_000 - 1);
                                 // account for jitter in Thread.sleep() and wait until a fixed point in time
                                 Jvm.busyWaitUntil(end);
+                                startTimeNs = System.nanoTime();
+
                             } else {
-                                Jvm.busyWaitMicros(latencyBetweenTasks / 1000);
+                                startTimeNs += latencyBetweenTasks - 14;
+                                long nowNS = System.nanoTime();
+                                if (startTimeNs < nowNS)
+                                    startTimeNs = nowNS;
+                                else
+                                    Jvm.busyWaitUntil(startTimeNs);
                             }
-                            startTimeNs = System.nanoTime();
                         }
                     }
 
@@ -530,7 +545,8 @@ public class JLBH implements NanoSampler {
     }
 
     private class JLBHEventHandler implements EventHandler {
-        private int iteration;
+        private int run;
+        private long iteration, i;
         private long runStart;
         private long nextInvokeTime;
         private boolean waitingForEndOfRun = false;
@@ -546,24 +562,26 @@ public class JLBH implements NanoSampler {
 
         @Override
         public boolean action() {
-            boolean busy = false;
-
-            int run = iteration / jlbhOptions.iterations;
-            int i = iteration % jlbhOptions.iterations;
+            final long iterations = jlbhOptions.iterations;
 
             if (!waitingForEndOfRun) {
                 long now = System.nanoTime();
                 if (now >= nextInvokeTime) {
                     nextInvokeTime += latencyBetweenTasks;
-                    jlbhOptions.jlbhTask.run(nextInvokeTime);
-                    busy = true;
+                    final long startTimeNS = jlbhOptions.accountForCoordinatedOmission ? nextInvokeTime : now;
+                    jlbhOptions.jlbhTask.run(startTimeNS);
                     ++iteration;
 
-                    if (i == jlbhOptions.iterations - 1)
+                    if (i >= iterations - 1) {
                         waitingForEndOfRun = true;
+                        i = 0;
+                        run++;
+                    } else {
+                        i++;
+                    }
                 }
             } else {
-                if (endToEndHistogram.totalCount() >= jlbhOptions.iterations) {
+                if (endToEndHistogram.totalCount() >= iterations) {
                     endOfRun(run - 1, runStart);
                     resetTime();
                     waitingForEndOfRun = false;
@@ -572,7 +590,7 @@ public class JLBH implements NanoSampler {
                 }
             }
 
-            return busy;
+            return true;
         }
     }
 }
