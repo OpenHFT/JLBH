@@ -1,6 +1,8 @@
 package net.openhft.chronicle.jlbh;
 
+import net.openhft.chronicle.core.OS;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,6 +24,7 @@ public class JLBHIntegrationTest {
     @Before
     public void setUp() {
         rememberOriginalStdErrOut();
+        Assume.assumeTrue(!OS.isMacOSX());
         outContent = new ByteArrayOutputStream();
         errContent = new ByteArrayOutputStream();
     }
