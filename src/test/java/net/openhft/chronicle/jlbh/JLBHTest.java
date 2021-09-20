@@ -1,15 +1,24 @@
 package net.openhft.chronicle.jlbh;
 
+import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.core.OS;
+import net.openhft.chronicle.core.io.Closeable;
+import net.openhft.chronicle.core.threads.EventLoop;
+import net.openhft.chronicle.threads.MediumEventLoop;
+import net.openhft.chronicle.threads.Pauser;
 import org.jetbrains.annotations.NotNull;
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,7 +28,35 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class JLBHTest {
+    private EventLoop eventLoop;
+
+    public JLBHTest(boolean runFromEventLoop) {
+        if (runFromEventLoop) {
+            eventLoop = new MediumEventLoop(null, "el", Pauser.busy(), true, null);
+            eventLoop.start();
+        }
+    }
+
+    @Parameterized.Parameters(name = "event loop {0}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] { { false }, { true } });
+    }
+
+    @After
+    public void after() {
+        Closeable.closeQuietly(eventLoop);
+    }
+
+    private void start(JLBH jlbh) {
+        if (eventLoop != null) {
+            jlbh.eventLoopHandler(eventLoop);
+            Jvm.pause(500);
+        } else {
+            jlbh.start();
+        }
+    }
 
     @Test
     public void shouldWriteResultToTheOutputProvided() {
@@ -30,7 +67,7 @@ public class JLBHTest {
         final JLBH jlbh = new JLBH(options(), new PrintStream(outputStream), resultConsumer());
 
         // when
-        jlbh.start();
+        start(jlbh);
 
         // then
         String result = outputStream.toString().replace("\r", "");
@@ -52,7 +89,7 @@ public class JLBHTest {
         final JLBH jlbh = new JLBH(options(), printStream(), resultConsumer);
 
         // when
-        jlbh.start();
+        start(jlbh);
 
         // then
         final JLBHResult.RunResult lastRunSummary = resultConsumer.get().endToEnd().summaryOfLastRun();
@@ -108,7 +145,7 @@ public class JLBHTest {
         final JLBH jlbh = new JLBH(jlbhOptions, printStream(), resultConsumer);
 
         // when
-        jlbh.start();
+        start(jlbh);
 
         // then
         final JLBHResult.RunResult probeALastRunSummary = resultConsumer.get().probe("A").get().summaryOfLastRun();
@@ -127,7 +164,7 @@ public class JLBHTest {
         final JLBH jlbh = new JLBH(jlbhOptions, printStream(), resultConsumer);
 
         // when
-        jlbh.start();
+        start(jlbh);
 
         // then
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -203,11 +240,11 @@ public class JLBHTest {
         final int warmUpIterations = 10;
         final int iterations = 10;
         final int runs = 2;
-        new JLBH(new JLBHOptions()
+        start(new JLBH(new JLBHOptions()
                 .warmUpIterations(warmUpIterations)
                 .iterations(iterations)
                 .runs(runs)
-                .jlbhTask(task)).start();
+                .jlbhTask(task)));
         assertEquals(1, initCount.get());
         assertEquals(warmUpIterations + (runs * iterations), runCount.get());
         assertEquals(1, warmedUpCount.get());
