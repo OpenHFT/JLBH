@@ -2,7 +2,6 @@ package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.OS;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -17,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 public class JLBHTest {
@@ -134,7 +134,7 @@ public class JLBHTest {
         try (final PrintStream printStream = new PrintStream(baos)) {
             TeamCityHelper.teamCityStatsLastRun("prefix", jlbh, jlbhOptions.iterations, printStream);
         }
-        Assert.assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5' value='8.072']\n" +
+        assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5' value='8.072']\n" +
                 "##teamcity[buildStatisticValue key='prefix.end-to-end.0.9' value='11.664']\n" +
                 "##teamcity[buildStatisticValue key='prefix.end-to-end.0.99' value='12.464']\n" +
                 "##teamcity[buildStatisticValue key='prefix.end-to-end.0.997' value='12.528']\n" +
