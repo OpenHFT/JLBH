@@ -22,6 +22,8 @@ import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.core.threads.EventHandler;
+import net.openhft.chronicle.core.threads.EventLoop;
+import net.openhft.chronicle.core.threads.InvalidEventHandlerException;
 import net.openhft.chronicle.core.util.Histogram;
 import net.openhft.chronicle.core.util.NanoSampler;
 import org.jetbrains.annotations.NotNull;
@@ -61,16 +63,18 @@ public class JLBH implements NanoSampler {
     @NotNull
     private final OSJitterMonitor osJitterMonitor = new OSJitterMonitor();
     @NotNull
-    private Histogram endToEndHistogram = createHistogram();
+    private final Histogram endToEndHistogram = createHistogram();
     @NotNull
-    private Histogram osJitterHistogram = createHistogram();
+    private final Histogram osJitterHistogram = createHistogram();
     private volatile long noResultsReturned;
     @NotNull
-    private AtomicBoolean warmUpComplete = new AtomicBoolean(false);
+    private final AtomicBoolean warmUpComplete = new AtomicBoolean(false);
     //Use non-atomic when so thread synchronisation is necessary
     private boolean warmedUp;
-    private AtomicBoolean abortTestRun = new AtomicBoolean();
+    private final AtomicBoolean abortTestRun = new AtomicBoolean();
     private volatile Thread testThread;
+    private final long mod;
+    private final long length;
 
     /**
      * @param jlbhOptions Options to run the benchmark
@@ -105,6 +109,15 @@ public class JLBH implements NanoSampler {
         percentileRuns = new ArrayList<>();
         additionalPercentileRuns = new TreeMap<>();
         latencyDistributor = jlbhOptions.latencyDistributor;
+
+        this.length = jlbhOptions.iterations > 200_000_000 ? 60_000_000_000L
+                : jlbhOptions.iterations > 50_000_000 ? 20_000_000_000L
+                : jlbhOptions.iterations > 10_000_000 ? 10_000_000_000L
+                : 5_000_000_000L;
+        long mod2;
+        for (mod2 = 1000; mod2 <= jlbhOptions.iterations / 200; mod2 *= 10) {
+        }
+        this.mod = mod2;
     }
 
     /**
@@ -134,7 +147,8 @@ public class JLBH implements NanoSampler {
         startTimeoutCheckerIfRequired();
 
         this.testThread = Thread.currentThread();
-        long warmupStart = initStartOSJitterMonitorWarmup();
+        initStartOSJitterMonitor();
+        long warmupStart = warmup();
         int interruptCheckThrottle = 0;
         int interruptCheckThrottleMask = 1024 - 1;
         AffinityLock lock = jlbhOptions.acquireLock.get();
@@ -145,13 +159,6 @@ public class JLBH implements NanoSampler {
                 long startTimeNs = System.nanoTime(), lastPrint = startTimeNs;
 
                 final long iterations = jlbhOptions.iterations;
-                final long length = iterations > 200_000_000 ? 60_000_000_000L
-                        : iterations > 50_000_000 ? 20_000_000_000L
-                        : iterations > 10_000_000 ? 10_000_000_000L
-                        : 5_000_000_000L;
-                long mod;
-                for (mod = 1000; mod <= iterations / 200; mod *= 10) {
-                }
 
                 for (int i = 0; i < iterations; i++) {
 
@@ -162,7 +169,7 @@ public class JLBH implements NanoSampler {
                     }
 
                     if (i == 0 && run == 0) {
-                        warmupComplete(warmupStart);
+                        waitForWarmupToComplete(warmupStart);
                         runStart = System.currentTimeMillis();
                         startTimeNs = System.nanoTime();
 
@@ -224,9 +231,9 @@ public class JLBH implements NanoSampler {
         }
     }
 
-    private void warmupComplete(long warmupStart) {
+    private void waitForWarmupToComplete(long warmupStart) {
         while (!warmUpComplete.get()) {
-            Jvm.pause(2000);
+            Jvm.pause(500);
             printStream.println("Complete: " + noResultsReturned);
             if (testThread.isInterrupted()) {
                 return;
@@ -241,13 +248,15 @@ public class JLBH implements NanoSampler {
         jlbhOptions.jlbhTask.warmedUp();
     }
 
-    private long initStartOSJitterMonitorWarmup() {
+    private void initStartOSJitterMonitor() {
         jlbhOptions.jlbhTask.init(this);
         if (jlbhOptions.recordOSJitter) {
             osJitterMonitor.setDaemon(true);
             osJitterMonitor.start();
         }
+    }
 
+    private long warmup() {
         long warmupStart = System.currentTimeMillis();
         for (int i = 0; i < jlbhOptions.warmUpIterations; i++) {
             jlbhOptions.jlbhTask.run(System.nanoTime());
@@ -332,13 +341,29 @@ public class JLBH implements NanoSampler {
 
     /**
      * Call this instead of start if you want to install JLBH as a handler on your event loop thread
+     * @deprecated call {@link #eventLoopHandler(EventLoop)}
      */
+    @Deprecated(/* to be removed in x.23 */)
     public JLBHEventHandler eventLoopHandler() {
         if (!jlbhOptions.accountForCoordinatedOmission)
             throw new UnsupportedOperationException();
-        long warmupStart = initStartOSJitterMonitorWarmup();
-        warmupComplete(warmupStart);
+        initStartOSJitterMonitor();
+        long warmupStart = warmup();
+        waitForWarmupToComplete(warmupStart);
         return new JLBHEventHandler();
+    }
+
+    /**
+     * Call this instead of {@link #start()} if you want to install JLBH as a handler on your event loop thread
+     */
+    public void eventLoopHandler(@NotNull EventLoop eventLoop) {
+        if (!jlbhOptions.accountForCoordinatedOmission)
+            throw new UnsupportedOperationException();
+        initStartOSJitterMonitor();
+        eventLoop.addHandler(new WarmupHandler());
+        Jvm.pause(100);
+        waitForWarmupToComplete(System.currentTimeMillis());
+        eventLoop.addHandler(new JLBHEventHandler());
     }
 
     private void consumeResults() {
@@ -550,9 +575,11 @@ public class JLBH implements NanoSampler {
         private long runStart;
         private long nextInvokeTime;
         private boolean waitingForEndOfRun = false;
+        private long lastPrint;
 
         JLBHEventHandler() {
             resetTime();
+            this.lastPrint = nextInvokeTime;
         }
 
         private void resetTime() {
@@ -561,16 +588,17 @@ public class JLBH implements NanoSampler {
         }
 
         @Override
-        public boolean action() {
+        public boolean action() throws InvalidEventHandlerException {
+            boolean busy = false;
             final long iterations = jlbhOptions.iterations;
 
             if (!waitingForEndOfRun) {
                 long now = System.nanoTime();
                 if (now >= nextInvokeTime) {
+                    jlbhOptions.jlbhTask.run(nextInvokeTime);
                     nextInvokeTime += latencyBetweenTasks;
-                    final long startTimeNS = jlbhOptions.accountForCoordinatedOmission ? nextInvokeTime : now;
-                    jlbhOptions.jlbhTask.run(startTimeNS);
                     ++iteration;
+                    busy = true;
 
                     if (i >= iterations - 1) {
                         waitingForEndOfRun = true;
@@ -579,18 +607,44 @@ public class JLBH implements NanoSampler {
                     } else {
                         i++;
                     }
+
+                    if (i % 16 == 0 && i % mod == 0 && nextInvokeTime > lastPrint + length) {
+                        System.out.printf("... run %,d out of %,d%n", i, iterations);
+                        lastPrint = nextInvokeTime;
+                    }
                 }
             } else {
                 if (endToEndHistogram.totalCount() >= iterations) {
                     endOfRun(run - 1, runStart);
                     resetTime();
                     waitingForEndOfRun = false;
-                    if (run == jlbhOptions.runs)
+                    if (run == jlbhOptions.runs) {
                         endOfAllRuns();
+                        throw new InvalidEventHandlerException();
+                    }
                 }
             }
 
+            return busy;
+        }
+    }
+
+    private class WarmupHandler implements EventHandler {
+        private int iteration;
+
+        @Override
+        public boolean action() throws InvalidEventHandlerException {
+            if (iteration >= jlbhOptions.warmUpIterations)
+                throw new InvalidEventHandlerException();
+
+            jlbhOptions.jlbhTask.run(System.nanoTime());
+            ++iteration;
             return true;
+        }
+
+        @Override
+        public void loopStarted() {
+            testThread = Thread.currentThread();
         }
     }
 }
