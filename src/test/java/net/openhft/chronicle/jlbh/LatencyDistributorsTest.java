@@ -33,6 +33,6 @@ public class LatencyDistributorsTest {
         final int count = 100_000;
         for (int i = 0; i < count; i++)
             sum += ld.apply(base);
-        assertEquals(count * base, sum, sum / 100.0);
+        assertEquals(count * base, sum, sum / 50.0);
     }
 }
