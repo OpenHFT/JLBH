@@ -41,7 +41,7 @@ public class JLBHTest {
 
     @Parameterized.Parameters(name = "event loop {0}")
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] { { false }, { true } });
+        return Arrays.asList(new Object[][]{{false}, {true}});
     }
 
     @After
