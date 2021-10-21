@@ -437,11 +437,11 @@ public class JLBH implements NanoSampler {
                 if (p == 1) {
                     s = "worst";
                 } else {
-                    double p2 = p * 100;
-                    s = (long) p2 == p2 ? Long.toString((long) p2) : Double.toString(p2);
+                    double p2 = Math.round(p * 1e6) / 1e4;
+                    s = Double.toString(p2);
                 }
                 s += ":     ";
-                s = s.substring(0, 8);
+                s = s.substring(0, 9);
                 addPrToPrint(sb, s, jlbhOptions.runs);
             }
 
