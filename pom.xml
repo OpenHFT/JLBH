@@ -25,6 +25,11 @@
         <relativePath />
     </parent>
 
+    <properties>
+      <sonar.organization>openhft</sonar.organization>
+      <sonar.host.url>https://sonarcloud.io</sonar.host.url>   
+    </properties>
+  
     <artifactId>jlbh</artifactId>
     <version>1.22ea4-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
