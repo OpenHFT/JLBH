@@ -188,7 +188,8 @@ public class JLBH implements NanoSampler {
             //noinspection ResultOfMethodCallIgnored
             Thread.interrupted(); // Reset thread interrupted status.
             Jvm.pause(5);
-            lock.release();
+            if (lock != null)
+                lock.release();
             Jvm.pause(5);
         }
 
