@@ -213,7 +213,6 @@
             </build>
         </profile>
     </profiles>
-
     <scm>
         <url>scm:git:git@github.com:OpenHFT/JLBH.git</url>
         <connection>scm:git:git@github.com:OpenHFT/JLBH.git</connection>
