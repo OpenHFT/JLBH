@@ -76,6 +76,7 @@ public class JLBHDeterministicFixtures {
                 .replaceAll("Warm up complete \\(\\d+ iterations took .+s\\)", "Warm up complete ...")
                 .replaceAll("OS Jitter .+", "OS Jitter ...")
                 .replaceAll("Run time: .+s,", "Run time: ...s,")
+                .replaceAll("Complete: 500\\w+,", "")
                 .replaceAll("\r", "");
     }
 
