@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 /**
  * Data structure to store the options to pass into the JLBH constructor
  */
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
+@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */) // For removal in x.23
 public class JLBHOptions {
     int throughput = 10_000;
 

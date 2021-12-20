@@ -7,7 +7,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
+@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */) // For removal in x.23
 public class TeamCityHelper {
 
     /**

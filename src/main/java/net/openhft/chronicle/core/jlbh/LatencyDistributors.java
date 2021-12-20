@@ -2,7 +2,7 @@ package net.openhft.chronicle.core.jlbh;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
+@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */) // For removal in x.23
 public enum LatencyDistributors implements LatencyDistributor {
     NORMAL {
         @Override
