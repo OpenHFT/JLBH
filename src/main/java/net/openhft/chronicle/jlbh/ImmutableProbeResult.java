@@ -25,7 +25,7 @@ import java.util.List;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
-class ImmutableProbeResult implements JLBHResult.ProbeResult {
+final class ImmutableProbeResult implements JLBHResult.ProbeResult {
 
     @NotNull
     private final List<JLBHResult.RunResult> runsSummary;

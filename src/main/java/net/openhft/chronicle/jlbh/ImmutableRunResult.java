@@ -29,7 +29,7 @@ import static java.time.temporal.ChronoUnit.NANOS;
 import static java.util.Collections.unmodifiableMap;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
 
-class ImmutableRunResult implements JLBHResult.RunResult {
+final class ImmutableRunResult implements JLBHResult.RunResult {
 
     private final Map<Percentile, Duration> percentiles;
 
