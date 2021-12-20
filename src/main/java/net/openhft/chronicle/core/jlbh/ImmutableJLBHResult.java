@@ -25,7 +25,7 @@ import java.util.Optional;
 
 import static java.util.Collections.unmodifiableMap;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
+@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */) // For removal in x.23
 class ImmutableJLBHResult implements JLBHResult {
 
     @NotNull

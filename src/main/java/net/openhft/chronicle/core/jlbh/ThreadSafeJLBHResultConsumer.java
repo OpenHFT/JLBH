@@ -18,7 +18,7 @@
  */
 package net.openhft.chronicle.core.jlbh;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
+@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */) // For removal in x.23
 final class ThreadSafeJLBHResultConsumer implements JLBHResultConsumer {
 
     // the assumption is that the JLBHResult is immutable

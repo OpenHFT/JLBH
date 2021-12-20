@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * This tool was inspired by JMH.
  */
 @SuppressWarnings("unused")
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
+@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */) // For removal in x.23
 public class JLBH implements NanoSampler {
     private static final Double[] NO_DOUBLES = {};
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();

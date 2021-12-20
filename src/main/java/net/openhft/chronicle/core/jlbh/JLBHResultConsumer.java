@@ -21,7 +21,7 @@ package net.openhft.chronicle.core.jlbh;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */)
+@Deprecated(/* moved from net.openhft.chronicle.core.jlbh to net.openhft.chronicle.jlbh */) // For removal in x.23
 public interface JLBHResultConsumer extends Consumer<JLBHResult>, Supplier<JLBHResult> {
 
     /**
