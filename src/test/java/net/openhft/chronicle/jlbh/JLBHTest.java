@@ -74,7 +74,15 @@ public class JLBHTest {
         assertThat(result, containsString("OS Jitter"));
         assertThat(result, containsString("Warm up complete (500 iterations took "));
         assertThat(result, containsString("Run time: "));
-        assertEquals(withoutNonDeterministicFields(predictableTaskExpectedResult()), withoutNonDeterministicFields(result));
+
+        final String predictableTaskExpectedResult = predictableTaskExpectedResult();
+        System.out.println("predictableTaskExpectedResult = " + predictableTaskExpectedResult);
+        final String expected = withoutNonDeterministicFields(predictableTaskExpectedResult);
+        System.out.println("expected = " + expected);
+        final String actual = withoutNonDeterministicFields(result);
+        System.out.println("actual = " + actual);
+
+        assertEquals(expected, actual);
     }
 
     @Test
