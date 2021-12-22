@@ -40,7 +40,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically these would be
+ * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically, these would be
  * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
  * <p></p>
  * This tool was inspired by JMH.
@@ -69,9 +69,9 @@ public class JLBH implements NanoSampler {
     private final Histogram osJitterHistogram = createHistogram();
     private final AtomicLong noResultsReturned = new AtomicLong();
     @NotNull
-    private final AtomicBoolean warmUpComplete = new AtomicBoolean(false);
+    private final AtomicBoolean warmUpComplete = new AtomicBoolean();
     //Use non-atomic when so thread synchronisation is necessary
-    private boolean warmedUp;
+    private final AtomicBoolean warmedUp = new AtomicBoolean();
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
     private volatile Thread testThread;
     private final long mod;
@@ -509,14 +509,13 @@ public class JLBH implements NanoSampler {
 
     public void sample(long nanoTime) {
         final long cnt = noResultsReturned.getAndIncrement();
-        if (cnt < jlbhOptions.warmUpIterations && !warmedUp) {
+        if (cnt < jlbhOptions.warmUpIterations && !warmedUp.get()) {
             endToEndHistogram.sample(nanoTime);
             return;
         }
-        if (cnt == jlbhOptions.warmUpIterations && !warmedUp) {
-            warmedUp = true;
+        if (cnt == jlbhOptions.warmUpIterations && warmedUp.compareAndSet(false, true)) {
             endToEndHistogram.reset();
-            if (additionHistograms.size() > 0) {
+            if (!additionHistograms.isEmpty()) {
                 additionHistograms.values().forEach(Histogram::reset);
             }
             warmUpComplete.set(true);
@@ -530,7 +529,7 @@ public class JLBH implements NanoSampler {
         return new Histogram();
     }
 
-    private class OSJitterMonitor extends Thread {
+    private final class OSJitterMonitor extends Thread {
         final AtomicBoolean reset = new AtomicBoolean(false);
 
         @Override
@@ -572,7 +571,7 @@ public class JLBH implements NanoSampler {
         }
     }
 
-    private class JLBHEventHandler implements EventHandler {
+    private final class JLBHEventHandler implements EventHandler {
         private int run;
         private long iteration, i;
         private long runStart;
@@ -632,13 +631,13 @@ public class JLBH implements NanoSampler {
         }
     }
 
-    private class WarmupHandler implements EventHandler {
+    private final class WarmupHandler implements EventHandler {
         private int iteration;
 
         @Override
         public boolean action() throws InvalidEventHandlerException {
             if (iteration >= jlbhOptions.warmUpIterations)
-                throw new InvalidEventHandlerException();
+                throw InvalidEventHandlerException.reusable();
 
             jlbhOptions.jlbhTask.run(System.nanoTime());
             ++iteration;
