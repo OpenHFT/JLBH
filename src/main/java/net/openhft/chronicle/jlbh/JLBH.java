@@ -513,7 +513,7 @@ public class JLBH implements NanoSampler {
             endToEndHistogram.sample(nanoTime);
             return;
         }
-        if (cnt == jlbhOptions.warmUpIterations && warmedUp.compareAndSet(false, true)) {
+        if (cnt >= jlbhOptions.warmUpIterations && warmedUp.compareAndSet(false, true)) {
             endToEndHistogram.reset();
             if (!additionHistograms.isEmpty()) {
                 additionHistograms.values().forEach(Histogram::reset);
