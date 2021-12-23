@@ -21,6 +21,7 @@ package net.openhft.chronicle.jlbh;
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import net.openhft.chronicle.core.Jvm;
+import net.openhft.chronicle.core.annotation.SingleThreaded;
 import net.openhft.chronicle.core.threads.EventHandler;
 import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.core.threads.InvalidEventHandlerException;
@@ -44,7 +45,10 @@ import java.util.stream.Collectors;
  * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
  * <p></p>
  * This tool was inspired by JMH.
+ * <p>
+ * This class is not thread-safe.
  */
+@SingleThreaded
 @SuppressWarnings("unused")
 public class JLBH implements NanoSampler {
     private static final Double[] NO_DOUBLES = {};
@@ -67,11 +71,12 @@ public class JLBH implements NanoSampler {
     private final Histogram endToEndHistogram = createHistogram();
     @NotNull
     private final Histogram osJitterHistogram = createHistogram();
-    private final AtomicLong noResultsReturned = new AtomicLong();
+    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
+    private volatile long noResultsReturned;
     @NotNull
     private final AtomicBoolean warmUpComplete = new AtomicBoolean();
     //Use non-atomic when so thread synchronisation is necessary
-    private final AtomicBoolean warmedUp = new AtomicBoolean();
+    private boolean warmedUp;
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
     private volatile Thread testThread;
     private final long mod;
@@ -314,7 +319,7 @@ public class JLBH implements NanoSampler {
         }
         printStream.println("-------------------------------------------------------------------------------------------------------------------");
 
-        noResultsReturned.set(0);
+        noResultsReturned = 0;
         endToEndHistogram.reset();
         additionHistograms.values().forEach(Histogram::reset);
         osJitterMonitor.reset();
@@ -328,9 +333,8 @@ public class JLBH implements NanoSampler {
         while (true) {
             Jvm.pause(TimeUnit.SECONDS.toMillis(10));
 
-            final long cnt = noResultsReturned.get();
-            if (previousSampleCount < cnt) {
-                previousSampleCount = cnt;
+            if (previousSampleCount < noResultsReturned) {
+                previousSampleCount = noResultsReturned;
                 previousSampleTime = System.currentTimeMillis();
             } else {
                 if (previousSampleTime < (System.currentTimeMillis() - jlbhOptions.timeout)) {
@@ -503,17 +507,18 @@ public class JLBH implements NanoSampler {
     }
 
     @Override
-    public void sampleNanos(long nanos) {
-        sample(nanos);
+    public void sampleNanos(long durationNs) {
+        sample(durationNs);
     }
 
-    public void sample(long nanoTime) {
-        final long cnt = noResultsReturned.getAndIncrement();
-        if (cnt < jlbhOptions.warmUpIterations && !warmedUp.get()) {
-            endToEndHistogram.sample(nanoTime);
+    public void sample(long durationNs) {
+        noResultsReturned++;
+        if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
+            endToEndHistogram.sample(durationNs);
             return;
         }
-        if (cnt >= jlbhOptions.warmUpIterations && warmedUp.compareAndSet(false, true)) {
+        if (noResultsReturned == jlbhOptions.warmUpIterations && !warmedUp) {
+            warmedUp = true;
             endToEndHistogram.reset();
             if (!additionHistograms.isEmpty()) {
                 additionHistograms.values().forEach(Histogram::reset);
@@ -521,7 +526,7 @@ public class JLBH implements NanoSampler {
             warmUpComplete.set(true);
             return;
         }
-        endToEndHistogram.sample(nanoTime);
+        endToEndHistogram.sample(durationNs);
     }
 
     @NotNull
@@ -553,7 +558,7 @@ public class JLBH implements NanoSampler {
                     for (int i = 0; i < 1000; i++) {
                         long time = System.nanoTime();
                         if (time - lastTime > jlbhOptions.recordJitterGreaterThanNs) {
-                            osJitterHistogram.sample((double)(time - lastTime));
+                            osJitterHistogram.sampleNanos(time - lastTime);
                         }
                         lastTime = time;
                     }
