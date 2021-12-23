@@ -22,6 +22,7 @@ package net.openhft.chronicle.jlbh;
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import net.openhft.chronicle.core.Jvm;
+import net.openhft.chronicle.core.annotation.SingleThreaded;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
@@ -30,6 +31,7 @@ import java.util.function.Supplier;
 /**
  * Data structure to store the options to pass into the JLBH constructor
  */
+@SingleThreaded
 public class JLBHOptions {
     int throughput = 10_000;
 

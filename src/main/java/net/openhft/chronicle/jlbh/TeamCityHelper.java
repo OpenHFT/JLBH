@@ -7,7 +7,11 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 
-public class TeamCityHelper {
+public final class TeamCityHelper {
+
+    // Suppresses default constructor, ensuring non-instantiability.
+    private TeamCityHelper() {
+    }
 
     public static void histo(@NotNull String name, @NotNull Histogram histo, @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(histo.totalCount());
@@ -25,12 +29,12 @@ public class TeamCityHelper {
         }
     }
 
-    private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, @NotNull double[] percentages, @NotNull List<double[]> valuesList) {
+    private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, @NotNull List<double[]> valuesList) {
         double[] values = valuesList.get(valuesList.size() - 1);
         printPercentiles(s, printStream, percentages, values);
     }
 
-    private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, @NotNull double[] percentages, double[] values) {
+    private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, double[] values) {
         if (percentages.length != values.length) {
             percentages = shortenArray(percentages, values.length);
         }
@@ -39,8 +43,7 @@ public class TeamCityHelper {
         }
     }
 
-    @NotNull
-    private static double[] shortenArray(@NotNull double[] percentages, int newLen) {
+    private static double[] shortenArray(double[] percentages, int newLen) {
         double[] percentages2 = new double[newLen];
         System.arraycopy(percentages, 0, percentages2, 0, percentages2.length - 1);
         percentages2[newLen - 1] = percentages[percentages.length - 1];
