@@ -558,7 +558,7 @@ public class JLBH implements NanoSampler {
                     for (int i = 0; i < 1000; i++) {
                         long time = System.nanoTime();
                         if (time - lastTime > jlbhOptions.recordJitterGreaterThanNs) {
-                            osJitterHistogram.sample((double)(time - lastTime));
+                            osJitterHistogram.sampleNanos(time - lastTime);
                         }
                         lastTime = time;
                     }
