@@ -67,11 +67,11 @@ public class JLBH implements NanoSampler {
     private final Histogram endToEndHistogram = createHistogram();
     @NotNull
     private final Histogram osJitterHistogram = createHistogram();
-    private final AtomicLong noResultsReturned = new AtomicLong();
+    private volatile long noResultsReturned;
     @NotNull
     private final AtomicBoolean warmUpComplete = new AtomicBoolean();
     //Use non-atomic when so thread synchronisation is necessary
-    private final AtomicBoolean warmedUp = new AtomicBoolean();
+    private boolean warmedUp;
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
     private volatile Thread testThread;
     private final long mod;
@@ -314,7 +314,7 @@ public class JLBH implements NanoSampler {
         }
         printStream.println("-------------------------------------------------------------------------------------------------------------------");
 
-        noResultsReturned.set(0);
+        noResultsReturned = 0;
         endToEndHistogram.reset();
         additionHistograms.values().forEach(Histogram::reset);
         osJitterMonitor.reset();
@@ -328,9 +328,8 @@ public class JLBH implements NanoSampler {
         while (true) {
             Jvm.pause(TimeUnit.SECONDS.toMillis(10));
 
-            final long cnt = noResultsReturned.get();
-            if (previousSampleCount < cnt) {
-                previousSampleCount = cnt;
+            if (previousSampleCount < noResultsReturned) {
+                previousSampleCount = noResultsReturned;
                 previousSampleTime = System.currentTimeMillis();
             } else {
                 if (previousSampleTime < (System.currentTimeMillis() - jlbhOptions.timeout)) {
@@ -508,12 +507,13 @@ public class JLBH implements NanoSampler {
     }
 
     public void sample(long nanoTime) {
-        final long cnt = noResultsReturned.getAndIncrement();
-        if (cnt < jlbhOptions.warmUpIterations && !warmedUp.get()) {
+        noResultsReturned++;
+        if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
             endToEndHistogram.sample(nanoTime);
             return;
         }
-        if (cnt >= jlbhOptions.warmUpIterations && warmedUp.compareAndSet(false, true)) {
+        if (noResultsReturned == jlbhOptions.warmUpIterations && !warmedUp) {
+            warmedUp = true;
             endToEndHistogram.reset();
             if (!additionHistograms.isEmpty()) {
                 additionHistograms.values().forEach(Histogram::reset);
