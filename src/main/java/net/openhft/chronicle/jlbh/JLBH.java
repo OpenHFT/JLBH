@@ -21,6 +21,7 @@ package net.openhft.chronicle.jlbh;
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import net.openhft.chronicle.core.Jvm;
+import net.openhft.chronicle.core.annotation.SingleThreaded;
 import net.openhft.chronicle.core.threads.EventHandler;
 import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.core.threads.InvalidEventHandlerException;
@@ -44,7 +45,10 @@ import java.util.stream.Collectors;
  * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
  * <p></p>
  * This tool was inspired by JMH.
+ * <p>
+ * This class is not thread-safe.
  */
+@SingleThreaded
 @SuppressWarnings("unused")
 public class JLBH implements NanoSampler {
     private static final Double[] NO_DOUBLES = {};
@@ -67,6 +71,7 @@ public class JLBH implements NanoSampler {
     private final Histogram endToEndHistogram = createHistogram();
     @NotNull
     private final Histogram osJitterHistogram = createHistogram();
+    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
     private volatile long noResultsReturned;
     @NotNull
     private final AtomicBoolean warmUpComplete = new AtomicBoolean();
@@ -502,14 +507,14 @@ public class JLBH implements NanoSampler {
     }
 
     @Override
-    public void sampleNanos(long nanos) {
-        sample(nanos);
+    public void sampleNanos(long durationNs) {
+        sample(durationNs);
     }
 
-    public void sample(long nanoTime) {
+    public void sample(long durationNs) {
         noResultsReturned++;
         if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
-            endToEndHistogram.sample(nanoTime);
+            endToEndHistogram.sample(durationNs);
             return;
         }
         if (noResultsReturned == jlbhOptions.warmUpIterations && !warmedUp) {
@@ -521,7 +526,7 @@ public class JLBH implements NanoSampler {
             warmUpComplete.set(true);
             return;
         }
-        endToEndHistogram.sample(nanoTime);
+        endToEndHistogram.sample(durationNs);
     }
 
     @NotNull
