@@ -21,6 +21,7 @@ package net.openhft.chronicle.jlbh;
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import net.openhft.chronicle.core.Jvm;
+import net.openhft.chronicle.core.annotation.SingleThreaded;
 import net.openhft.chronicle.core.threads.EventHandler;
 import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.core.threads.InvalidEventHandlerException;
@@ -35,15 +36,19 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically these would be
+ * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically, these would be
  * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
  * <p></p>
  * This tool was inspired by JMH.
+ * <p>
+ * This class is not thread-safe.
  */
+@SingleThreaded
 @SuppressWarnings("unused")
 public class JLBH implements NanoSampler {
     private static final Double[] NO_DOUBLES = {};
@@ -66,9 +71,10 @@ public class JLBH implements NanoSampler {
     private final Histogram endToEndHistogram = createHistogram();
     @NotNull
     private final Histogram osJitterHistogram = createHistogram();
+    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
     private volatile long noResultsReturned;
     @NotNull
-    private final AtomicBoolean warmUpComplete = new AtomicBoolean(false);
+    private final AtomicBoolean warmUpComplete = new AtomicBoolean();
     //Use non-atomic when so thread synchronisation is necessary
     private boolean warmedUp;
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
@@ -501,26 +507,26 @@ public class JLBH implements NanoSampler {
     }
 
     @Override
-    public void sampleNanos(long nanos) {
-        sample(nanos);
+    public void sampleNanos(long durationNs) {
+        sample(durationNs);
     }
 
-    public void sample(long nanoTime) {
+    public void sample(long durationNs) {
         noResultsReturned++;
         if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
-            endToEndHistogram.sample(nanoTime);
+            endToEndHistogram.sample(durationNs);
             return;
         }
         if (noResultsReturned == jlbhOptions.warmUpIterations && !warmedUp) {
             warmedUp = true;
             endToEndHistogram.reset();
-            if (additionHistograms.size() > 0) {
+            if (!additionHistograms.isEmpty()) {
                 additionHistograms.values().forEach(Histogram::reset);
             }
             warmUpComplete.set(true);
             return;
         }
-        endToEndHistogram.sample(nanoTime);
+        endToEndHistogram.sample(durationNs);
     }
 
     @NotNull
@@ -528,7 +534,7 @@ public class JLBH implements NanoSampler {
         return new Histogram();
     }
 
-    private class OSJitterMonitor extends Thread {
+    private final class OSJitterMonitor extends Thread {
         final AtomicBoolean reset = new AtomicBoolean(false);
 
         @Override
@@ -552,7 +558,7 @@ public class JLBH implements NanoSampler {
                     for (int i = 0; i < 1000; i++) {
                         long time = System.nanoTime();
                         if (time - lastTime > jlbhOptions.recordJitterGreaterThanNs) {
-                            osJitterHistogram.sample(time - lastTime);
+                            osJitterHistogram.sampleNanos(time - lastTime);
                         }
                         lastTime = time;
                     }
@@ -570,7 +576,7 @@ public class JLBH implements NanoSampler {
         }
     }
 
-    private class JLBHEventHandler implements EventHandler {
+    private final class JLBHEventHandler implements EventHandler {
         private int run;
         private long iteration, i;
         private long runStart;
@@ -630,13 +636,13 @@ public class JLBH implements NanoSampler {
         }
     }
 
-    private class WarmupHandler implements EventHandler {
+    private final class WarmupHandler implements EventHandler {
         private int iteration;
 
         @Override
         public boolean action() throws InvalidEventHandlerException {
             if (iteration >= jlbhOptions.warmUpIterations)
-                throw new InvalidEventHandlerException();
+                throw InvalidEventHandlerException.reusable();
 
             jlbhOptions.jlbhTask.run(System.nanoTime());
             ++iteration;

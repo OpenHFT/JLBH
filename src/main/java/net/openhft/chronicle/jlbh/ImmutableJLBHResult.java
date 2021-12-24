@@ -25,7 +25,7 @@ import java.util.Optional;
 
 import static java.util.Collections.unmodifiableMap;
 
-class ImmutableJLBHResult implements JLBHResult {
+final class ImmutableJLBHResult implements JLBHResult {
 
     @NotNull
     private final ProbeResult endToEndProbeResult;
