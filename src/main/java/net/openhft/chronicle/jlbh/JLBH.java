@@ -36,7 +36,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -71,16 +70,16 @@ public class JLBH implements NanoSampler {
     private final Histogram endToEndHistogram = createHistogram();
     @NotNull
     private final Histogram osJitterHistogram = createHistogram();
-    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
-    private volatile long noResultsReturned;
     @NotNull
     private final AtomicBoolean warmUpComplete = new AtomicBoolean();
-    //Use non-atomic when so thread synchronisation is necessary
-    private boolean warmedUp;
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
-    private volatile Thread testThread;
     private final long mod;
     private final long length;
+    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
+    private volatile long noResultsReturned;
+    //Use non-atomic when so thread synchronisation is necessary
+    private boolean warmedUp;
+    private volatile Thread testThread;
 
     /**
      * @param jlbhOptions Options to run the benchmark
@@ -183,11 +182,16 @@ public class JLBH implements NanoSampler {
                         final long latencyBetweenTasks = latencyDistributor.apply(this.latencyBetweenTasks);
                         if (jlbhOptions.accountForCoordinatedOmission) {
                             startTimeNs += latencyBetweenTasks;
-                            long millis = (startTimeNs - System.nanoTime()) / 1000000 - 2;
-                            if (millis > 0) {
-                                Jvm.pause(millis);
+                            final long now = System.nanoTime();
+                            if (now < startTimeNs) {
+                                long millis = (startTimeNs - now) / 1000000 - 2;
+                                if (millis > 0) {
+                                    Jvm.pause(millis);
+                                }
+                                // account for jitter in Thread.sleep() and wait until a fixed point in time
+                                Jvm.busyWaitUntil(startTimeNs);
+                                startTimeNs = System.nanoTime();
                             }
-                            Jvm.busyWaitUntil(startTimeNs);
 
                         } else {
                             if (latencyBetweenTasks > 2e6) {
@@ -200,10 +204,13 @@ public class JLBH implements NanoSampler {
                             } else {
                                 startTimeNs += latencyBetweenTasks - 14;
                                 long nowNS = System.nanoTime();
-                                if (startTimeNs < nowNS)
+                                if (startTimeNs < nowNS) {
                                     startTimeNs = nowNS;
-                                else
+                                } else {
+                                    // account for jitter in Thread.sleep() and wait until a fixed point in time
                                     Jvm.busyWaitUntil(startTimeNs);
+                                    startTimeNs = System.nanoTime();
+                                }
                             }
                         }
                     }
@@ -348,6 +355,7 @@ public class JLBH implements NanoSampler {
 
     /**
      * Call this instead of start if you want to install JLBH as a handler on your event loop thread
+     *
      * @deprecated call {@link #eventLoopHandler(EventLoop)}
      */
     @Deprecated(/* to be removed in x.23 */)
