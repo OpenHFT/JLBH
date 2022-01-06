@@ -29,6 +29,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+@Ignore("see https://github.com/OpenHFT/JLBH/issues/31")
 @RunWith(Parameterized.class)
 public class JLBHTest {
     private EventLoop eventLoop;
