@@ -61,7 +61,6 @@ public class JLBHTest {
 
     @Test
     public void shouldWriteResultToTheOutputProvided() {
-        Assume.assumeTrue(!OS.isMacOSX());
 
         // given
         final OutputStream outputStream = new ByteArrayOutputStream();
@@ -83,6 +82,13 @@ public class JLBHTest {
         final String actual = withoutNonDeterministicFields(result);
         System.out.println("actual = " + actual);
 
+        if (!expected.equals(actual)) {
+            System.err.println("expected");
+            expected.chars().limit(10).boxed().forEach(System.err::println);
+            System.err.println("actual");
+            actual.chars().limit(10).boxed().forEach(System.err::println);
+        }
+
         assertEquals(expected, actual);
     }
 
@@ -92,7 +98,7 @@ public class JLBHTest {
      * and JLBHDeterministicFixtures::expectedOutput in particular
      */
     public void shouldProvideResultData() {
-        Assume.assumeTrue(!OS.isMacOSX());
+
         // given
         final JLBHResultConsumer resultConsumer = resultConsumer();
         final JLBH jlbh = new JLBH(options(), printStream(), resultConsumer);
@@ -147,7 +153,7 @@ public class JLBHTest {
 
     @Test
     public void shouldProvideResultDataEvenIfProbesDoNotProvideSameShapedData() {
-        Assume.assumeTrue(!OS.isMacOSX());
+
         // given
         final JLBHResultConsumer resultConsumer = resultConsumer();
         JLBHOptions jlbhOptions = options().jlbhTask(new PredictableJLBHTaskDifferentShape()).iterations(ITERATIONS * 2);
@@ -166,7 +172,7 @@ public class JLBHTest {
 
     @Test
     public void teamCityHelper() {
-        Assume.assumeTrue(!OS.isMacOSX());
+
         // given
         final JLBHResultConsumer resultConsumer = resultConsumer();
         JLBHOptions jlbhOptions = options().jlbhTask(new PredictableJLBHTaskDifferentShape()).iterations(ITERATIONS * 2);
@@ -198,7 +204,7 @@ public class JLBHTest {
 
     @Test
     public void shouldCallAllLifecycleMethods() {
-        Assume.assumeTrue(!OS.isMacOSX());
+
         AtomicInteger initCount = new AtomicInteger(0);
         AtomicInteger runCount = new AtomicInteger(0);
 
