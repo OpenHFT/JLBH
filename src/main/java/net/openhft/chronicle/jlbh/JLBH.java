@@ -254,9 +254,9 @@ public class JLBH implements NanoSampler {
             }
         }
         printStream.println("Warm up complete (" + jlbhOptions.warmUpIterations + " iterations took " +
-                ((System.currentTimeMillis() - warmupStart) / 1000.0) + "s)");
+                ((System.currentTimeMillis() - warmupStart) / 1000.0) + " s)");
         if (jlbhOptions.pauseAfterWarmupMS != 0) {
-            printStream.println("Pausing after warmup for " + jlbhOptions.pauseAfterWarmupMS + "ms");
+            printStream.println("Pausing after warmup for " + jlbhOptions.pauseAfterWarmupMS + " ms");
             Jvm.pause(jlbhOptions.pauseAfterWarmupMS);
         }
         jlbhOptions.jlbhTask.warmedUp();
@@ -302,8 +302,8 @@ public class JLBH implements NanoSampler {
 
         percentileRuns.add(endToEndHistogram.getPercentiles());
 
-        printStream.println("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") --------------------------------------------------------");
-        printStream.println("Run time: " + totalRunTime / 1000.0 + "s, distribution: " + latencyDistributor);
+        printStream.println("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") " + timeUnitToString(TimeUnit.MICROSECONDS) + " -----------------------------------------------------");
+        printStream.println("Run time: " + totalRunTime / 1000.0 + " s, distribution: " + latencyDistributor);
         printStream.println("Correcting for co-ordinated:" + jlbhOptions.accountForCoordinatedOmission);
         printStream.println("Target throughput:" + jlbhOptions.throughput + "/" + timeUnitToString(jlbhOptions.throughputTimeUnit) + " = 1 message every " + (latencyBetweenTasks / 1000) + "us");
         printStream.printf("%-48s", String.format("End to End: (%,d)", endToEndHistogram.totalCount()));
@@ -398,7 +398,7 @@ public class JLBH implements NanoSampler {
         try {
             appendable.append("-------------------------------- SUMMARY (")
                     .append(label)
-                    .append(") -----------------------------------------------------------\n");
+                    .append(") " + timeUnitToString(TimeUnit.MICROSECONDS) + " ---------------------------------------------------------\n");
             @NotNull List<Double> consistencies = new ArrayList<>();
             double maxValue = Double.MIN_VALUE;
             double minValue = Double.MAX_VALUE;
