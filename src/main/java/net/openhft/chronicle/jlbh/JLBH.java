@@ -125,6 +125,13 @@ public class JLBH implements NanoSampler {
         this.mod = mod2;
     }
 
+    static CharSequence padUntil(CharSequence cs, int length, char ch) {
+        StringBuilder sb = new StringBuilder(cs);
+        while (sb.length() < length)
+            sb.append(ch);
+        return sb;
+    }
+
     /**
      * Add a probe to measure a section of the benchmark.
      *
@@ -302,7 +309,7 @@ public class JLBH implements NanoSampler {
 
         percentileRuns.add(endToEndHistogram.getPercentiles());
 
-        printStream.println("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") " + timeUnitToString(TimeUnit.MICROSECONDS) + " -----------------------------------------------------");
+        printStream.println(padUntil("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") " + timeUnitToString(TimeUnit.MICROSECONDS) + " ----", 100, '-'));
         printStream.println("Run time: " + totalRunTime / 1000.0 + " s, distribution: " + latencyDistributor);
         printStream.println("Correcting for co-ordinated:" + jlbhOptions.accountForCoordinatedOmission);
         printStream.println("Target throughput:" + jlbhOptions.throughput + "/" + timeUnitToString(jlbhOptions.throughputTimeUnit) + " = 1 message every " + (latencyBetweenTasks / 1000) + "us");
@@ -324,7 +331,7 @@ public class JLBH implements NanoSampler {
             printStream.printf("%-48s", String.format("OS Jitter (%,d)", osJitterHistogram.totalCount()));
             printStream.println(osJitterHistogram.toMicrosFormat());
         }
-        printStream.println("-------------------------------------------------------------------------------------------------------------------");
+        printStream.println(padUntil("----", 100, '-'));
 
         noResultsReturned = 0;
         endToEndHistogram.reset();
@@ -393,12 +400,14 @@ public class JLBH implements NanoSampler {
         }
     }
 
-    public void printPercentilesSummary(String label, @NotNull List<double[]>
-            percentileRuns, Appendable appendable) {
+    public void printPercentilesSummary(
+            String label,
+            @NotNull List<double[]> percentileRuns,
+            Appendable appendable) {
         try {
-            appendable.append("-------------------------------- SUMMARY (")
-                    .append(label)
-                    .append(") " + timeUnitToString(TimeUnit.MICROSECONDS) + " ---------------------------------------------------------\n");
+            appendable.append(
+                            padUntil("-------------------------------- SUMMARY (" + label + ") " + timeUnitToString(TimeUnit.MICROSECONDS) +" ----", 100, '-'))
+                    .append("\n");
             @NotNull List<Double> consistencies = new ArrayList<>();
             double maxValue = Double.MIN_VALUE;
             double minValue = Double.MAX_VALUE;
@@ -466,8 +475,8 @@ public class JLBH implements NanoSampler {
             } catch (Exception e) {
                 appendable.append(e.getMessage());
             }
-            appendable.append
-                    ("-------------------------------------------------------------------------------------------------------------------\n");
+            appendable.append(padUntil("----", 100, '-'))
+                    .append("\n");
         } catch (IOException e) {
             throw Jvm.rethrow(e);
         }
