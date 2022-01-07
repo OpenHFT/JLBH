@@ -73,6 +73,8 @@ public class JLBHDeterministicFixtures {
 
     static String withoutNonDeterministicFields(String content) {
         return content
+                // Remove any lines with just a new-line, See https://github.com/OpenHFT/JLBH/issues/31
+                .replaceAll("^\\R", "")
                 .replaceAll("Warm up complete \\(\\d+ iterations took .+s\\)", "Warm up complete ...")
                 .replaceAll("OS Jitter .+", "OS Jitter ...")
                 .replaceAll("Run time: .+s,", "Run time: ...s,")
