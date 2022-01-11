@@ -31,7 +31,7 @@
     </properties>
   
     <artifactId>jlbh</artifactId>
-    <version>1.22ea6-SNAPSHOT</version>
+    <version>1.22ea7-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
     <description>Java Latency Benchmark Harness</description>
     <packaging>jar</packaging>
