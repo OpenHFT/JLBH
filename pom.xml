@@ -21,7 +21,7 @@
     <parent>
         <groupId>net.openhft</groupId>
         <artifactId>java-parent-pom</artifactId>
-        <version>1.1.28</version>
+        <version>1.1.29</version>
         <relativePath />
     </parent>
 
@@ -113,33 +113,6 @@
             </plugin>
 
             <!-- used to allow getClass().getPackage().getImplementationVersion() -->
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerArgument>-Xlint:deprecation</compilerArgument>
-                </configuration>
-                <!-- build a multi-release jar -->
-                <executions>
-                    <execution>
-                        <id>java8</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>java11</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <compileSourceRoots>${project.basedir}/src/main/java11</compileSourceRoots>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/versions/11</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
