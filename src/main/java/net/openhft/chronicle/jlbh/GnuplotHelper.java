@@ -9,17 +9,18 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class GnuplotHelper {
+    // TODO: change colours to corporate palette
     private static final String[] colours = new String[]{"coral", "forest-green", "royalblue", "gold", "mediumpurple3", "dark-red", "gray"};
 
     /**
      * line for each run. Each probe shares same colour but uses different line type
      * prefix drives gnuplot filename (overload) and .png name
      */
-    public static void printRuns(@NotNull String prefix, @NotNull JLBH jlbh, int iterations, @NotNull PrintStream printStream) {
-        printRuns(prefix, jlbh, iterations, printStream, TimeUnit.MICROSECONDS, 1.0, false);
+    public static void printRuns(@NotNull String prefix, @NotNull JLBH jlbh, long iterations, @NotNull PrintStream printStream) {
+        printRuns(prefix, jlbh, iterations, printStream, TimeUnit.MICROSECONDS, 1.0, false, false);
     }
 
-    public static void printRuns(@NotNull String prefix, @NotNull JLBH jlbh, int iterations, @NotNull PrintStream printStream, TimeUnit timeUnit, double maxPercentile, boolean e2eOnly) {
+    public static void printRuns(@NotNull String prefix, @NotNull JLBH jlbh, long iterations, @NotNull PrintStream printStream, TimeUnit timeUnit, double maxPercentile, boolean e2eOnly, boolean logscale) {
         final double convertSeed = 1_000_000;
         final double conversion = timeUnit.convert((long) convertSeed, TimeUnit.NANOSECONDS) / convertSeed;
         double[] percentages = Histogram.percentilesFor(iterations);
@@ -31,8 +32,12 @@ public class GnuplotHelper {
         }
         printStream.println("set terminal pngcairo size 1024,480");
         printStream.println("set output \"" + prefix + ".png\"");
-        printStream.println("set title \"" + prefix + "\" latency by percentile distribution");
-        printStream.println("set logscale y");
+        printStream.println("set title \"" + prefix + " - latency by percentile distribution\"");
+        if (logscale) {
+            printStream.println("set logscale y");
+            // otherwise lowest values hug the bottom of the graph
+            printStream.println("set yrange [0.01:]");
+        }
         printStream.println("set ylabel \"latency " + timeUnit.name() + "\"");
         printStream.println("set key outside");
         printStream.println("set style line 11 lc rgb '#808080' lt 1");

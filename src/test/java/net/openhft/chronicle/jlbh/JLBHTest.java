@@ -1,13 +1,14 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.Jvm;
-import net.openhft.chronicle.core.OS;
 import net.openhft.chronicle.core.io.Closeable;
 import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.threads.MediumEventLoop;
 import net.openhft.chronicle.threads.Pauser;
 import org.jetbrains.annotations.NotNull;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -294,18 +295,21 @@ public class JLBHTest {
         }
         Assert.assertEquals("set terminal pngcairo size 1024,480\n" +
                 "set output \"prefix.png\"\n" +
-                "set title \"prefix\"\n" +
-                "set logscale y\n" +
+                "set title \"prefix - latency by percentile distribution\"\n" +
                 "set ylabel \"latency MICROSECONDS\"\n" +
                 "set key outside\n" +
+                "set style line 11 lc rgb '#808080' lt 1\n" +
+                "set border 3 back ls 11\n" +
+                "set style line 12 lc rgb '#808080' lt 0 lw 1\n" +
+                "set grid back ls 12\n" +
                 "set xtics (\"0.5\" 0, \"0.9\" 1, \"0.99\" 2, \"0.997\" 3, \"1.0\" 4)\n" +
                 "\n" +
                 "$data << EOD\n" +
-                "0 8 5 8 7 4 7 0 0 0 \n" +
-                "1 11 10 11 10 9 10 0 0 0 \n" +
-                "2 12 12 12 11 11 11 0 0 0 \n" +
-                "3 12 12 12 11 11 11 - - - \n" +
-                "4 12 12 12 11 11 11 0 0 0 \n" +
+                "0 8.07 5.80 8.07 7.06 4.81 7.06 0.10 0.10 0.10 \n" +
+                "1 11.66 10.77 11.66 10.67 9.78 10.67 0.10 0.10 0.10 \n" +
+                "2 12.46 12.40 12.46 11.47 11.38 11.47 0.10 0.10 0.10 \n" +
+                "3 12.53 12.53 12.53 11.54 11.50 11.54 - - - \n" +
+                "4 12.56 12.56 12.56 11.57 11.57 11.57 0.10 0.10 0.10 \n" +
                 "EOD\n" +
                 "\n" +
                 "plot \\\n" +
