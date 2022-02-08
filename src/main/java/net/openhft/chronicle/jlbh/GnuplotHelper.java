@@ -38,7 +38,7 @@ public class GnuplotHelper {
             // otherwise lowest values hug the bottom of the graph
             printStream.println("set yrange [0.01:]");
         }
-        printStream.println("set ylabel \"latency " + timeUnit.name() + "\"");
+        printStream.println("set ylabel \"latency " + timeUnit.name() + (logscale ? " log scale" : "") + "\"");
         printStream.println("set key outside");
         printStream.println("set style line 11 lc rgb '#808080' lt 1");
         printStream.println("set border 3 back ls 11");

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
@@ -291,7 +292,8 @@ public class JLBHTest {
         // then
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (final PrintStream printStream = new PrintStream(baos)) {
-            GnuplotHelper.printRuns("prefix", jlbh, jlbhOptions.iterations, printStream);
+            final boolean logscale = false;
+            GnuplotHelper.printRuns("prefix", jlbh, jlbhOptions.iterations, printStream, TimeUnit.MICROSECONDS, 1.0, false, logscale);
         }
         Assert.assertEquals("set terminal pngcairo size 1024,480\n" +
                 "set output \"prefix.png\"\n" +
