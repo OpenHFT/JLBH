@@ -1,15 +1,12 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.Jvm;
-import net.openhft.chronicle.core.OS;
 import net.openhft.chronicle.core.io.Closeable;
 import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.threads.MediumEventLoop;
 import net.openhft.chronicle.threads.Pauser;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
-import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -205,6 +202,27 @@ public class JLBHTest {
                 "##teamcity[buildStatisticValue key='prefix.B.0.9' value='0.100125']\n" +
                 "##teamcity[buildStatisticValue key='prefix.B.0.99' value='0.100125']\n" +
                 "##teamcity[buildStatisticValue key='prefix.B.1.0' value='0.100125']\n", baos.toString().replace("\r", ""));
+    }
+
+    @Test
+    public void histogramSummariesAreCorrect() {
+        final JLBHResultConsumer resultConsumer = resultConsumer();
+        JLBHOptions jlbhOptions = options().jlbhTask(new PredictableJLBHTaskDifferentShape()).iterations(ITERATIONS * 2);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream printStream = new PrintStream(baos);
+        final JLBH jlbh = new JLBH(jlbhOptions, printStream, resultConsumer);
+
+        // when
+        start(jlbh);
+
+        System.out.println(baos);
+        assertTrue(baos.toString().contains(
+                "-------------------------------- SUMMARY (B) us ----------------------------------------------------\n" +
+                "Percentile   run1         run2         run3      % Variation\n" +
+                "50.0:            0.10         0.10         0.10         0.00\n" +
+                "90.0:            0.10         0.10         0.10         0.00\n" +
+                "99.0:            0.10         0.10         0.10         0.00\n" +
+                "worst:           0.10         0.10         0.10         0.00"));
     }
 
     @Test

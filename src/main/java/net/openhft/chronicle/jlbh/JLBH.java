@@ -22,6 +22,7 @@ import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.core.annotation.SingleThreaded;
+import net.openhft.chronicle.core.io.IORuntimeException;
 import net.openhft.chronicle.core.threads.EventHandler;
 import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.core.threads.InvalidEventHandlerException;
@@ -39,6 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+
 /**
  * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically, these would be
  * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
@@ -50,7 +53,6 @@ import java.util.stream.Collectors;
 @SingleThreaded
 @SuppressWarnings("unused")
 public class JLBH implements NanoSampler {
-    private static final Double[] NO_DOUBLES = {};
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();
     // wait time between invocations in nanoseconds
     private final long latencyBetweenTasks;
@@ -313,7 +315,7 @@ public class JLBH implements NanoSampler {
         printStream.println("Run time: " + totalRunTime / 1000.0 + " s, distribution: " + latencyDistributor);
         printStream.println("Correcting for co-ordinated:" + jlbhOptions.accountForCoordinatedOmission);
         printStream.println("Target throughput:" + jlbhOptions.throughput + "/" + timeUnitToString(jlbhOptions.throughputTimeUnit) + " = 1 message every " + (latencyBetweenTasks / 1000) + "us");
-        printStream.printf("%-48s", String.format("End to End: (%,d)", endToEndHistogram.totalCount()));
+        printStream.printf("%-48s", format("End to End: (%,d)", endToEndHistogram.totalCount()));
         printStream.println(endToEndHistogram.toMicrosFormat());
 
         if (additionHistograms.size() > 0) {
@@ -323,12 +325,12 @@ public class JLBH implements NanoSampler {
                 ds.add(value.getPercentiles());
 //                if (value.totalCount() != jlbhOptions.iterations)
 //                    warning = " WARNING " + value.totalCount() + "!=" + jlbhOptions.iterations;
-                printStream.printf("%-48s", String.format("%s (%,d)", key, value.totalCount()));
+                printStream.printf("%-48s", format("%s (%,d)", key, value.totalCount()));
                 printStream.println(value.toMicrosFormat());
             });
         }
         if (jlbhOptions.recordOSJitter) {
-            printStream.printf("%-48s", String.format("OS Jitter (%,d)", osJitterHistogram.totalCount()));
+            printStream.printf("%-48s", format("OS Jitter (%,d)", osJitterHistogram.totalCount()));
             printStream.println(osJitterHistogram.toMicrosFormat());
         }
         printStream.println(padUntil("----", 100, '-'));
@@ -406,80 +408,46 @@ public class JLBH implements NanoSampler {
             Appendable appendable) {
         try {
             appendable.append(
-                            padUntil("-------------------------------- SUMMARY (" + label + ") " + timeUnitToString(TimeUnit.MICROSECONDS) +" ----", 100, '-'))
+                            padUntil("-------------------------------- SUMMARY (" + label + ") " + timeUnitToString(TimeUnit.MICROSECONDS) + " ----", 100, '-'))
                     .append("\n");
-            @NotNull List<Double> consistencies = new ArrayList<>();
-            double maxValue = Double.MIN_VALUE;
-            double minValue = Double.MAX_VALUE;
-            double[] percentFor = Histogram.percentilesFor(jlbhOptions.iterations);
-            int length = percentFor.length;
-            for (int i = 0; i < length; i++) {
-                boolean skipFirst = length > 3;
-                if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.SKIP) {
-                    skipFirst = true;
-                } else if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.NO_SKIP) {
-                    skipFirst = false;
-                }
-                for (double[] percentileRun : percentileRuns) {
-                    if (skipFirst) {
-                        skipFirst = false;
-                        continue;
+            double[] percentiles = Histogram.percentilesFor(jlbhOptions.iterations);
+            boolean skipFirst = percentiles.length > 3;
+            if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.SKIP) {
+                skipFirst = true;
+            } else if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.NO_SKIP) {
+                skipFirst = false;
+            }
+            PercentileSummary percentileSummary = new PercentileSummary(skipFirst, percentileRuns, percentiles);
+
+            appendable.append(generateRunSummaryHeader(jlbhOptions.runs)).append('\n');
+            percentileSummary.forEachRow((percentile, values, variance) -> {
+                try {
+                    appendable.append(formatPercentile(percentile));
+                    for (double value : values) {
+                        appendable.append(format("%12.2f ", value));
                     }
-                    // not all measures may have got the same number of samples
-                    if (i < percentileRun.length) {
-                        double v = percentileRun[i];
-                        if (v > maxValue)
-                            maxValue = v;
-                        if (v < minValue)
-                            minValue = v;
-                    }
+                    appendable.append(format("%12.2f%n", variance));
+                } catch (IOException e) {
+                    throw new IORuntimeException("Error writing percentile summary", e);
                 }
-                consistencies.add(100 * (maxValue - minValue) / (maxValue + minValue / 2));
-
-                maxValue = Double.MIN_VALUE;
-                minValue = Double.MAX_VALUE;
-            }
-
-            @NotNull List<Double> summary = new ArrayList<>();
-            for (int i = 0; i < length; i++) {
-                for (double[] percentileRun : percentileRuns) {
-                    if (i < percentileRun.length)
-                        summary.add(percentileRun[i] / 1e3);
-                    else
-                        summary.add(Double.POSITIVE_INFINITY);
-                }
-                summary.add(consistencies.get(i));
-            }
-
-            @NotNull StringBuilder sb = new StringBuilder();
-            addHeaderToPrint(sb, jlbhOptions.runs);
-            appendable.append(sb.toString()).append('\n');
-
-            sb = new StringBuilder();
-            for (double p : percentFor) {
-                String s;
-                if (p == 1) {
-                    s = "worst";
-                } else {
-                    double p2 = Math.round(p * 1e6) / 1e4;
-                    s = Double.toString(p2);
-                }
-                s += ":     ";
-                s = s.substring(0, 9);
-                addPrToPrint(sb, s, jlbhOptions.runs);
-            }
-
-            try {
-                Double[] args = summary.toArray(NO_DOUBLES);
-                appendable.append(String.format(sb.toString(), (Object[]) args));
-            } catch (Exception e) {
-                appendable.append(e.getMessage());
-            }
+            });
             appendable.append(padUntil("----", 100, '-'))
                     .append("\n");
         } catch (IOException e) {
             throw Jvm.rethrow(e);
         }
+    }
+
+    private String formatPercentile(double percentile) {
+        String s;
+        if (percentile == 1) {
+            s = "worst";
+        } else {
+            double p2 = Math.round(percentile * 1e6) / 1e4;
+            s = Double.toString(p2);
+        }
+        s += ":     ";
+        return s.substring(0, 9);
     }
 
     private void addPrToPrint(@NotNull StringBuilder sb, String pr, int runs) {
@@ -491,7 +459,8 @@ public class JLBH implements NanoSampler {
         sb.append("%n");
     }
 
-    private void addHeaderToPrint(@NotNull StringBuilder sb, int runs) {
+    private String generateRunSummaryHeader(int runs) {
+        StringBuilder sb = new StringBuilder();
         sb.append("Percentile");
         for (int i = 1; i < runs + 1; i++) {
             if (i == 1)
@@ -500,6 +469,7 @@ public class JLBH implements NanoSampler {
                 sb.append("         run").append(i);
         }
         sb.append("      % Variation");
+        return sb.toString();
     }
 
     private String timeUnitToString(@NotNull TimeUnit timeUnit) {
