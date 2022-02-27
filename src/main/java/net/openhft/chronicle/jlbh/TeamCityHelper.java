@@ -4,6 +4,7 @@ import net.openhft.chronicle.core.util.Histogram;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -35,18 +36,9 @@ public final class TeamCityHelper {
     }
 
     private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, double[] values) {
-        if (percentages.length != values.length) {
-            percentages = shortenArray(percentages, values.length);
-        }
-        for (int i=0; i<percentages.length; i++) {
-            printStream.println("##teamcity[buildStatisticValue key='" + s + "." + percentages[i] + "' value='" + values[i] / 1_000 + "']");
-        }
-    }
-
-    private static double[] shortenArray(double[] percentages, int newLen) {
-        double[] percentages2 = new double[newLen];
-        System.arraycopy(percentages, 0, percentages2, 0, percentages2.length - 1);
-        percentages2[newLen - 1] = percentages[percentages.length - 1];
-        return percentages2;
+        PercentileSummary summary = new PercentileSummary(false, Collections.singletonList(values), percentages);
+        summary.forEachRow(((percentile, rowValues, variance) -> {
+            printStream.println("##teamcity[buildStatisticValue key='" + s + "." + percentile + "' value='" + rowValues[0] + "']");
+        }));
     }
 }
