@@ -216,7 +216,7 @@ public class JLBHTest {
         start(jlbh);
 
         System.out.println(baos);
-        assertTrue(baos.toString().contains(
+        assertTrue(baos.toString().replace("\r", "").contains(
                 "-------------------------------- SUMMARY (B) us ----------------------------------------------------\n" +
                 "Percentile   run1         run2         run3      % Variation\n" +
                 "50.0:            0.10         0.10         0.10         0.00\n" +
