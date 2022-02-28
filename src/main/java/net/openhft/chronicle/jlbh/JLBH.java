@@ -363,21 +363,6 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Call this instead of start if you want to install JLBH as a handler on your event loop thread
-     *
-     * @deprecated call {@link #eventLoopHandler(EventLoop)}
-     */
-    @Deprecated(/* to be removed in x.23 */)
-    public JLBHEventHandler eventLoopHandler() {
-        if (!jlbhOptions.accountForCoordinatedOmission)
-            throw new UnsupportedOperationException();
-        initStartOSJitterMonitor();
-        long warmupStart = warmup();
-        waitForWarmupToComplete(warmupStart);
-        return new JLBHEventHandler();
-    }
-
-    /**
      * Call this instead of {@link #start()} if you want to install JLBH as a handler on your event loop thread
      */
     public void eventLoopHandler(@NotNull EventLoop eventLoop) {
