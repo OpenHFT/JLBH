@@ -100,12 +100,6 @@ public class JLBHOptions {
         return this;
     }
 
-    @Deprecated(/* to be removed in x.23 */)
-    @NotNull
-    public JLBHOptions accountForCoordinatedOmmission(boolean accountForCoordinatedOmission) {
-        return accountForCoordinatedOmission(accountForCoordinatedOmission);
-    }
-
     /**
      * Determines how much jitter to record.
      *
