@@ -21,7 +21,7 @@
     <parent>
         <groupId>net.openhft</groupId>
         <artifactId>java-parent-pom</artifactId>
-        <version>1.1.33</version>
+        <version>1.1.35</version>
         <relativePath />
     </parent>
 
@@ -165,30 +165,6 @@
         </repository>
     </repositories>
 
-    <profiles>
-        <profile>
-            <id>java11</id>
-            <activation>
-                <jdk>[11,</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <source>11</source>
-                            <target>11</target>
-                            <compilerArgs>
-                                <arg>--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED</arg>
-                                <arg>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</arg>
-                            </compilerArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
     <scm>
         <url>scm:git:git@github.com:OpenHFT/JLBH.git</url>
         <connection>scm:git:git@github.com:OpenHFT/JLBH.git</connection>
