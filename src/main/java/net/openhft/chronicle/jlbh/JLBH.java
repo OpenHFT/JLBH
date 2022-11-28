@@ -235,6 +235,7 @@ public class JLBH implements NanoSampler {
                 endOfRun(run, runStart);
             }
         } finally {
+            osJitterMonitor.terminate();
             //noinspection ResultOfMethodCallIgnored
             Thread.interrupted(); // Reset thread interrupted status.
             Jvm.pause(5);
@@ -508,9 +509,12 @@ public class JLBH implements NanoSampler {
 
     private final class OSJitterMonitor extends Thread {
         final AtomicBoolean reset = new AtomicBoolean(false);
+        final AtomicBoolean running = new AtomicBoolean(false);
 
         @Override
         public void run() {
+            running.set(true);
+
             // make sure this thread is not bound by its parent.
             Affinity.setAffinity(AffinityLock.BASE_AFFINITY);
             @Nullable AffinityLock affinityLock = null;
@@ -522,7 +526,7 @@ public class JLBH implements NanoSampler {
             try {
                 long lastTime = System.nanoTime(), start = lastTime;
                 //noinspection InfiniteLoopStatement
-                while (true) {
+                while (running.get()) {
                     if (reset.compareAndSet(true, false)) {
                         osJitterHistogram.reset();
                         lastTime = System.nanoTime();
@@ -545,6 +549,10 @@ public class JLBH implements NanoSampler {
 
         void reset() {
             reset.set(true);
+        }
+
+        void terminate() {
+            running.set(false);
         }
     }
 
