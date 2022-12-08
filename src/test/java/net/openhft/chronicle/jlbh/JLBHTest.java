@@ -206,20 +206,21 @@ public class JLBHTest {
         try (final PrintStream printStream = new PrintStream(baos)) {
             TeamCityHelper.teamCityStatsLastRun("prefix", jlbh, jlbhOptions.iterations, printStream);
         }
-        assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5' value='8.072']\n" +
-                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.9' value='11.664']\n" +
-                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.99' value='12.464']\n" +
-                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.997' value='12.528']\n" +
-                "##teamcity[buildStatisticValue key='prefix.end-to-end.1.0' value='12.56']\n" +
-                "##teamcity[buildStatisticValue key='prefix.A.0.5' value='7.064']\n" +
-                "##teamcity[buildStatisticValue key='prefix.A.0.9' value='10.672']\n" +
-                "##teamcity[buildStatisticValue key='prefix.A.0.99' value='11.472']\n" +
-                "##teamcity[buildStatisticValue key='prefix.A.0.997' value='11.536']\n" +
-                "##teamcity[buildStatisticValue key='prefix.A.1.0' value='11.568']\n" +
-                "##teamcity[buildStatisticValue key='prefix.B.0.5' value='0.100125']\n" +
-                "##teamcity[buildStatisticValue key='prefix.B.0.9' value='0.100125']\n" +
-                "##teamcity[buildStatisticValue key='prefix.B.0.99' value='0.100125']\n" +
-                "##teamcity[buildStatisticValue key='prefix.B.1.0' value='0.100125']\n", baos.toString().replace("\r", ""));
+        String extra = Jvm.isAzulZing() ? ".zing" : "";
+        assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5" + extra + "' value='8.072']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.9" + extra + "' value='11.664']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.99" + extra + "' value='12.464']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.0.997" + extra + "' value='12.528']\n" +
+                "##teamcity[buildStatisticValue key='prefix.end-to-end.1.0" + extra + "' value='12.56']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.5" + extra + "' value='7.064']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.9" + extra + "' value='10.672']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.99" + extra + "' value='11.472']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.0.997" + extra + "' value='11.536']\n" +
+                "##teamcity[buildStatisticValue key='prefix.A.1.0" + extra + "' value='11.568']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.0.5" + extra + "' value='0.100125']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.0.9" + extra + "' value='0.100125']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.0.99" + extra + "' value='0.100125']\n" +
+                "##teamcity[buildStatisticValue key='prefix.B.1.0" + extra + "' value='0.100125']\n", baos.toString().replace("\r", ""));
     }
 
     @Test

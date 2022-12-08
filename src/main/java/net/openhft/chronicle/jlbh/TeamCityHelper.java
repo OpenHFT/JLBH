@@ -18,6 +18,7 @@
 
 package net.openhft.chronicle.jlbh;
 
+import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.core.util.Histogram;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,8 +56,8 @@ public final class TeamCityHelper {
 
     private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, double[] values) {
         PercentileSummary summary = new PercentileSummary(false, Collections.singletonList(values), percentages);
-        summary.forEachRow(((percentile, rowValues, variance) -> {
-            printStream.println("##teamcity[buildStatisticValue key='" + s + "." + percentile + "' value='" + rowValues[0] + "']");
-        }));
+        String extra = Jvm.isAzulZing() ? ".zing" : "";
+        summary.forEachRow(((percentile, rowValues, variance) ->
+                printStream.println("##teamcity[buildStatisticValue key='" + s + "." + percentile + extra + "' value='" + rowValues[0] + "']")));
     }
 }
