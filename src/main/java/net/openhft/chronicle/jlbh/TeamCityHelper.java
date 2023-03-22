@@ -56,7 +56,7 @@ public final class TeamCityHelper {
 
     private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, double[] values) {
         PercentileSummary summary = new PercentileSummary(false, Collections.singletonList(values), percentages);
-        String extra = Jvm.isAzulZing() ? ".zing" : "";
+        String extra = Jvm.isAzulZing() ? ".zing" : Jvm.isJava15Plus() ? ".java17" : "";
         summary.forEachRow(((percentile, rowValues, variance) ->
                 printStream.println("##teamcity[buildStatisticValue key='" + s + "." + percentile + extra + "' value='" + rowValues[0] + "']")));
     }
