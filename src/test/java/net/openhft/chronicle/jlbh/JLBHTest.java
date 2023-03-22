@@ -206,7 +206,7 @@ public class JLBHTest {
         try (final PrintStream printStream = new PrintStream(baos)) {
             TeamCityHelper.teamCityStatsLastRun("prefix", jlbh, jlbhOptions.iterations, printStream);
         }
-        String extra = Jvm.isAzulZing() ? ".zing" : "";
+        String extra = Jvm.isAzulZing() ? ".zing" : Jvm.isJava15Plus() ? ".java17" : "";
         assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5" + extra + "' value='8.072']\n" +
                 "##teamcity[buildStatisticValue key='prefix.end-to-end.0.9" + extra + "' value='11.664']\n" +
                 "##teamcity[buildStatisticValue key='prefix.end-to-end.0.99" + extra + "' value='12.464']\n" +
