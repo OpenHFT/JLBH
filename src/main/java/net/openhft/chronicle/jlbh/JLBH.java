@@ -53,6 +53,7 @@ import static java.lang.String.format;
 @SingleThreaded
 @SuppressWarnings("unused")
 public class JLBH implements NanoSampler {
+    public static final int TIME_CALL_NANO_TIME = 18;
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();
     // wait time between invocations in nanoseconds
     private final long latencyBetweenTasks;
@@ -198,8 +199,7 @@ public class JLBH implements NanoSampler {
                                     Jvm.pause(millis);
                                 }
                                 // account for jitter in Thread.sleep() and wait until a fixed point in time
-                                Jvm.busyWaitUntil(startTimeNs);
-                                startTimeNs = System.nanoTime();
+                                startTimeNs = busyWaitUntil(startTimeNs);
                             }
 
                         } else {
@@ -207,18 +207,16 @@ public class JLBH implements NanoSampler {
                                 long end = System.nanoTime() + latencyBetweenTasks;
                                 Jvm.pause(latencyBetweenTasks / 1_000_000 - 1);
                                 // account for jitter in Thread.sleep() and wait until a fixed point in time
-                                Jvm.busyWaitUntil(end);
-                                startTimeNs = System.nanoTime();
+                                startTimeNs = busyWaitUntil(startTimeNs);
 
                             } else {
                                 startTimeNs += latencyBetweenTasks - 14;
                                 long nowNS = System.nanoTime();
-                                if (startTimeNs < nowNS) {
+                                if (startTimeNs < nowNS + TIME_CALL_NANO_TIME) {
                                     startTimeNs = nowNS;
                                 } else {
                                     // account for jitter in Thread.sleep() and wait until a fixed point in time
-                                    Jvm.busyWaitUntil(startTimeNs);
-                                    startTimeNs = System.nanoTime();
+                                    startTimeNs = busyWaitUntil(startTimeNs);
                                 }
                             }
                         }
@@ -245,6 +243,15 @@ public class JLBH implements NanoSampler {
         }
 
         endOfAllRuns();
+    }
+
+    private static long busyWaitUntil(long startTimeNs) {
+        long nanoTime;
+        do {
+            nanoTime = System.nanoTime();
+        } while (startTimeNs > nanoTime);
+        startTimeNs = nanoTime;
+        return startTimeNs;
     }
 
     private void startTimeoutCheckerIfRequired() {
