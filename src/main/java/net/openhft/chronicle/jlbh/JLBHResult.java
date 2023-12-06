@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface JLBHResult {
 
@@ -33,6 +34,10 @@ public interface JLBHResult {
 
     @NotNull
     Optional<ProbeResult> probe(String probeName);
+
+    Set<String> probeNames();
+
+    Optional<ProbeResult> osJitter();
 
     interface ProbeResult {
 

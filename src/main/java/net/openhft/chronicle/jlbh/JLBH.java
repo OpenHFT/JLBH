@@ -233,6 +233,8 @@ public class JLBH implements NanoSampler {
                 endOfRun(run, runStart);
             }
         } finally {
+            endOfAllRuns();
+
             osJitterMonitor.terminate();
             //noinspection ResultOfMethodCallIgnored
             Thread.interrupted(); // Reset thread interrupted status.
@@ -242,7 +244,6 @@ public class JLBH implements NanoSampler {
             Jvm.pause(5);
         }
 
-        endOfAllRuns();
     }
 
     private static long busyWaitUntil(long startTimeNs) {
@@ -343,11 +344,12 @@ public class JLBH implements NanoSampler {
         }
         printStream.println(padUntil("----", 100, '-'));
 
-        noResultsReturned = 0;
-        endToEndHistogram.reset();
-        additionHistograms.values().forEach(Histogram::reset);
-        osJitterMonitor.reset();
         jlbhOptions.jlbhTask.runComplete();
+
+        noResultsReturned = 0;
+        additionHistograms.values().forEach(Histogram::reset);
+        endToEndHistogram.reset();
+        osJitterMonitor.reset();
     }
 
     private void checkSampleTimeout() {
@@ -391,7 +393,9 @@ public class JLBH implements NanoSampler {
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
                             probe -> new ImmutableProbeResult(probe.getValue())));
-            resultConsumer.accept(new ImmutableJLBHResult(endToEndProbeResult, additionalProbeResults));
+            List<double[]> percentileRuns = Collections.singletonList(osJitterHistogram.getPercentiles());
+            ImmutableProbeResult osJitter = new ImmutableProbeResult(percentileRuns);
+            resultConsumer.accept(new ImmutableJLBHResult(endToEndProbeResult, additionalProbeResults, osJitter));
         }
     }
 
