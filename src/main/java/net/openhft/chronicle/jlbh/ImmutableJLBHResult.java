@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
 
@@ -31,10 +32,12 @@ final class ImmutableJLBHResult implements JLBHResult {
     private final ProbeResult endToEndProbeResult;
     @NotNull
     private final Map<String, ProbeResult> additionalProbeResults;
+    private final ProbeResult osJitterResult;
 
-    ImmutableJLBHResult(@NotNull ProbeResult endToEndProbeResult, @NotNull Map<String, ? extends ProbeResult> additionalProbeResults) {
+    ImmutableJLBHResult(@NotNull ProbeResult endToEndProbeResult, @NotNull Map<String, ? extends ProbeResult> additionalProbeResults, ProbeResult osJitterResult) {
         this.endToEndProbeResult = endToEndProbeResult;
         this.additionalProbeResults = unmodifiableMap(additionalProbeResults);
+        this.osJitterResult = osJitterResult;
     }
 
     @Override
@@ -48,4 +51,15 @@ final class ImmutableJLBHResult implements JLBHResult {
     public Optional<ProbeResult> probe(String probeName) {
         return Optional.ofNullable(additionalProbeResults.get(probeName));
     }
+
+    @Override
+    public Set<String> probeNames() {
+        return additionalProbeResults.keySet();
+    }
+
+    @Override
+    public Optional<ProbeResult> osJitter() {
+        return Optional.ofNullable(osJitterResult);
+    }
+
 }
