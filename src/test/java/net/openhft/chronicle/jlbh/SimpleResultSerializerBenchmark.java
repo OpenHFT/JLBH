@@ -18,15 +18,14 @@
 
 package net.openhft.chronicle.jlbh;
 
-import net.openhft.chronicle.core.util.NanoSampler;
+import net.openhft.chronicle.jlbh.util.JLBHResultSerializer;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.concurrent.locks.LockSupport;
 
-public class SimpleOSJitterBenchmark implements JLBHTask {
+public class SimpleResultSerializerBenchmark implements JLBHTask {
 
     private JLBH jlbh;
-    private NanoSampler myProbe;
 
     public static void main(String[] args) {
         //Create the JLBH options you require for the benchmark
@@ -34,26 +33,24 @@ public class SimpleOSJitterBenchmark implements JLBHTask {
                 .warmUpIterations(20_000)
                 .iterations(1_000_000)
                 .throughput(100_000)
-                .recordOSJitter(true)
-                .runs(4)
-                .jlbhTask(new SimpleOSJitterBenchmark());
-        new JLBH(lth,System.out, jlbhResult -> {
-            jlbhResult.osJitter().ifPresent(probeResult -> {
-                JLBHResult.RunResult runResult = probeResult.summaryOfLastRun();
-                System.out.println("runResult = " + runResult);
-                List<JLBHResult.RunResult> runResults = probeResult.eachRunSummary();
-                for (JLBHResult.RunResult result : runResults) {
-                    System.out.println("eachRunSummary = " + result);
-                }
-            });
+//                .accountForCoordinatedOmission(true)
+                .runs(2)
+                .jlbhTask(new SimpleResultSerializerBenchmark() );
+        new JLBH(lth, System.out,jlbhResult -> {
+            try {
+                System.out.println("Serializing result...");
+                JLBHResultSerializer.runResultToCSV(jlbhResult);
+                System.out.println("Done.");
 
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }).start();
     }
 
     @Override
     public void init(JLBH jlbh) {
         this.jlbh = jlbh;
-        myProbe = jlbh.addProbe("MyProbe");
     }
 
     @Override
@@ -64,6 +61,5 @@ public class SimpleOSJitterBenchmark implements JLBHTask {
 
         final long delta = System.nanoTime() - start;
         jlbh.sample(delta);
-        myProbe.sampleNanos(delta);
     }
 }
