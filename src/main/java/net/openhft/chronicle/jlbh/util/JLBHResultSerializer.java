@@ -10,7 +10,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -20,48 +20,45 @@ public class JLBHResultSerializer {
     public static final String THE_PROBE = "TheProbe";
     public static final String RESULT_CSV = "result.csv";
     public static final String END_TO_END = "endToEnd";
+    public static final String OS_JITTER = "OSJitter";
 
 
     public static void runResultToCSV(JLBHResult jlbhResult) throws IOException {
-        runResultToCSV(jlbhResult, RESULT_CSV, jlbhResult.probeNames());
+        runResultToCSV(jlbhResult, RESULT_CSV, jlbhResult.probeNames(), true);
     }
 
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName) throws IOException {
-        runResultToCSV(jlbhResult, fileName, jlbhResult.probeNames());
+        runResultToCSV(jlbhResult, fileName, jlbhResult.probeNames(), true);
     }
 
-    public static void runResultToCSV(JLBHResult jlbhResult, String fileName, String probe) throws IOException {
-        runResultToCSV(jlbhResult, fileName, Arrays.asList(probe));
+    public static void runResultToCSV(JLBHResult jlbhResult, String fileName, String probeName) throws IOException {
+        runResultToCSV(jlbhResult, fileName, Collections.singletonList(probeName), true);
     }
 
-    public static void runResultToCSV(JLBHResult jlbhResult, String fileName, Iterable<String> probes) throws IOException {
+    public static void runResultToCSV(JLBHResult jlbhResult, String fileName, Iterable<String> namesOfProbes, boolean includeOSJitter) throws IOException {
         try (Writer pw = new BufferedWriter(new PrintWriter(Files.newOutputStream(Paths.get(fileName))))) {
             writeHeader(pw);
 
             JLBHResult.ProbeResult probeResult = jlbhResult.endToEnd();
+            writeProbeResult(pw, END_TO_END, probeResult);
 
-            writeProbeResultRows(probeResult, pw, END_TO_END);
-            for (String probe : probes) {
-                writeProbeResult(jlbhResult, pw, probe);
+            for (String probeName : namesOfProbes) {
+                Optional<JLBHResult.ProbeResult> optProbe = jlbhResult.probe(probeName);
+                optProbe.ifPresent(probe -> writeProbeResult(pw, probeName, probe));
             }
+            if (!includeOSJitter) return;
+            Optional<JLBHResult.ProbeResult> osJitterResult = jlbhResult.osJitter();
+            osJitterResult.ifPresent(osJitterRes -> writeProbeResult(pw, OS_JITTER, osJitterRes));
         }
     }
 
-
-    private static void writeProbeResult(JLBHResult jlbhResult, Writer pw, String probeName) {
-        Optional<JLBHResult.ProbeResult> probeResult = jlbhResult.probe(probeName);
-        probeResult.ifPresent(probeResult1 -> {
-            try {
-                writeProbeResultRows(probeResult1, pw, probeName);
-            } catch (IOException e) {
-                throw new RuntimeException("Error writing probe results: "+probeName, e);
-            }
-        });
-    }
-
-    private static void writeProbeResultRows(JLBHResult.ProbeResult probeResult, Writer pw, String probeName) throws IOException {
-        JLBHResult.@NotNull RunResult runResult = probeResult.summaryOfLastRun();
-        writeRow(probeName, pw, runResult);
+    private static void writeProbeResult(Writer pw, String probeName, JLBHResult.ProbeResult probeResult) {
+        try {
+            JLBHResult.@NotNull RunResult runResult = probeResult.summaryOfLastRun();
+            writeRow(probeName, pw, runResult);
+        } catch (IOException e) {
+            throw new RuntimeException("Error writing probe results: " + probeName, e);
+        }
     }
 
     private static void writeRow(String probeName, Writer pw, JLBHResult.RunResult runResult) throws IOException {
