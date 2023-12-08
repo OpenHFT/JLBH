@@ -511,7 +511,7 @@ public class JLBH implements NanoSampler {
 
     @NotNull
     protected Histogram createHistogram() {
-        return new Histogram();
+        return new Histogram(35, 8, 100);
     }
 
     private final class OSJitterMonitor extends Thread {
