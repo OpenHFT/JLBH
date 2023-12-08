@@ -86,7 +86,7 @@ public class JLBHResultSerializer {
 
     private static void writeValue(Writer pw, Duration runResult) throws IOException {
         if (runResult != null) {
-            pw.write(Integer.toString(runResult.getNano()));
+            pw.write(Long.toString(runResult.toNanos()));
         }
         pw.write(",");
     }
