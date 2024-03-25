@@ -31,7 +31,7 @@
     </properties>
   
     <artifactId>jlbh</artifactId>
-    <version>1.25ea8-SNAPSHOT</version>
+    <version>1.26ea0-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
     <description>Java Latency Benchmark Harness</description>
     <packaging>jar</packaging>
@@ -41,14 +41,14 @@
             <dependency>
                 <groupId>net.openhft</groupId>
                 <artifactId>third-party-bom</artifactId>
-                <version>3.24.0</version>
+                <version>3.25.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>net.openhft</groupId>
                 <artifactId>chronicle-bom</artifactId>
-                <version>2.25ea-SNAPSHOT</version>
+                <version>2.26ea-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
