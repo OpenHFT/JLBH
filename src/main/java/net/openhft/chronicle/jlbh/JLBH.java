@@ -243,7 +243,6 @@ public class JLBH implements NanoSampler {
                 lock.release();
             Jvm.pause(5);
         }
-
     }
 
     private static long busyWaitUntil(long startTimeNs) {

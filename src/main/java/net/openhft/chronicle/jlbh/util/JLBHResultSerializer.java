@@ -22,7 +22,6 @@ public class JLBHResultSerializer {
     public static final String END_TO_END = "endToEnd";
     public static final String OS_JITTER = "OSJitter";
 
-
     public static void runResultToCSV(JLBHResult jlbhResult) throws IOException {
         runResultToCSV(jlbhResult, RESULT_CSV, jlbhResult.probeNames(), true);
     }

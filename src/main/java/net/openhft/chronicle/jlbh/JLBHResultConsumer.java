@@ -35,4 +35,3 @@ public interface JLBHResultConsumer extends Consumer<JLBHResult>, Supplier<JLBHR
         return new ThreadSafeJLBHResultConsumer();
     }
 }
-

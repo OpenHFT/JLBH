@@ -61,5 +61,4 @@ final class ImmutableJLBHResult implements JLBHResult {
     public Optional<ProbeResult> osJitter() {
         return Optional.ofNullable(osJitterResult);
     }
-
 }

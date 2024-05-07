@@ -109,7 +109,6 @@ public class JLBHTest {
         if (!expected.equals(actual)) {
             System.err.println("ERROR! There is an error here which is disabled at the moment! expected is not equal to actual");
         }
-
     }
 
     @Test
