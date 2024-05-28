@@ -45,7 +45,7 @@ import static java.lang.String.format;
 /**
  * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically, these would be
  * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
- * <p></p>
+ * <p>
  * This tool was inspired by JMH.
  * <p>
  * This class is not thread-safe.
@@ -243,7 +243,6 @@ public class JLBH implements NanoSampler {
                 lock.release();
             Jvm.pause(5);
         }
-
     }
 
     private static long busyWaitUntil(long startTimeNs) {

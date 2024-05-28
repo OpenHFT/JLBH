@@ -66,7 +66,7 @@ public class JLBHOptions {
      * Number of iterations per time unit to be pushed through the benchmark
      *
      * @param throughput         defaults to 10,000
-     * @param throughputTimeUnit defaults to <code>TimeUnit.SECOND</code>
+     * @param throughputTimeUnit defaults to {@code TimeUnit.SECOND}
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
     @NotNull
