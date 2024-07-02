@@ -33,6 +33,7 @@ import java.util.function.Supplier;
  */
 @SingleThreaded
 public class JLBHOptions {
+    // Benchmark configuration variables with default values
     int throughput = 10_000;
 
     LatencyDistributor latencyDistributor = LatencyDistributors.NORMAL;
@@ -161,6 +162,12 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Sets the number of iterations for the benchmark.
+     *
+     * @param iterations The number of iterations
+     * @return Instance of JLBHOptions to be used in the builder pattern
+     */
     @NotNull
     public JLBHOptions iterations(long iterations) {
         this.iterations = iterations;
@@ -168,9 +175,10 @@ public class JLBHOptions {
     }
 
     /**
-     * The latency benchmark to be run.
+     * Sets the latency benchmark task to be run.
      *
-     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     * @param JLBHTask The JLBHTask to set
+     * @return Instance of JLBHOptions to be used in the builder pattern
      */
     @NotNull
     public JLBHOptions jlbhTask(JLBHTask JLBHTask) {
@@ -214,16 +222,33 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Sets the supplier for acquiring an AffinityLock.
+     *
+     * @param acquireLock The supplier for AffinityLock
+     * @return Instance of JLBHOptions to be used in the builder pattern
+     */
     public JLBHOptions acquireLock(Supplier<AffinityLock> acquireLock) {
         this.acquireLock = acquireLock;
         return this;
     }
 
+    /**
+     * Sets the timeout for the benchmark.
+     *
+     * @param timeout The timeout duration
+     * @return Instance of JLBHOptions to be used in the builder pattern
+     */
     public JLBHOptions timeout(long timeout) {
         this.timeout = timeout;
         return this;
     }
 
+    /**
+     * Returns a string representation of the JLBHOptions.
+     *
+     * @return A string representation of the JLBHOptions
+     */
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("JLBHOptions{");
@@ -246,6 +271,9 @@ public class JLBHOptions {
         return sb.toString();
     }
 
+    /**
+     * Enumeration for specifying whether to skip the first run in the variation statistics.
+     */
     enum SKIP_FIRST_RUN {
         NOT_SET, SKIP, NO_SKIP
     }

@@ -18,21 +18,30 @@
  */
 package net.openhft.chronicle.jlbh;
 
+/**
+ * A thread-safe implementation of the JLBHResultConsumer interface.
+ * This class allows for safe consumption and retrieval of JLBH results across different threads.
+ */
 final class ThreadSafeJLBHResultConsumer implements JLBHResultConsumer {
 
-    // the assumption is that the JLBHResult is immutable
+    // The assumption is that the JLBHResult is immutable
     private volatile JLBHResult result;
 
     /**
-     * Must be immutable.
+     * Accepts a JLBH result. The result must be immutable.
      *
-     * @param result Result provided by the JLBH
+     * @param result The result provided by the JLBH
      */
     @Override
     public void accept(JLBHResult result) {
         this.result = result;
     }
 
+    /**
+     * Returns the JLBH result.
+     *
+     * @return The JLBH result
+     */
     @Override
     public JLBHResult get() {
         return result;

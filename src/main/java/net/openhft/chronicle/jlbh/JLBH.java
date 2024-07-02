@@ -43,8 +43,9 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 /**
- * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically, these would be
- * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
+ * Java Latency Benchmark Harness (JLBH).
+ * The harness is intended to be used for benchmarks where coordinated omission is an issue.
+ * Typically, these would be of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
  * <p>
  * This tool was inspired by JMH.
  * <p>
@@ -53,10 +54,10 @@ import static java.lang.String.format;
 @SingleThreaded
 @SuppressWarnings("unused")
 public class JLBH implements NanoSampler {
+    // Constants and configuration variables
     public static final int TIME_CALL_NANO_TIME = 18;
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();
-    // wait time between invocations in nanoseconds
-    private final long latencyBetweenTasks;
+    private final long latencyBetweenTasks; // Wait time between invocations in nanoseconds
     private final LatencyDistributor latencyDistributor;
     @NotNull
     private final JLBHOptions jlbhOptions;
@@ -78,13 +79,13 @@ public class JLBH implements NanoSampler {
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
     private final long mod;
     private final long length;
-    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
-    private volatile long noResultsReturned;
-    //Use non-atomic when so thread synchronisation is necessary
-    private boolean warmedUp;
-    private volatile Thread testThread;
+    private volatile long noResultsReturned; // Result counter
+    private boolean warmedUp; // Warm-up state flag
+    private volatile Thread testThread; // Thread running the test
 
     /**
+     * Constructs a JLBH instance with the specified options.
+     *
      * @param jlbhOptions Options to run the benchmark
      */
     public JLBH(@NotNull JLBHOptions jlbhOptions) {
@@ -92,12 +93,12 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Use this constructor if you want to test the latencies in more automated fashion. The result is passed to the result consumer after the
-     * JLBH::start method returns. You can create you own consumer, or use provided JLBHResultConsumer::newThreadSafeInstance() that allows you to
-     * retrieve the result even if the JLBH has been executed in a different thread.
+     * Constructs a JLBH instance with the specified options, print stream, and result consumer.
+     * Use this constructor if you want to test the latencies in a more automated fashion.
+     * The result is passed to the result consumer after the JLBH::start method returns.
      *
      * @param jlbhOptions    Options to run the benchmark
-     * @param printStream    Used to print text output. Use System.out to show the result on you standard out (e.g. screen)
+     * @param printStream    Used to print text output. Use System.out to show the result on your standard out (e.g. screen)
      * @param resultConsumer If provided, accepts the result data to be retrieved after the latencies have been measured
      */
     public JLBH(@NotNull JLBHOptions jlbhOptions, @NotNull PrintStream printStream, Consumer<JLBHResult> resultConsumer) {
@@ -105,7 +106,7 @@ public class JLBH implements NanoSampler {
         final String resourceTracing = System.getProperty("jvm.resource.tracing");
 
         if (resourceTracing != null && (resourceTracing.isEmpty() || Boolean.parseBoolean(resourceTracing))) {
-            System.out.println("***** WARNING : JLBH can not be run if jvm.resource.tracing=" + resourceTracing + ", please remove all \"jvm.resource.tracing\" as this will corrupt your stats *****");
+            System.out.println("***** WARNING : JLBH cannot be run if jvm.resource.tracing=" + resourceTracing + ", please remove all \"jvm.resource.tracing\" as this will corrupt your stats *****");
             System.exit(-1);
         }
 
@@ -128,6 +129,14 @@ public class JLBH implements NanoSampler {
         this.mod = mod2;
     }
 
+    /**
+     * Pads the given CharSequence until it reaches the specified length, using the provided character.
+     *
+     * @param cs The CharSequence to pad
+     * @param length The target length
+     * @param ch The character to pad with
+     * @return The padded CharSequence
+     */
     static CharSequence padUntil(CharSequence cs, int length, char ch) {
         StringBuilder sb = new StringBuilder(cs);
         while (sb.length() < length)
@@ -136,27 +145,35 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Add a probe to measure a section of the benchmark.
+     * Adds a probe to measure a section of the benchmark.
      *
-     * @param name Name of probe
-     * @return NanoSampler
+     * @param name Name of the probe
+     * @return The NanoSampler associated with the probe
      */
     public NanoSampler addProbe(String name) {
         return additionHistograms.computeIfAbsent(name, n -> createHistogram());
     }
 
+    /**
+     * Returns a map of additional percentile runs.
+     *
+     * @return A map containing additional percentile runs
+     */
     @NotNull
     public Map<String, List<double[]>> additionalPercentileRuns() {
         return additionalPercentileRuns;
     }
 
+    /**
+     * Aborts the benchmark run.
+     */
     public void abort() {
         abortTestRun.set(true);
         testThread.interrupt();
     }
 
     /**
-     * Start benchmark
+     * Starts the benchmark.
      */
     public void start() {
         startTimeoutCheckerIfRequired();
@@ -198,7 +215,7 @@ public class JLBH implements NanoSampler {
                                 if (millis > 0) {
                                     Jvm.pause(millis);
                                 }
-                                // account for jitter in Thread.sleep() and wait until a fixed point in time
+                                // Account for jitter in Thread.sleep() and wait until a fixed point in time
                                 startTimeNs = busyWaitUntil(startTimeNs);
                             }
 
@@ -206,7 +223,7 @@ public class JLBH implements NanoSampler {
                             if (latencyBetweenTasks > 2e6) {
                                 long end = System.nanoTime() + latencyBetweenTasks;
                                 Jvm.pause(latencyBetweenTasks / 1_000_000 - 1);
-                                // account for jitter in Thread.sleep() and wait until a fixed point in time
+                                // Account for jitter in Thread.sleep() and wait until a fixed point in time
                                 startTimeNs = busyWaitUntil(startTimeNs);
 
                             } else {
@@ -215,7 +232,7 @@ public class JLBH implements NanoSampler {
                                 if (startTimeNs < nowNS + TIME_CALL_NANO_TIME) {
                                     startTimeNs = nowNS;
                                 } else {
-                                    // account for jitter in Thread.sleep() and wait until a fixed point in time
+                                    // Account for jitter in Thread.sleep() and wait until a fixed point in time
                                     startTimeNs = busyWaitUntil(startTimeNs);
                                 }
                             }
@@ -245,6 +262,12 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Busy waits until the specified time.
+     *
+     * @param startTimeNs The target time in nanoseconds
+     * @return The actual start time in nanoseconds
+     */
     private static long busyWaitUntil(long startTimeNs) {
         long nanoTime;
         do {
@@ -254,6 +277,9 @@ public class JLBH implements NanoSampler {
         return startTimeNs;
     }
 
+    /**
+     * Starts the timeout checker if required.
+     */
     private void startTimeoutCheckerIfRequired() {
         if (jlbhOptions.timeout > 0) {
             Thread sampleTimeoutChecker = new Thread(this::checkSampleTimeout);
@@ -262,6 +288,11 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Waits for the warm-up to complete.
+     *
+     * @param warmupStart The start time of the warm-up period
+     */
     private void waitForWarmupToComplete(long warmupStart) {
         while (!warmUpComplete.get()) {
             Jvm.pause(500);
@@ -279,6 +310,9 @@ public class JLBH implements NanoSampler {
         jlbhOptions.jlbhTask.warmedUp();
     }
 
+    /**
+     * Initializes and starts the OS jitter monitor if required.
+     */
     private void initStartOSJitterMonitor() {
         jlbhOptions.jlbhTask.init(this);
         if (jlbhOptions.recordOSJitter) {
@@ -287,6 +321,11 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Performs the warm-up phase of the benchmark.
+     *
+     * @return The start time of the warm-up period
+     */
     private long warmup() {
         long warmupStart = System.currentTimeMillis();
         for (int i = 0; i < jlbhOptions.warmUpIterations; i++) {
@@ -295,6 +334,9 @@ public class JLBH implements NanoSampler {
         return warmupStart;
     }
 
+    /**
+     * Ends all runs and prints the percentiles summary.
+     */
     private void endOfAllRuns() {
         printPercentilesSummary("end to end", percentileRuns, printStream);
         if (additionalPercentileRuns.size() > 0) {
@@ -306,19 +348,33 @@ public class JLBH implements NanoSampler {
         jlbhOptions.jlbhTask.complete();
     }
 
+    /**
+     * Returns the list of percentile runs.
+     *
+     * @return A list containing the percentile runs
+     */
     public List<double[]> percentileRuns() {
         return percentileRuns;
     }
 
+    /**
+     * Handles the end of a benchmark run.
+     *
+     * @param run The current run number
+     * @param runStart The start time of the run in milliseconds
+     */
     private void endOfRun(int run, long runStart) {
+        // Wait until all iterations are completed or the test is aborted
         while (!abortTestRun.get() && endToEndHistogram.totalCount() < jlbhOptions.iterations) {
             Thread.yield();
         }
 
         long totalRunTime = System.currentTimeMillis() - runStart;
 
+        // Add the current run's percentiles to the list
         percentileRuns.add(endToEndHistogram.getPercentiles());
 
+        // Print the run results
         printStream.println(padUntil("-------------------------------- BENCHMARK RESULTS (RUN " + (run + 1) + ") " + timeUnitToString(TimeUnit.MICROSECONDS) + " ----", 100, '-'));
         printStream.println("Run time: " + totalRunTime / 1000.0 + " s, distribution: " + latencyDistributor);
         printStream.println("Correcting for co-ordinated:" + jlbhOptions.accountForCoordinatedOmission);
@@ -326,6 +382,7 @@ public class JLBH implements NanoSampler {
         printStream.printf("%-48s", format("End to End: (%,d)", endToEndHistogram.totalCount()));
         printStream.println(endToEndHistogram.toMicrosFormat());
 
+        // Print additional histograms
         if (additionHistograms.size() > 0) {
             additionHistograms.forEach((key, value) -> {
                 List<double[]> ds = additionalPercentileRuns.computeIfAbsent(key,
@@ -337,20 +394,28 @@ public class JLBH implements NanoSampler {
                 printStream.println(value.toMicrosFormat());
             });
         }
+
+        // Print OS jitter histogram if recording OS jitter
         if (jlbhOptions.recordOSJitter) {
             printStream.printf("%-48s", format("OS Jitter (%,d)", osJitterHistogram.totalCount()));
             printStream.println(osJitterHistogram.toMicrosFormat());
         }
+
         printStream.println(padUntil("----", 100, '-'));
 
+        // Signal the task that the run is complete
         jlbhOptions.jlbhTask.runComplete();
 
+        // Reset counters and histograms for the next run
         noResultsReturned = 0;
         additionHistograms.values().forEach(Histogram::reset);
         endToEndHistogram.reset();
         osJitterMonitor.reset();
     }
 
+    /**
+     * Checks for sample timeouts and aborts the test if a timeout occurs.
+     */
     private void checkSampleTimeout() {
         long previousSampleCount = 0;
         long previousSampleTime = 0;
@@ -372,7 +437,9 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Call this instead of {@link #start()} if you want to install JLBH as a handler on your event loop thread
+     * Installs JLBH as a handler on the event loop thread instead of starting the benchmark directly.
+     *
+     * @param eventLoop The EventLoop to add the handler to
      */
     public void eventLoopHandler(@NotNull EventLoop eventLoop) {
         if (!jlbhOptions.accountForCoordinatedOmission)
@@ -384,6 +451,9 @@ public class JLBH implements NanoSampler {
         eventLoop.addHandler(new JLBHEventHandler());
     }
 
+    /**
+     * Consumes the benchmark results and passes them to the result consumer.
+     */
     private void consumeResults() {
         if (resultConsumer != null) {
             final JLBHResult.ProbeResult endToEndProbeResult = new ImmutableProbeResult(percentileRuns);
@@ -398,6 +468,13 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Prints the summary of percentiles for the benchmark.
+     *
+     * @param label The label for the summary
+     * @param percentileRuns The list of percentile runs
+     * @param appendable The Appendable to print the summary to
+     */
     public void printPercentilesSummary(
             String label,
             @NotNull List<double[]> percentileRuns,
@@ -434,6 +511,12 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Formats the percentile value for display.
+     *
+     * @param percentile The percentile value to format
+     * @return A formatted string representing the percentile
+     */
     private String formatPercentile(double percentile) {
         String s;
         if (percentile == 1) {
@@ -446,6 +529,13 @@ public class JLBH implements NanoSampler {
         return s.substring(0, 9);
     }
 
+    /**
+     * Adds a formatted percentile run to the given StringBuilder.
+     *
+     * @param sb   The StringBuilder to append to
+     * @param pr   The percentile run string
+     * @param runs The number of runs
+     */
     private void addPrToPrint(@NotNull StringBuilder sb, String pr, int runs) {
         sb.append(pr);
         for (int i = 0; i < runs; i++) {
@@ -455,6 +545,12 @@ public class JLBH implements NanoSampler {
         sb.append("%n");
     }
 
+    /**
+     * Generates the run summary header.
+     *
+     * @param runs The number of runs
+     * @return A string representing the run summary header
+     */
     private String generateRunSummaryHeader(int runs) {
         StringBuilder sb = new StringBuilder();
         sb.append("Percentile");
@@ -468,6 +564,12 @@ public class JLBH implements NanoSampler {
         return sb.toString();
     }
 
+    /**
+     * Converts a TimeUnit to its corresponding string representation.
+     *
+     * @param timeUnit The TimeUnit to convert
+     * @return A string representing the TimeUnit
+     */
     private String timeUnitToString(@NotNull TimeUnit timeUnit) {
         switch (timeUnit) {
             case NANOSECONDS:
@@ -489,11 +591,21 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Samples a duration in nanoseconds.
+     *
+     * @param durationNs The duration in nanoseconds
+     */
     @Override
     public void sampleNanos(long durationNs) {
         sample(durationNs);
     }
 
+    /**
+     * Samples a duration in nanoseconds and updates histograms accordingly.
+     *
+     * @param durationNs The duration in nanoseconds
+     */
     public void sample(long durationNs) {
         noResultsReturned++;
         if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
@@ -512,11 +624,19 @@ public class JLBH implements NanoSampler {
         endToEndHistogram.sample(durationNs);
     }
 
+    /**
+     * Creates and returns a new Histogram instance.
+     *
+     * @return A new Histogram instance
+     */
     @NotNull
     protected Histogram createHistogram() {
         return new Histogram(35, 8, 100);
     }
 
+    /**
+     * Monitors and records OS jitter.
+     */
     private final class OSJitterMonitor extends Thread {
         final AtomicBoolean reset = new AtomicBoolean(false);
         final AtomicBoolean running = new AtomicBoolean(false);
@@ -525,7 +645,7 @@ public class JLBH implements NanoSampler {
         public void run() {
             running.set(true);
 
-            // make sure this thread is not bound by its parent.
+            // Ensure this thread is not bound by its parent.
             Affinity.setAffinity(AffinityLock.BASE_AFFINITY);
             @Nullable AffinityLock affinityLock = null;
             if (jlbhOptions.jitterAffinity) {
@@ -557,15 +677,24 @@ public class JLBH implements NanoSampler {
             }
         }
 
+        /**
+         * Resets the jitter monitor.
+         */
         void reset() {
             reset.set(true);
         }
 
+        /**
+         * Terminates the jitter monitor.
+         */
         void terminate() {
             running.set(false);
         }
     }
 
+    /**
+     * EventHandler implementation for handling JLBH events.
+     */
     private final class JLBHEventHandler implements EventHandler {
         private int run;
         private long iteration, i;
@@ -579,11 +708,20 @@ public class JLBH implements NanoSampler {
             this.lastPrint = nextInvokeTime;
         }
 
+        /**
+         * Resets the timing for the next run.
+         */
         private void resetTime() {
             runStart = System.currentTimeMillis();
             nextInvokeTime = System.nanoTime() + latencyBetweenTasks;
         }
 
+        /**
+         * Performs the action associated with this EventHandler.
+         *
+         * @return True if the handler was busy, false otherwise
+         * @throws InvalidEventHandlerException If the event handler is invalid
+         */
         @Override
         public boolean action() throws InvalidEventHandlerException {
             boolean busy = false;
@@ -626,9 +764,18 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * EventHandler implementation for handling warm-up events.
+     */
     private final class WarmupHandler implements EventHandler {
         private int iteration;
 
+        /**
+         * Performs the action associated with this EventHandler.
+         *
+         * @return True if the handler was busy, false otherwise
+         * @throws InvalidEventHandlerException If the event handler is invalid
+         */
         @Override
         public boolean action() throws InvalidEventHandlerException {
             if (iteration >= jlbhOptions.warmUpIterations)
@@ -639,6 +786,9 @@ public class JLBH implements NanoSampler {
             return true;
         }
 
+        /**
+         * Called when the event loop starts.
+         */
         @Override
         public void loopStarted() {
             testThread = Thread.currentThread();

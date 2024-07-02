@@ -18,7 +18,17 @@
 
 package net.openhft.chronicle.jlbh;
 
+/**
+ * Functional interface representing a latency distributor.
+ * It applies a function to the average latency to alter it pseudo-randomly.
+ */
 @FunctionalInterface
 public interface LatencyDistributor {
+    /**
+     * Applies the distribution function to the average latency.
+     *
+     * @param averageLatencyNS The average latency in nanoseconds
+     * @return The altered latency in nanoseconds
+     */
     long apply(long averageLatencyNS);
 }

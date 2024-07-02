@@ -20,13 +20,22 @@ package net.openhft.chronicle.jlbh;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Enumeration representing different latency distribution strategies.
+ */
 public enum LatencyDistributors implements LatencyDistributor {
+    /**
+     * Normal distribution which returns the average latency as is.
+     */
     NORMAL {
         @Override
         public long apply(long averageLatencyNS) {
             return averageLatencyNS;
         }
     },
+    /**
+     * Random distribution which returns a random latency within a specified range.
+     */
     RANDOM {
         @Override
         public long apply(long averageLatencyNS) {
@@ -34,6 +43,9 @@ public enum LatencyDistributors implements LatencyDistributor {
                     .nextLong(1000, 2 * averageLatencyNS - 1000);
         }
     },
+    /**
+     * Another random distribution which returns a latency based on a cubic function of a random float.
+     */
     RANDOM2 {
         @Override
         public long apply(long averageLatencyNS) {

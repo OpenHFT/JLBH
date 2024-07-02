@@ -29,14 +29,30 @@ import static java.time.temporal.ChronoUnit.NANOS;
 import static java.util.Collections.unmodifiableMap;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
 
+/**
+ * Immutable implementation of the JLBHResult.RunResult interface.
+ * Encapsulates the results for various percentiles and worst-case scenarios.
+ */
 final class ImmutableRunResult implements JLBHResult.RunResult {
 
+    // A map of percentiles to their corresponding durations
     private final Map<Percentile, Duration> percentiles;
 
+    /**
+     * Constructs an ImmutableRunResult with the given percentile's data.
+     *
+     * @param percentiles An array of percentile values
+     */
     public ImmutableRunResult(double[] percentiles) {
         this.percentiles = asMap(percentiles);
     }
 
+    /**
+     * Converts an array of percentiles into a map of Percentile to Duration.
+     *
+     * @param percentiles An array of percentile values
+     * @return An unmodifiable map of Percentile to Duration
+     */
     private static Map<Percentile, Duration> asMap(double[] percentiles) {
         final Map<Percentile, Duration> data = new EnumMap<>(Percentile.class);
         // TODO: duplicate of knowledge with Histogram.percentilesFor()
@@ -59,52 +75,98 @@ final class ImmutableRunResult implements JLBHResult.RunResult {
         return unmodifiableMap(data);
     }
 
+    /**
+     * Converts a percentile value to a Duration.
+     *
+     * @param percentile The percentile value in nanoseconds
+     * @return A Duration representing the percentile value
+     */
     private static Duration durationOf(double percentile) {
         return Duration.of((long) percentile, NANOS);
     }
 
+    /**
+     * Returns a map of percentiles to durations.
+     *
+     * @return An unmodifiable map of percentiles to durations
+     */
     @Override
     @NotNull
     public Map<Percentile, Duration> percentiles() {
         return percentiles;
     }
 
+    /**
+     * Returns the duration of the 50th percentile.
+     *
+     * @return The duration of the 50th percentile
+     */
     @Override
     @NotNull
     public Duration get50thPercentile() {
         return percentiles.get(PERCENTILE_50TH);
     }
 
+    /**
+     * Returns the duration of the 90th percentile.
+     *
+     * @return The duration of the 90th percentile
+     */
     @Override
     @NotNull
     public Duration get90thPercentile() {
         return percentiles.get(PERCENTILE_90TH);
     }
 
+    /**
+     * Returns the duration of the 99th percentile.
+     *
+     * @return The duration of the 99th percentile
+     */
     @Override
     @NotNull
     public Duration get99thPercentile() {
         return percentiles.get(PERCENTILE_99TH);
     }
 
+    /**
+     * Returns the duration of the 99.9th percentile, if available.
+     *
+     * @return The duration of the 99.9th percentile, or null if not available
+     */
     @Override
     @Nullable
     public Duration get999thPercentile() {
         return percentiles.get(PERCENTILE_99_9TH);
     }
 
+    /**
+     * Returns the duration of the 99.99th percentile, if available.
+     *
+     * @return The duration of the 99.99th percentile, or null if not available
+     */
     @Override
     @Nullable
     public Duration get9999thPercentile() {
         return percentiles.get(PERCENTILE_99_99TH);
     }
 
+    /**
+     * Returns the duration of the worst-case scenario.
+     *
+     * @return The duration of the worst-case scenario
+     */
     @Override
     @NotNull
     public Duration getWorst() {
         return percentiles.get(WORST);
     }
 
+    /**
+     * Returns a string representation of the ImmutableRunResult.
+     *
+     * @return A string representation of the ImmutableRunResult
+     */
     @Override
     public String toString() {
         return "ImmutableRunResult{" +
@@ -112,6 +174,12 @@ final class ImmutableRunResult implements JLBHResult.RunResult {
                 '}';
     }
 
+    /**
+     * Checks for equality between this ImmutableRunResult and another object.
+     *
+     * @param o The object to compare with
+     * @return True if the objects are equal, false otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -120,9 +188,13 @@ final class ImmutableRunResult implements JLBHResult.RunResult {
         ImmutableRunResult summary = (ImmutableRunResult) o;
 
         return percentiles.equals(summary.percentiles);
-
     }
 
+    /**
+     * Returns the hash code for this ImmutableRunResult.
+     *
+     * @return The hash code
+     */
     @Override
     public int hashCode() {
         return percentiles.hashCode();

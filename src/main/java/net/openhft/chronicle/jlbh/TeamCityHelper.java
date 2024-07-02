@@ -27,19 +27,34 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class to assist with printing benchmark statistics in a TeamCity-friendly format.
+ */
 public final class TeamCityHelper {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private TeamCityHelper() {
     }
 
+    /**
+     * Prints histogram data in a TeamCity-friendly format.
+     *
+     * @param name       The name of the histogram
+     * @param histo      The histogram to print
+     * @param printStream The PrintStream to print to
+     */
     public static void histo(@NotNull String name, @NotNull Histogram histo, @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(histo.totalCount());
         printPercentiles(name, printStream, percentages, histo.getPercentiles());
     }
 
     /**
-     * prints out stats for the last run in a TeamCity friendly manner
+     * Prints out statistics for the last run in a TeamCity-friendly format.
+     *
+     * @param prefix      The prefix for the statistics
+     * @param jlbh        The JLBH instance
+     * @param iterations  The number of iterations
+     * @param printStream The PrintStream to print to
      */
     public static void teamCityStatsLastRun(@NotNull String prefix, @NotNull JLBH jlbh, long iterations, @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(iterations);
@@ -49,15 +64,31 @@ public final class TeamCityHelper {
         }
     }
 
+    /**
+     * Prints percentiles for the given values list in a TeamCity-friendly format.
+     *
+     * @param s           The prefix for the statistics
+     * @param printStream The PrintStream to print to
+     * @param percentages The percentile values
+     * @param valuesList  The list of percentile values
+     */
     private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, @NotNull List<double[]> valuesList) {
         double[] values = valuesList.get(valuesList.size() - 1);
         printPercentiles(s, printStream, percentages, values);
     }
 
+    /**
+     * Prints percentiles for the given values in a TeamCity-friendly format.
+     *
+     * @param s           The prefix for the statistics
+     * @param printStream The PrintStream to print to
+     * @param percentages The percentile values
+     * @param values      The percentile values
+     */
     private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, double[] values) {
         PercentileSummary summary = new PercentileSummary(false, Collections.singletonList(values), percentages);
         String extra = Jvm.isAzulZing() ? ".zing" : Jvm.isJava15Plus() ? ".java17" : "";
-        summary.forEachRow(((percentile, rowValues, variance) ->
-                printStream.println("##teamcity[buildStatisticValue key='" + s + "." + percentile + extra + "' value='" + rowValues[0] + "']")));
+        summary.forEachRow((percentile, rowValues, variance) ->
+                printStream.println("##teamcity[buildStatisticValue key='" + s + "." + percentile + extra + "' value='" + rowValues[0] + "']"));
     }
 }
