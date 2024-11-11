@@ -51,7 +51,7 @@ import static java.lang.String.format;
  * This class is not thread-safe.
  */
 @SingleThreaded
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "this-escape"})
 public class JLBH implements NanoSampler {
     public static final int TIME_CALL_NANO_TIME = 18;
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();
