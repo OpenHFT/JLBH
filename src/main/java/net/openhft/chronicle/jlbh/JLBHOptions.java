@@ -234,6 +234,16 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Sets the maximum time to wait for the next sample to be produced.
+     * <p>
+     * If no additional samples are recorded within the specified number of
+     * milliseconds the running benchmark is aborted. A value of {@code 0}
+     * disables the timeout check.
+     *
+     * @param timeout timeout in milliseconds
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
     public JLBHOptions timeout(long timeout) {
         this.timeout = timeout;
         return this;
