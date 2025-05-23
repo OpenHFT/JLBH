@@ -156,7 +156,20 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Start benchmark
+     * Start benchmark.
+     *
+     * <p>The start method performs an initial warm up phase before collecting
+     * any timings. {@link #warmup()} runs the configured number of warm-up
+     * iterations. The thread then waits in {@link #waitForWarmupToComplete(long)}
+     * until {@link #sample(long)} signals that the histograms have been reset
+     * and the warm up is finished.</p>
+     *
+     * <p>Once warmed up, the benchmark executes the configured number of runs.
+     * For each run the method loops over all iterations invoking
+     * {@link JLBHTask#run(long)} at the calculated start time. After every run
+     * {@link #endOfRun(int, long)} prints the results and resets the histograms.
+     * After the final run {@link #endOfAllRuns()} outputs the summary and calls
+     * the result consumer.</p>
      */
     public void start() {
         startTimeoutCheckerIfRequired();
