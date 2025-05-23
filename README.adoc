@@ -52,7 +52,7 @@ http://www.rationaljava.com/2016/04/jlbh-examples-2-accounting-for.html[Accounti
 http://www.rationaljava.com/2016/04/jlbh-examples-3-affects-of-throughput.html[The Affects of Throughput on Latency]
 
 - A discussion about the effects of throughput on latency
-- How use JLBH to measure TCP loopback
+- How to use JLBH to measure TCP loopback
 - Adding probes to test both halves of the TCP round trip
 - Watching the effect of increasing throughput on latency
 - Understanding that you have to drop throughput to achieve good latencies at high percentiles.
