@@ -73,3 +73,8 @@ that is used to execute this type of tests. If the developer's machine is able t
 sufficient performance, this type of test can be run along with all other tests locally. This, in turn
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
+
+=== CSV Output
+
+To export JLBH results in CSV format, invoke `JLBHResultSerializer.runResultToCSV(jlbhResult)`. This writes the output to `result.csv` by default, as defined in `JLBHResultSerializer.RESULT_CSV`.
+
