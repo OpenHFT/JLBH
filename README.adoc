@@ -25,6 +25,19 @@ Since those articles were written the main change has been to allow JLBH to be i
 rather than it running in its own thread. To do this, use
 the JLBH.eventLoopHandler method rather than JLBH.start.
 
+For example, you can run the benchmark on your own event loop:
+
+[source,java]
+----
+EventLoop eventLoop = new MediumEventLoop(null, "el", Pauser.busy(), true, null);
+eventLoop.start();
+
+JLBH jlbh = new JLBH(options);
+jlbh.eventLoopHandler(eventLoop);
+----
+
+This installs JLBH onto the supplied loop instead of starting its own thread.
+
 JLBH supports single-thread usage only.
 
 == Articles on Java Latency Benchmarking Harness
