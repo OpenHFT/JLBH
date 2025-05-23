@@ -161,6 +161,13 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Variant of {@link #iterations(int)} that accepts a {@code long} so that
+     * iteration counts greater than {@code Integer#MAX_VALUE} can be specified.
+     *
+     * @param iterations total number of iterations to run
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
     @NotNull
     public JLBHOptions iterations(long iterations) {
         this.iterations = iterations;
