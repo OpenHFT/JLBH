@@ -566,6 +566,14 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * {@link EventHandler} used when {@link #eventLoopHandler(EventLoop)} is
+     * called. It drives the benchmark from within the provided event loop,
+     * invoking the configured {@link JLBHTask} at the configured rate and
+     * managing progression through the iterations and runs. Once all runs are
+     * complete it triggers result reporting and removes itself from the event
+     * loop by throwing an {@link InvalidEventHandlerException}.
+     */
     private final class JLBHEventHandler implements EventHandler {
         private int run;
         private long iteration, i;
