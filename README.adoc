@@ -26,6 +26,15 @@ the JLBH.eventLoopHandler method rather than JLBH.start.
 
 JLBH supports single-thread usage only.
 
+=== OS Jitter Measurement
+JLBH can optionally track operating-system jitter by running a background thread
+that records scheduler delays as a separate probe. This is useful when
+investigating latency spikes caused by kernel activity, but it incurs some
+overhead so it is disabled by default. You can enable it via
+`recordOSJitter()` when you need to quantify such noise. The feature is listed
+in the requirements specification around lines 52 and 56 of
+`jlbh-requirements.adoc`.
+
 == Articles on Java Latency Benchmarking Harness
 
 http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introducting JLBH]
