@@ -11,29 +11,113 @@ image:https://javadoc.io/badge2/net.openhft/JLBH/javadoc.svg[link="https://www.j
 image:https://img.shields.io/github/license/OpenHFT/JLBH[GitHub]
 image:https://img.shields.io/badge/release%20notes-subscribe-brightgreen[link="https://chronicle.software/release-notes/"]
 image:https://sonarcloud.io/api/project_badges/measure?project=OpenHFT_JLBH&metric=alert_status[link="https://sonarcloud.io/dashboard?id=OpenHFT_JLBH"]
+This project is actively maintained; see link:https://github.com/OpenHFT/JLBH/releases[GitHub releases] for the latest versions.
 
 toc::[]
 
 == About
 
 Java Latency Benchmark Harness is a tool that allows you to benchmark your code
-running in context, rather than in a microbenchmark. An excellent introduction can be found in
+running in context, rather than in a microbenchmark. See <<further-reading,Further Reading>>
+for a series of articles introducing JLBH.
+An excellent introduction can be found in
 http://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html[this series of articles.]
+link:src/main/adoc/jlbh-requirements.adoc[The requirements document] contains detailed feature descriptions.
+
+For terminology used throughout the project, see link:src/main/adoc/jlbh-requirements.adoc#_7-glossary[the Glossary (section 7)].
 
 Since those articles were written the main change has been to allow JLBH to be installed  to an event loop,
 rather than it running in its own thread. To do this, use
 the JLBH.eventLoopHandler method rather than JLBH.start.
 
-JLBH supports single-thread usage only.
+NOTE: The JLBH harness itself runs on a single thread; benchmarked code may spawn threads, but the harness thread is unique.
+
+For example, you can run the benchmark on your own event loop:
+
+[source,java]
+----
+EventLoop eventLoop = new MediumEventLoop(null, "el", Pauser.busy(), true, null);
+eventLoop.start();
+
+JLBH jlbh = new JLBH(options);
+jlbh.eventLoopHandler(eventLoop);
+----
+
+This installs JLBH onto the supplied loop instead of starting its own thread.
+
+[[further-reading]]
+== Further Reading
+|===
+| Feature | Summary
+
+| Coordinated omission handling | Optionally compensates for delays by adjusting the synthetic start time.
+| Additional probes | `addProbe(String)` records extra timings within the benchmark.
+| OS jitter measurement | Background thread tracks scheduling gaps as a separate probe.
+| CSV output | `JLBHResultSerializer` persists run data for offline analysis.
+|===
+
+== Environment
+
+CPU affinity can be configured using the OpenHFT Affinity library as noted in the
+link:src/main/adoc/jlbh-requirements.adoc[requirements document].
+
+Histogramming of recorded latencies is precise. As specified in the
+link:src/main/adoc/jlbh-requirements.adoc[jlbh-requirements], JLBH
+generates high-resolution histograms of at least 35 bits. This accuracy
+retains sub-nanosecond resolution over a wide range, so the reported
+percentiles closely reflect true end-to-end timings.
+
+== Quick Start
+
+To run a simple benchmark disable accounting for coordinated omission as
+follows:
+
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .warmUpIterations(100_000)
+        .iterations(1_000_000)
+        .throughput(1_000_000)
+        .accountForCoordinatedOmission(false) // disable correction
+        .jlbhTask(myTask);
+
+new JLBH(options).start();
+----
+
+For a visual overview of how a benchmark progresses, see the
+link:docs/benchmark-lifecycle.adoc[benchmark lifecycle diagram].
+
+=== OS Jitter Measurement
+JLBH can optionally track operating-system jitter by running a background thread
+that records scheduler delays as a separate probe. This is useful when
+investigating latency spikes caused by kernel activity, but it incurs some
+overhead so it is disabled by default. You can enable it via
+`recordOSJitter()` when you need to quantify such noise. The feature is listed
+in the requirements specification around lines 52 and 56 of
+`jlbh-requirements.adoc`.
 
 == Articles on Java Latency Benchmarking Harness
 
-http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introducting JLBH]
+http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introducing JLBH]
 
 - What is JLBH
 - What was the motivation for JLBH
 - Differences between JMH and JLBH
 - Quick start guide
+
+=== Sample percentile output
+
+The output of a short JLBH run may look similar to the following:
+
+[source]
+----
+-------------------------------- SUMMARY (end to end) us --------------------------------
+Percentile   run1         run2         run3      % Variation
+50.0:            8.07         8.07         6.10        17.69
+90.0:           11.66        11.66         9.71        11.82
+99.0:           12.46        12.46        10.51        11.02
+worst:          12.56        12.56        10.61        10.93
+----
 
 http://www.rationaljava.com/2016/04/jlbh-examples-1-why-code-should-be.html[Why Code Should be Benchmarked in Context]
 
@@ -41,18 +125,21 @@ http://www.rationaljava.com/2016/04/jlbh-examples-1-why-code-should-be.html[Why 
  - Measuring Date serialisation in a microbenchmark
  - Measuring Date serialisation as part of a proper application
  - How to add a probe to your JLBH benchmark
- - Understanding the importance of measuring code in context
+- Understanding the importance of measuring code in context
+
+Co-ordinated omission occurs when latency measurements ignore the time requests wait to be serviced, leading to unrealistically low results.
 
 http://www.rationaljava.com/2016/04/jlbh-examples-2-accounting-for.html[Accounting for Coordinated Omission]
 
 - Running JLBH with and without accounting for coordinated omission
-- An example to in numbers the effects of coordinated omission
+- An example illustrating the numerical impact of coordinated omission
 - A discussion about flow control
 
 http://www.rationaljava.com/2016/04/jlbh-examples-3-affects-of-throughput.html[The Affects of Throughput on Latency]
+Note: the blog deliberately uses "Affects" in the title while describing the effects of throughput on latency.
 
 - A discussion about the effects of throughput on latency
-- How use JLBH to measure TCP loopback
+- How to use JLBH to measure TCP loopback
 - Adding probes to test both halves of the TCP round trip
 - Watching the effect of increasing throughput on latency
 - Understanding that you have to drop throughput to achieve good latencies at high percentiles.
@@ -63,7 +150,32 @@ http://www.rationaljava.com/2016/04/jlbh-examples-4-benchmarking-quickfix.html[B
 - Observing how QuickFix latencies degrade through the percentiles
 - Comparing QuickFIX with Chronicle FIX
 
+== Quick Start
+
+Configure JLBH using the `JLBHOptions` builder:
+
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .throughput(50_000)
+        .iterations(1_000_000)
+        .jlbhTask(myTask);
+new JLBH(options).start();
+----
+
+Commonly used option methods include:
+
+* `.throughput(int)` - set target iterations per time unit
+* `.iterations(long)` - number of iterations to execute
+
+For a full list of configuration parameters see `src/main/java/net/openhft/chronicle/jlbh/JLBHOptions.java`.
+
 === Using JLBH as part of automated performance/performance regression testing
+
+- Extract latency percentiles from `net.openhft.chronicle.jlbh.JLBHTest::shouldProvideResultData` for xUnit tests.
+- Run them on a production-like CI server.
+- When local hardware is adequate, execute them along with other tests.
+- Integrate these benchmarks into the TDD cycle to expose latency-related design issues early.
 
 The net.openhft.chronicle.jlbh.JLBHTest::shouldProvideResultData
 test shows how the latency percentiles can be extracted
@@ -78,3 +190,91 @@ design flaws earlier and often, lowering the development cost of the latency-sen
 
 To export JLBH results in CSV format, invoke `JLBHResultSerializer.runResultToCSV(jlbhResult)`. This writes the output to `result.csv` by default, as defined in `JLBHResultSerializer.RESULT_CSV`.
 
+== Adding custom probes
+
+JLBH lets you time additional stages of your benchmark using `addProbe(String)`.
+The returned `NanoSampler` records its own histogram.
+
+[source,java]
+----
+class ProbedTask implements JLBHTask {
+    private JLBH jlbh;
+    private NanoSampler stage;
+
+    @Override
+    public void init(JLBH jlbh) {
+        this.jlbh = jlbh;
+        stage = jlbh.addProbe("my-stage");
+    }
+
+    @Override
+    public void run(long startTimeNs) {
+        long stepStart = System.nanoTime();
+        // ... benchmarked stage ...
+        stage.sampleNanos(System.nanoTime() - stepStart);
+
+        jlbh.sample(System.nanoTime() - startTimeNs);
+    }
+}
+----
+
+For a runnable example see
+`src/test/java/net/openhft/chronicle/jlbh/SimpleOSJitterBenchmark.java`.
+
+== Key Non-Functional Requirements
+
+The following table summarises the main non-functional quality attributes derived from the Software Requirements Specification.
+
+|===
+| Area | Requirement
+
+| Performance | Overhead per sample must remain below 100 ns when no additional probes are active. Histogram generation must support ≥200 M iterations without heap pressure.
+| Reliability | Harness must abort gracefully on interruptions or sample time-outs, and immutable result objects ensure thread-safe publication.
+| Usability | Fluent builder API with sensible defaults yields a runnable benchmark in ≤10 LOC. ASCII table outputs are human-readable and CI-friendly.
+| Portability | Pure-Java codebase with runtime-detected JDK optimisations; no native compilation.
+| Maintainability | ≥80 % unit-test coverage and adherence to Chronicle coding standards validated by SonarCloud.
+| Security | No executable deserialisation; harness operates in-process. Users remain responsible for securing benchmarked code.
+|===
+
+== Sample benchmarks and tests
+
+The project ships with several example tasks and tests located under
+`src/test/java/net/openhft/chronicle/jlbh`. They can serve as a starting
+point when writing your own benchmarks.
+
+|===
+| Class | Purpose
+
+| `ExampleJLBHMain` | Basic demonstration harness
+| `JLBHDeterministicFixtures` | Helper fixtures used in deterministic tests
+| `JLBHIntegrationTest` | Example integration test
+| `JLBHTest` | Unit test showing result extraction
+| `LatencyDistributorsTest` | Tests percentile distribution logic
+| `NothingBenchmark` | Simple benchmark that does no work
+| `PercentileSummaryTest` | Tests percentile summaries
+| `SimpleBenchmark` | Minimal benchmark example
+| `SimpleOSJitterBenchmark` | Demonstrates OS jitter recording
+| `SimpleResultSerializerBenchmark` | Example of serialising results
+|===
+
+== Quick Start
+
+`JLBHOptions` is configured via a fluent builder pattern so each setter returns the same instance allowing method chaining.
+
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .throughput(1_000_000)
+        .warmUpIterations(5_000)
+        .iterations(50_000)
+        .jlbhTask(new MyBenchmarkTask());
+----
+
+== Options
+
+- `timeout(long)` aborts the benchmark if no samples are produced for the given number of milliseconds.
+
+=== Common queries
+
+* *Warm-up iterations* - JLBH performs a warm-up phase before measurements start. A rule of thumb is to warm up for about 30% of the run iterations. Override this with `warmUpIterations(int)` if needed.
+* *Throughput modelling* - Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns. Start with your production rate and tune to study latency trade-offs.
