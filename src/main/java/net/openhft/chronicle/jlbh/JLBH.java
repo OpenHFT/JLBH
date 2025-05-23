@@ -102,7 +102,14 @@ public class JLBH implements NanoSampler {
     private volatile Thread testThread;
 
     /**
-     * @param jlbhOptions Options to run the benchmark
+     * Creates a benchmark instance using the supplied options.  The provided
+     * {@link JLBHOptions} defines how the benchmark will be executed including
+     * run count, iteration count, warm-up iterations, throughput and jitter
+     * recording settings.  If this convenience constructor is used the textual
+     * benchmark output will be sent to {@code System.out}. Results are printed
+     * once {@link #start()} completes.
+     *
+     * @param jlbhOptions options controlling the benchmark execution
      */
     public JLBH(@NotNull JLBHOptions jlbhOptions) {
         this(jlbhOptions, System.out, null);
