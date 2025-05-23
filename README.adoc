@@ -73,3 +73,8 @@ that is used to execute this type of tests. If the developer's machine is able t
 sufficient performance, this type of test can be run along with all other tests locally. This, in turn
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
+
+=== Common queries
+
+* *Warm-up iterations* - JLBH performs a warm-up phase before measurements start. A rule of thumb is to warm up for about 30% of the run iterations. Override this with `warmUpIterations(int)` if needed.
+* *Throughput modelling* - Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns. Start with your production rate and tune to study latency trade-offs.
