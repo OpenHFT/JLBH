@@ -389,7 +389,13 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Call this instead of {@link #start()} if you want to install JLBH as a handler on your event loop thread
+     * Call this instead of {@link #start()} to run JLBH using an external
+     * {@link EventLoop}. The warmup and benchmark handlers are registered with
+     * the supplied event loop so that all work executes on that loop's thread.
+     * The caller is expected to manage the lifecycle of the event loop itself.
+     *
+     * @param eventLoop the loop to attach the JLBH handlers to
+     * @throws UnsupportedOperationException if coordinated omission accounting is disabled
      */
     public void eventLoopHandler(@NotNull EventLoop eventLoop) {
         if (!jlbhOptions.accountForCoordinatedOmission)
