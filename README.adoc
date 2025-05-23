@@ -81,7 +81,9 @@ http://www.rationaljava.com/2016/04/jlbh-examples-1-why-code-should-be.html[Why 
  - Measuring Date serialisation in a microbenchmark
  - Measuring Date serialisation as part of a proper application
  - How to add a probe to your JLBH benchmark
- - Understanding the importance of measuring code in context
+- Understanding the importance of measuring code in context
+
+Co-ordinated omission occurs when latency measurements ignore the time requests wait to be serviced, leading to unrealistically low results.
 
 http://www.rationaljava.com/2016/04/jlbh-examples-2-accounting-for.html[Accounting for Coordinated Omission]
 
