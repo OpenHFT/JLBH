@@ -11,6 +11,7 @@ image:https://javadoc.io/badge2/net.openhft/JLBH/javadoc.svg[link="https://www.j
 image:https://img.shields.io/github/license/OpenHFT/JLBH[GitHub]
 image:https://img.shields.io/badge/release%20notes-subscribe-brightgreen[link="https://chronicle.software/release-notes/"]
 image:https://sonarcloud.io/api/project_badges/measure?project=OpenHFT_JLBH&metric=alert_status[link="https://sonarcloud.io/dashboard?id=OpenHFT_JLBH"]
+This project is actively maintained; see link:https://github.com/OpenHFT/JLBH/releases[GitHub releases] for the latest versions.
 
 toc::[]
 
