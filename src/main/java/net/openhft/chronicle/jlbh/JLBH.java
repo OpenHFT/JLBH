@@ -43,12 +43,29 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 /**
- * Java Latency Benchmark Harness The harness is intended to be used for benchmarks where co-ordinated omission is an issue. Typically, these would be
- * of the producer/consumer nature where the start time for the benchmark may be on a different thread than the end time.
+ * Java Latency Benchmark Harness (JLBH).
+ * <p>
+ * JLBH is designed to measure end to end latency of a workload under a
+ * configured throughput.  It is intended for benchmarks where coordinated
+ * omission matters, typically producer/consumer style tests where the start of
+ * an iteration may be executed on a different thread than its completion.
  * <p>
  * This tool was inspired by JMH.
  * <p>
- * This class is not thread-safe.
+ * The harness itself is not thread safe and should be run from a single
+ * thread.  Implementations of {@link JLBHTask} must expect {@link JLBHTask#run(long)}
+ * to be invoked by only one thread at a time.  To safely retrieve results from
+ * another thread use {@link ThreadSafeJLBHResultConsumer}.
+ * <p>
+ * Typical usage:
+ * <pre>{@code
+ * JLBHOptions options = new JLBHOptions()
+ *         .throughput(50_000)
+ *         .runs(3)
+ *         .iterations(100_000)
+ *         .jlbhTask(new MyJLBHTask());
+ * new JLBH(options).start();
+ * }</pre>
  */
 @SingleThreaded
 @SuppressWarnings({"unused", "this-escape"})
