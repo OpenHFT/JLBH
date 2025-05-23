@@ -92,13 +92,15 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Use this constructor if you want to test the latencies in more automated fashion. The result is passed to the result consumer after the
-     * JLBH::start method returns. You can create you own consumer, or use provided JLBHResultConsumer::newThreadSafeInstance() that allows you to
-     * retrieve the result even if the JLBH has been executed in a different thread.
+     * Use this constructor if you want to test the latencies in a more automated fashion. The
+     * {@link JLBHResult} produced after {@link #start()} completes is passed to the supplied
+     * {@code resultConsumer}.  If you need to access the result from another thread consider using
+     * {@link JLBHResultConsumer#newThreadSafeInstance()} to obtain a suitable consumer.
      *
-     * @param jlbhOptions    Options to run the benchmark
-     * @param printStream    Used to print text output. Use System.out to show the result on you standard out (e.g. screen)
-     * @param resultConsumer If provided, accepts the result data to be retrieved after the latencies have been measured
+     * @param jlbhOptions    options that control how the benchmark is executed
+     * @param printStream    stream used for textual output, e.g. {@link System#out}
+     * @param resultConsumer consumer that receives the {@link JLBHResult} once the benchmark has
+     *                       finished; may be {@code null} if no programmatic result is required
      */
     public JLBH(@NotNull JLBHOptions jlbhOptions, @NotNull PrintStream printStream, Consumer<JLBHResult> resultConsumer) {
 
