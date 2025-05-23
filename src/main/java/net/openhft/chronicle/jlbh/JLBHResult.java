@@ -42,6 +42,11 @@ import java.util.Set;
  */
 public interface JLBHResult {
 
+    /**
+     * Returns the statistics for the end to end latency probe.
+     *
+     * @return probe result summarising the end to end measurements
+     */
     @NotNull
     ProbeResult endToEnd();
 
