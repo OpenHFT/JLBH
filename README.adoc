@@ -96,6 +96,10 @@ overhead so it is disabled by default. You can enable it via
 in the requirements specification around lines 52 and 56 of
 `jlbh-requirements.adoc`.
 
+== Quick Start
+
+A minimal demonstration is provided in `src/test/java/net/openhft/chronicle/jlbh/ExampleJLBHMain.java`, showing how to run the harness from the command line.
+
 == Articles on Java Latency Benchmarking Harness
 
 http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introducing JLBH]
