@@ -150,6 +150,15 @@ public class JLBH implements NanoSampler {
         return additionalPercentileRuns;
     }
 
+    /**
+     * Request the currently executing benchmark to stop.
+     * <p>
+     * This method sets an internal flag that causes the running loop in
+     * {@link #start()} to exit. The thread executing the benchmark is also
+     * interrupted, so any code waiting or blocking on that thread may fail with
+     * {@link InterruptedException}. The interrupted status of the test thread is
+     * cleared when {@link #start()} finishes.
+     */
     public void abort() {
         abortTestRun.set(true);
         testThread.interrupt();
