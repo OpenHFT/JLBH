@@ -41,6 +41,11 @@ public interface JLBHResult {
 
     interface ProbeResult {
 
+        /**
+         * Obtain the summary statistics for the most recent run of this probe.
+         *
+         * @return summary of the last run
+         */
         @NotNull
         RunResult summaryOfLastRun();
 
