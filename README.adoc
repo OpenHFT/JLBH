@@ -30,6 +30,8 @@ Since those articles were written the main change has been to allow JLBH to be i
 rather than it running in its own thread. To do this, use
 the JLBH.eventLoopHandler method rather than JLBH.start.
 
+NOTE: The JLBH harness itself runs on a single thread; benchmarked code may spawn threads, but the harness thread is unique.
+
 For example, you can run the benchmark on your own event loop:
 
 [source,java]
@@ -42,8 +44,6 @@ jlbh.eventLoopHandler(eventLoop);
 ----
 
 This installs JLBH onto the supplied loop instead of starting its own thread.
-
-JLBH supports single-thread usage only.
 
 [[further-reading]]
 == Further Reading
