@@ -494,6 +494,17 @@ public class JLBH implements NanoSampler {
         sample(durationNs);
     }
 
+    /**
+     * Record a latency sample and manage warm-up state.
+     *
+     * <p>The first {@code jlbhOptions.warmUpIterations} calls are treated as the
+     * warm-up phase. Samples taken during this period are added to the internal
+     * histogram but are discarded once the warm-up is complete. When the warm-up
+     * count is reached the histograms are cleared, {@code warmUpComplete} is set
+     * and subsequent samples contribute to the benchmark results.</p>
+     *
+     * @param durationNs latency in nanoseconds
+     */
     public void sample(long durationNs) {
         noResultsReturned++;
         if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
