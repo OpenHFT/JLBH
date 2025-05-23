@@ -27,6 +27,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Immutable view of the data produced by a {@link JLBH} run.
+ * <p>
+ * A typical usage pattern is to provide a {@link JLBHResultConsumer} when
+ * constructing the benchmark. Once {@link JLBH#start()} completes the
+ * consumer can be queried for the {@code JLBHResult} instance. All data is
+ * published immutably so it may be read from any thread after the run
+ * finishes.
+ * <p>
+ * The result contains a default end-to-end probe as well as any additional
+ * probes registered via {@link JLBH#addProbe(String)}. Each probe exposes the
+ * summary of the last run and the metrics for every individual run.
+ */
 public interface JLBHResult {
 
     @NotNull
