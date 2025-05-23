@@ -85,6 +85,14 @@ public interface JLBHResult {
      */
     Optional<ProbeResult> osJitter();
 
+    /**
+     * Aggregated latency statistics for a single probe.
+     *
+     * <p>A probe may be executed in multiple runs.  For each run a
+     * {@link RunResult} is recorded and implementations of this interface
+     * expose both the summary of the last run and a list of summaries for all
+     * runs.</p>
+     */
     interface ProbeResult {
 
         @NotNull
