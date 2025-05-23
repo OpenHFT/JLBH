@@ -24,7 +24,7 @@ Since those articles were written the main change has been to allow JLBH to be i
 rather than it running in its own thread. To do this, use
 the JLBH.eventLoopHandler method rather than JLBH.start.
 
-JLBH supports single-thread usage only.
+*WARNING:* The JLBH harness itself runs on a single thread; benchmarked code may spawn threads, but the harness thread is unique.
 
 == Articles on Java Latency Benchmarking Harness
 
