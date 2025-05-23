@@ -1,0 +1,12 @@
+= Benchmark Lifecycle
+
+[source]
+----
++-------+    +--------+    +-----------+    +-----------+    +---------+
+| Setup | -> | Warmup | -> | Execution | -> | Reporting | -> | Cleanup |
++-------+    +--------+    +-----------+    +-----------+    +---------+
+----
+
+A typical JLBH run begins with *Setup* of probes and test fixtures. The harness
+performs a configurable *Warmup* phase before *Execution* of timed iterations.
+Afterwards, results are *Reported* and resources are *Cleaned up*.
