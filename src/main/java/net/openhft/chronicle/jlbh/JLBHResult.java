@@ -50,6 +50,16 @@ public interface JLBHResult {
     @NotNull
     ProbeResult endToEnd();
 
+    /**
+     * Returns the results for the given probe name.
+     * <p>
+     * If no probe exists with the supplied name the returned {@code Optional}
+     * will be empty.
+     *
+     * @param probeName name of the probe for which results are requested
+     * @return an {@code Optional} containing the probe results or
+     *         {@link Optional#empty()} if the probe is not present
+     */
     @NotNull
     Optional<ProbeResult> probe(String probeName);
 
