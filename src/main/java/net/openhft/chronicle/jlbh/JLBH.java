@@ -153,10 +153,18 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Add a probe to measure a section of the benchmark.
+     * Add a named probe to measure a sub-stage of the benchmark.
+     * <p>
+     * A probe is sampled whenever the returned {@link NanoSampler}'s
+     * {@code sampleNanos(long)} (or {@link #sample(long)}) method is invoked.
+     * Samples gathered during the warmup phase are discarded when warmup
+     * completes and each probe histogram is reset after every run
+     * before collecting the next run's data.
+     * Typical usage is to create probes in {@link JLBHTask#init(JLBH)} and
+     * record durations inside {@link JLBHTask#run(long)}.
      *
      * @param name Name of probe
-     * @return NanoSampler
+     * @return a {@code NanoSampler} to record timings for the named probe
      */
     public NanoSampler addProbe(String name) {
         return additionHistograms.computeIfAbsent(name, n -> createHistogram());
