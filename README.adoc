@@ -58,6 +58,20 @@ http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introduct
 - Differences between JMH and JLBH
 - Quick start guide
 
+=== Sample percentile output
+
+The output of a short JLBH run may look similar to the following:
+
+[source]
+----
+-------------------------------- SUMMARY (end to end) us --------------------------------
+Percentile   run1         run2         run3      % Variation
+50.0:            8.07         8.07         6.10        17.69
+90.0:           11.66        11.66         9.71        11.82
+99.0:           12.46        12.46        10.51        11.02
+worst:          12.56        12.56        10.61        10.93
+----
+
 http://www.rationaljava.com/2016/04/jlbh-examples-1-why-code-should-be.html[Why Code Should be Benchmarked in Context]
 
  - A side by side example using JMH and JLBH for Date serialisation
