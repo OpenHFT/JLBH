@@ -489,6 +489,11 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Records a duration sample expressed in nanoseconds.
+     *
+     * @param durationNs duration of the event in nanoseconds
+     */
     @Override
     public void sampleNanos(long durationNs) {
         sample(durationNs);
