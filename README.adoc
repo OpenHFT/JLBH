@@ -132,3 +132,17 @@ For a full list of configuration parameters see `src/main/java/net/openhft/chron
 - Run them on a production-like CI server.
 - When local hardware is adequate, execute them along with other tests.
 - Integrate these benchmarks into the TDD cycle to expose latency-related design issues early.
+
+The net.openhft.chronicle.jlbh.JLBHTest::shouldProvideResultData
+test shows how the latency percentiles can be extracted
+and used in the xUnit type of testing frameworks. Ideally, such tests should be run in the environment
+identical to the production one - it can be achieved by having a special, production-like CI server
+that is used to execute this type of tests. If the developer's machine is able to provide
+sufficient performance, this type of test can be run along with all other tests locally. This, in turn
+allows the performance testing to be part of the regular TDD cycle, which helps to discover
+design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
+
+=== Common queries
+
+* *Warm-up iterations* - JLBH performs a warm-up phase before measurements start. A rule of thumb is to warm up for about 30% of the run iterations. Override this with `warmUpIterations(int)` if needed.
+* *Throughput modelling* - Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns. Start with your production rate and tune to study latency trade-offs.
