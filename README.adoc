@@ -151,6 +151,27 @@ sufficient performance, this type of test can be run along with all other tests 
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
 
+== Sample benchmarks and tests
+
+The project ships with several example tasks and tests located under
+`src/test/java/net/openhft/chronicle/jlbh`. They can serve as a starting
+point when writing your own benchmarks.
+
+|===
+| Class | Purpose
+
+| `ExampleJLBHMain` | Basic demonstration harness
+| `JLBHDeterministicFixtures` | Helper fixtures used in deterministic tests
+| `JLBHIntegrationTest` | Example integration test
+| `JLBHTest` | Unit test showing result extraction
+| `LatencyDistributorsTest` | Tests percentile distribution logic
+| `NothingBenchmark` | Simple benchmark that does no work
+| `PercentileSummaryTest` | Tests percentile summaries
+| `SimpleBenchmark` | Minimal benchmark example
+| `SimpleOSJitterBenchmark` | Demonstrates OS jitter recording
+| `SimpleResultSerializerBenchmark` | Example of serialising results
+|===
+
 == Quick Start
 
 `JLBHOptions` is configured via a fluent builder pattern so each setter returns the same instance allowing method chaining.
@@ -172,4 +193,3 @@ JLBHOptions options = new JLBHOptions()
 
 * *Warm-up iterations* - JLBH performs a warm-up phase before measurements start. A rule of thumb is to warm up for about 30% of the run iterations. Override this with `warmUpIterations(int)` if needed.
 * *Throughput modelling* - Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns. Start with your production rate and tune to study latency trade-offs.
-
