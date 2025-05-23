@@ -26,6 +26,11 @@ the JLBH.eventLoopHandler method rather than JLBH.start.
 
 JLBH supports single-thread usage only.
 
+== Environment
+
+CPU affinity can be configured using the OpenHFT Affinity library as noted in the
+link:src/main/adoc/jlbh-requirements.adoc[requirements document].
+
 == Articles on Java Latency Benchmarking Harness
 
 http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introducting JLBH]
