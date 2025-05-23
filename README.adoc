@@ -142,6 +142,19 @@ sufficient performance, this type of test can be run along with all other tests 
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
 
+== Quick Start
+
+`JLBHOptions` is configured via a fluent builder pattern so each setter returns the same instance allowing method chaining.
+
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .throughput(1_000_000)
+        .warmUpIterations(5_000)
+        .iterations(50_000)
+        .jlbhTask(new MyBenchmarkTask());
+----
+
 == Options
 
 - `timeout(long)` aborts the benchmark if no samples are produced for the given number of milliseconds.
@@ -150,3 +163,4 @@ design flaws earlier and often, lowering the development cost of the latency-sen
 
 * *Warm-up iterations* - JLBH performs a warm-up phase before measurements start. A rule of thumb is to warm up for about 30% of the run iterations. Override this with `warmUpIterations(int)` if needed.
 * *Throughput modelling* - Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns. Start with your production rate and tune to study latency trade-offs.
+
