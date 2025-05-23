@@ -67,6 +67,23 @@ generates high-resolution histograms of at least 35 bits. This accuracy
 retains sub-nanosecond resolution over a wide range, so the reported
 percentiles closely reflect true end-to-end timings.
 
+== Quick Start
+
+To run a simple benchmark disable accounting for coordinated omission as
+follows:
+
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .warmUpIterations(100_000)
+        .iterations(1_000_000)
+        .throughput(1_000_000)
+        .accountForCoordinatedOmission(false) // disable correction
+        .jlbhTask(myTask);
+
+new JLBH(options).start();
+----
+
 == Articles on Java Latency Benchmarking Harness
 
 http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introducing JLBH]
