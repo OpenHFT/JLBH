@@ -37,6 +37,15 @@ public interface JLBHResult {
 
     Set<String> probeNames();
 
+    /**
+     * Returns statistics gathered by the operating system jitter monitor
+     * if it was enabled for the benchmark run.
+     * <p>
+     * When jitter recording was disabled an {@link Optional#empty() empty}
+     * value is returned.
+     *
+     * @return optional OS jitter probe results
+     */
     Optional<ProbeResult> osJitter();
 
     interface ProbeResult {
