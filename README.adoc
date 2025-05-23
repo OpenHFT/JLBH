@@ -63,6 +63,26 @@ http://www.rationaljava.com/2016/04/jlbh-examples-4-benchmarking-quickfix.html[B
 - Observing how QuickFix latencies degrade through the percentiles
 - Comparing QuickFIX with Chronicle FIX
 
+== Quick Start
+
+Configure JLBH using the `JLBHOptions` builder:
+
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .throughput(50_000)
+        .iterations(1_000_000)
+        .jlbhTask(myTask);
+new JLBH(options).start();
+----
+
+Commonly used option methods include:
+
+* `.throughput(int)` - set target iterations per time unit
+* `.iterations(long)` - number of iterations to execute
+
+For a full list of configuration parameters see `src/main/java/net/openhft/chronicle/jlbh/JLBHOptions.java`.
+
 === Using JLBH as part of automated performance/performance regression testing
 
 The net.openhft.chronicle.jlbh.JLBHTest::shouldProvideResultData
