@@ -271,6 +271,17 @@ public class JLBHOptions {
         return sb.toString();
     }
 
+    /**
+     * Options controlling whether the results of the first run are included
+     * when calculating run-to-run variation.
+     * <ul>
+     *     <li>{@link #NOT_SET} - behaviour is chosen automatically based on the
+     *     number of runs (the first run is skipped if there are more than three
+     *     runs).</li>
+     *     <li>{@link #SKIP} - always skip the first run.</li>
+     *     <li>{@link #NO_SKIP} - always include the first run.</li>
+     * </ul>
+     */
     enum SKIP_FIRST_RUN {
         NOT_SET, SKIP, NO_SKIP
     }
