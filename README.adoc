@@ -73,3 +73,34 @@ that is used to execute this type of tests. If the developer's machine is able t
 sufficient performance, this type of test can be run along with all other tests locally. This, in turn
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
+
+== Adding custom probes
+
+JLBH lets you time additional stages of your benchmark using `addProbe(String)`.
+The returned `NanoSampler` records its own histogram.
+
+[source,java]
+----
+class ProbedTask implements JLBHTask {
+    private JLBH jlbh;
+    private NanoSampler stage;
+
+    @Override
+    public void init(JLBH jlbh) {
+        this.jlbh = jlbh;
+        stage = jlbh.addProbe("my-stage");
+    }
+
+    @Override
+    public void run(long startTimeNs) {
+        long stepStart = System.nanoTime();
+        // ... benchmarked stage ...
+        stage.sampleNanos(System.nanoTime() - stepStart);
+
+        jlbh.sample(System.nanoTime() - startTimeNs);
+    }
+}
+----
+
+For a runnable example see
+`src/test/java/net/openhft/chronicle/jlbh/SimpleOSJitterBenchmark.java`.
