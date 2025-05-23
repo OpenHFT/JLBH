@@ -415,6 +415,34 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Print a human readable summary of percentile data for a probe.
+     * <p>
+     * The supplied {@code appendable} receives a table showing the percentile
+     * latencies for each run followed by the percentage variation of those
+     * values. The first line contains a header in the following form
+     * (padded to 100 characters):
+     *
+     * <pre>
+     * -------------------------------- SUMMARY (label) us -------------------------
+     * Percentile   run1         run2         run3      % Variation
+     * 50.0:            8.07         8.07         6.10        17.69
+     * ...
+     * worst:          12.56        12.56        10.61        10.93
+     * ----
+     * </pre>
+     *
+     * Each percentile value is printed in microseconds with two decimal places.
+     * The final column displays the percentage variation between the largest and
+     * smallest values present in the row. The number of {@code run} columns is
+     * determined by {@link JLBHOptions#runs}.
+     *
+     * @param label          descriptive name of the probe being summarised
+     * @param percentileRuns list of percentile arrays for each run (values in
+     *                       nanoseconds)
+     * @param appendable     destination for the generated summary text
+     * @throws IORuntimeException if writing to {@code appendable} fails
+     */
     public void printPercentilesSummary(
             String label,
             @NotNull List<double[]> percentileRuns,
