@@ -584,6 +584,14 @@ public class JLBH implements NanoSampler {
         return new Histogram(35, 8, 100);
     }
 
+    /**
+     * Background thread that measures scheduling jitter introduced by the
+     * operating system. It repeatedly samples {@code System.nanoTime()} and
+     * records any gap larger than {@link JLBHOptions#recordJitterGreaterThanNs}
+     * into {@link #osJitterHistogram}. The monitor can optionally be bound to a
+     * dedicated CPU when {@link JLBHOptions#jitterAffinity} is enabled and runs
+     * until {@link #terminate()} is invoked.
+     */
     private final class OSJitterMonitor extends Thread {
         final AtomicBoolean reset = new AtomicBoolean(false);
         final AtomicBoolean running = new AtomicBoolean(false);
@@ -624,10 +632,19 @@ public class JLBH implements NanoSampler {
             }
         }
 
+        /**
+         * Request that the jitter histogram be cleared and monitoring restarts
+         * from the current time. The request is processed by the monitor thread
+         * on its next iteration.
+         */
         void reset() {
             reset.set(true);
         }
 
+        /**
+         * Stop the jitter monitoring thread. The thread will exit once the
+         * current loop iteration completes.
+         */
         void terminate() {
             running.set(false);
         }
