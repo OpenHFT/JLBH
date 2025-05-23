@@ -186,6 +186,10 @@ sufficient performance, this type of test can be run along with all other tests 
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
 
+=== CSV Output
+
+To export JLBH results in CSV format, invoke `JLBHResultSerializer.runResultToCSV(jlbhResult)`. This writes the output to `result.csv` by default, as defined in `JLBHResultSerializer.RESULT_CSV`.
+
 == Adding custom probes
 
 JLBH lets you time additional stages of your benchmark using `addProbe(String)`.
