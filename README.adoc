@@ -174,6 +174,21 @@ sufficient performance, this type of test can be run along with all other tests 
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
 
+== Key Non-Functional Requirements
+
+The following table summarises the main non-functional quality attributes derived from the Software Requirements Specification.
+
+|===
+| Area | Requirement
+
+| Performance | Overhead per sample must remain below 100 ns when no additional probes are active. Histogram generation must support ≥200 M iterations without heap pressure.
+| Reliability | Harness must abort gracefully on interruptions or sample time-outs, and immutable result objects ensure thread-safe publication.
+| Usability | Fluent builder API with sensible defaults yields a runnable benchmark in ≤10 LOC. ASCII table outputs are human-readable and CI-friendly.
+| Portability | Pure-Java codebase with runtime-detected JDK optimisations; no native compilation.
+| Maintainability | ≥80 % unit-test coverage and adherence to Chronicle coding standards validated by SonarCloud.
+| Security | No executable deserialisation; harness operates in-process. Users remain responsible for securing benchmarked code.
+|===
+
 == Sample benchmarks and tests
 
 The project ships with several example tasks and tests located under
