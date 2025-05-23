@@ -626,6 +626,14 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Handler executed before the benchmark runs to perform warm-up iterations.
+     * <p>
+     * Each call to {@link #action()} invokes the benchmark task once. When the
+     * configured number of warm-up iterations has been reached the handler
+     * throws {@link InvalidEventHandlerException#reusable()} which removes it
+     * from the event loop and allows the main benchmark handler to start.
+     */
     private final class WarmupHandler implements EventHandler {
         private int iteration;
 
