@@ -568,6 +568,17 @@ public class JLBH implements NanoSampler {
         endToEndHistogram.sample(durationNs);
     }
 
+    /**
+     * Create the histogram used for all probes in JLBH.
+     * <p>
+     * The parameters {@code 35}, {@code 8} and {@code 100} configure the
+     * histogram to keep 35 bits of range with eight significant digits and
+     * around one hundred buckets per decade. This provides sub-microsecond
+     * precision over a very wide range of latencies.
+     * </p>
+     *
+     * @return newly configured {@link Histogram}
+     */
     @NotNull
     protected Histogram createHistogram() {
         return new Histogram(35, 8, 100);
