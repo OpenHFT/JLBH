@@ -162,6 +162,11 @@ public class JLBH implements NanoSampler {
         return additionHistograms.computeIfAbsent(name, n -> createHistogram());
     }
 
+    /**
+     * Returns the percentile runs that have been recorded for any additional probes.
+     *
+     * @return a map of probe name to a list of percentile arrays for each run
+     */
     @NotNull
     public Map<String, List<double[]>> additionalPercentileRuns() {
         return additionalPercentileRuns;
