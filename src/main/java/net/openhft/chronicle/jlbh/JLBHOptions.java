@@ -214,6 +214,14 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Sets the supplier used to acquire an {@link AffinityLock} when the
+     * benchmark starts.
+     *
+     * @param acquireLock supplier that provides the lock, defaults to
+     *                    {@code Affinity::acquireLock}
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
     public JLBHOptions acquireLock(Supplier<AffinityLock> acquireLock) {
         this.acquireLock = acquireLock;
         return this;
