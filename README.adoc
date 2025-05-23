@@ -142,6 +142,10 @@ sufficient performance, this type of test can be run along with all other tests 
 allows the performance testing to be part of the regular TDD cycle, which helps to discover
 design flaws earlier and often, lowering the development cost of the latency-sensitive applications.
 
+== Options
+
+- `timeout(long)` aborts the benchmark if no samples are produced for the given number of milliseconds.
+
 === Common queries
 
 * *Warm-up iterations* - JLBH performs a warm-up phase before measurements start. A rule of thumb is to warm up for about 30% of the run iterations. Override this with `warmUpIterations(int)` if needed.
