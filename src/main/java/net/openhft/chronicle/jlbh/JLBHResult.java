@@ -63,6 +63,15 @@ public interface JLBHResult {
     @NotNull
     Optional<ProbeResult> probe(String probeName);
 
+    /**
+     * Return the names of all additional probes configured for the benchmark.
+     * <p>
+     * These correspond to the probe names supplied via
+     * {@link JLBH#addProbe(String)} and therefore do not include the default
+     * {@code endToEnd} or {@code osJitter} probes.
+     *
+     * @return names of the user defined probes
+     */
     Set<String> probeNames();
 
     Optional<ProbeResult> osJitter();
