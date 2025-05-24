@@ -94,7 +94,17 @@ public final class TeamCityHelper {
         }
     }
 
-    private static void printPercentiles(@NotNull String s, @NotNull PrintStream printStream, double[] percentages, @NotNull List<double[]> valuesList) {
+    /**
+     * Helper that prints the percentile values for the most recent run.
+     *
+     * <p>The {@code valuesList} parameter is a list of percentile arrays, one
+     * for each run that was executed. The last element in the list represents
+     * the latest run and its values are used when printing.</p>
+     */
+    private static void printPercentiles(@NotNull String s,
+                                         @NotNull PrintStream printStream,
+                                         double[] percentages,
+                                         @NotNull List<double[]> valuesList) {
         double[] values = valuesList.get(valuesList.size() - 1);
         printPercentiles(s, printStream, percentages, values);
     }
