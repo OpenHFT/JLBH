@@ -131,14 +131,23 @@ public interface JLBHResult {
         Duration getWorst();
 
         enum Percentile {
+            /** 50th percentile (median). */
             PERCENTILE_50TH,
+            /** 90th percentile. */
             PERCENTILE_90TH,
+            /** 99th percentile. */
             PERCENTILE_99TH,
+            /** 99.7th percentile. */
             PERCENTILE_99_7TH,
+            /** 99.9th percentile. */
             PERCENTILE_99_9TH,
+            /** 99.97th percentile. */
             PERCENTILE_99_97TH,
+            /** 99.99th percentile. */
             PERCENTILE_99_99TH,
+            /** 99.999th percentile. */
             PERCENTILE_99_999TH,
+            /** Highest (worst) observed latency. */
             WORST
         }
     }
