@@ -20,6 +20,16 @@ package net.openhft.chronicle.jlbh;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Predefined strategies used to vary the latency applied by JLBH.
+ * <ul>
+ *     <li>{@link #NORMAL} - return the supplied latency unchanged.</li>
+ *     <li>{@link #RANDOM} - choose a value uniformly between one microsecond
+ *     and roughly twice the average.</li>
+ *     <li>{@link #RANDOM2} - skewed random distribution that favours smaller
+ *     values but can return up to about four times the average latency.</li>
+ * </ul>
+ */
 public enum LatencyDistributors implements LatencyDistributor {
     NORMAL {
         @Override
