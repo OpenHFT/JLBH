@@ -52,14 +52,18 @@ public final class TeamCityHelper {
     }
 
     /**
-     * Emit the values of a {@link Histogram} as TeamCity statistics lines.
+     * Print the contents of a {@link Histogram} in a TeamCity friendly format.
      *
-     * @param name        prefix used when constructing the TeamCity keys
-     * @param histo       histogram containing the percentile values
-     * @param printStream destination for the generated service messages
+     * <p>For each percentile, a line similar to the following is written:</p>
+     * <pre>
+     * ##teamcity[buildStatisticValue key='Latency.50.0.java17' value='123.0']
+     * </pre>
+     *
+     * @param name        base name for the generated TeamCity statistic keys
+     * @param histo       the histogram whose percentiles will be printed
+     * @param printStream the stream to write the output to
      */
-    public static void histo(@NotNull String name, @NotNull Histogram histo,
-                             @NotNull PrintStream printStream) {
+    public static void histo(@NotNull String name, @NotNull Histogram histo, @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(histo.totalCount());
         printPercentiles(name, printStream, percentages, histo.getPercentiles());
     }
