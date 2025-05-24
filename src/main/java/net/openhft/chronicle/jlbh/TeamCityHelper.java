@@ -33,6 +33,18 @@ public final class TeamCityHelper {
     private TeamCityHelper() {
     }
 
+    /**
+     * Print the contents of a {@link Histogram} in a TeamCity friendly format.
+     *
+     * <p>For each percentile, a line similar to the following is written:</p>
+     * <pre>
+     * ##teamcity[buildStatisticValue key='Latency.50.0.java17' value='123.0']
+     * </pre>
+     *
+     * @param name        base name for the generated TeamCity statistic keys
+     * @param histo       the histogram whose percentiles will be printed
+     * @param printStream the stream to write the output to
+     */
     public static void histo(@NotNull String name, @NotNull Histogram histo, @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(histo.totalCount());
         printPercentiles(name, printStream, percentages, histo.getPercentiles());
