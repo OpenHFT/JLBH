@@ -156,6 +156,11 @@ public interface JLBHResult {
         @NotNull
         Duration get50thPercentile();
 
+        /**
+         * Obtain the latency at the 90th percentile of all recorded values.
+         *
+         * @return 90th percentile latency
+         */
         @NotNull
         Duration get90thPercentile();
 
