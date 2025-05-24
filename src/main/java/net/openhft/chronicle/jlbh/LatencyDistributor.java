@@ -18,6 +18,13 @@
 
 package net.openhft.chronicle.jlbh;
 
+/**
+ * Strategy interface used by JLBH to adjust the target latency between benchmark
+ * iterations. Implementations take an expected average latency and return the
+ * actual delay that should be used before invoking the next task. This allows
+ * different distributions (such as constant or randomised) to be applied when
+ * controlling the pace of a test.
+ */
 @FunctionalInterface
 public interface LatencyDistributor {
     long apply(long averageLatencyNS);
