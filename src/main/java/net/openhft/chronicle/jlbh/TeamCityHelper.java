@@ -27,13 +27,39 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utilities for emitting JLBH latency results as TeamCity build statistics.
+ * <p>
+ * TeamCity parses log lines of the form
+ * {@code ##teamcity[buildStatisticValue key='someKey' value='someValue']}. The
+ * methods in this class produce such lines so that percentiles measured by JLBH
+ * can be consumed by a TeamCity build configuration. The output is usually
+ * written to {@link System#out} but any {@link PrintStream} may be supplied.
+ * <p>
+ * A typical pattern is to invoke {@link #teamCityStatsLastRun(String, JLBH, long, PrintStream)}
+ * once a benchmark has completed:
+ *
+ * <pre>{@code
+ * JLBH jlbh = ...;
+ * TeamCityHelper.teamCityStatsLastRun("myBenchmark", jlbh,
+ *         options.iterations(), System.out);
+ * }</pre>
+ */
 public final class TeamCityHelper {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private TeamCityHelper() {
     }
 
-    public static void histo(@NotNull String name, @NotNull Histogram histo, @NotNull PrintStream printStream) {
+    /**
+     * Emit the values of a {@link Histogram} as TeamCity statistics lines.
+     *
+     * @param name        prefix used when constructing the TeamCity keys
+     * @param histo       histogram containing the percentile values
+     * @param printStream destination for the generated service messages
+     */
+    public static void histo(@NotNull String name, @NotNull Histogram histo,
+                             @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(histo.totalCount());
         printPercentiles(name, printStream, percentages, histo.getPercentiles());
     }
@@ -55,7 +81,8 @@ public final class TeamCityHelper {
      * @param printStream destination to which the TeamCity service messages are
      *                    written
      */
-    public static void teamCityStatsLastRun(@NotNull String prefix, @NotNull JLBH jlbh, long iterations, @NotNull PrintStream printStream) {
+    public static void teamCityStatsLastRun(@NotNull String prefix, @NotNull JLBH jlbh,
+                                            long iterations, @NotNull PrintStream printStream) {
         double[] percentages = Histogram.percentilesFor(iterations);
         printPercentiles(prefix + ".end-to-end", printStream, percentages, jlbh.percentileRuns());
         for (Map.Entry<String, List<double[]>> entry : jlbh.additionalPercentileRuns().entrySet()) {

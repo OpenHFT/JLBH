@@ -16,8 +16,18 @@
  * limitations under the License.
  *
  */
+
 package net.openhft.chronicle.jlbh;
 
+/**
+ * {@link JLBHResultConsumer} implementation that stores the last result in a
+ * {@code volatile} field.
+ *
+ * <p>The accepted {@link JLBHResult} is expected to be immutable. Storing it in
+ * a {@code volatile} variable ensures that once {@link #accept(JLBHResult)}
+ * returns, any thread invoking {@link #get()} will observe the same instance
+ * without further synchronisation.</p>
+ */
 final class ThreadSafeJLBHResultConsumer implements JLBHResultConsumer {
 
     // the assumption is that the JLBHResult is immutable
@@ -33,6 +43,11 @@ final class ThreadSafeJLBHResultConsumer implements JLBHResultConsumer {
         this.result = result;
     }
 
+    /**
+     * Returns the result previously supplied via {@link #accept(JLBHResult)}.
+     *
+     * @return the last accepted {@link JLBHResult}, or {@code null} if none has been provided
+     */
     @Override
     public JLBHResult get() {
         return result;
