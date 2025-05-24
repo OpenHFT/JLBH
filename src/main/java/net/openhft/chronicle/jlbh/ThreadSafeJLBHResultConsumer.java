@@ -33,6 +33,11 @@ final class ThreadSafeJLBHResultConsumer implements JLBHResultConsumer {
         this.result = result;
     }
 
+    /**
+     * Returns the result previously supplied via {@link #accept(JLBHResult)}.
+     *
+     * @return the last accepted {@link JLBHResult}, or {@code null} if none has been provided
+     */
     @Override
     public JLBHResult get() {
         return result;
