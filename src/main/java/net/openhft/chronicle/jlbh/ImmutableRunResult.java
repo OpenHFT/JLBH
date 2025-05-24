@@ -33,6 +33,11 @@ final class ImmutableRunResult implements JLBHResult.RunResult {
 
     private final Map<Percentile, Duration> percentiles;
 
+    /**
+     * Construct a run result from the supplied percentile values.
+     *
+     * @param percentiles array of percentile measurements in nanoseconds
+     */
     public ImmutableRunResult(double[] percentiles) {
         this.percentiles = asMap(percentiles);
     }
