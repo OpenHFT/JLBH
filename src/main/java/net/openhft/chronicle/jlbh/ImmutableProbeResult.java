@@ -25,6 +25,14 @@ import java.util.List;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Immutable implementation of {@link JLBHResult.ProbeResult}.
+ *
+ * <p>Each probe run is supplied as an array of percentile values which is
+ * converted to an {@link ImmutableRunResult} and stored in an unmodifiable
+ * list. The order of the list matches the order of execution so the last
+ * element represents the most recent run.</p>
+ */
 final class ImmutableProbeResult implements JLBHResult.ProbeResult {
 
     @NotNull
