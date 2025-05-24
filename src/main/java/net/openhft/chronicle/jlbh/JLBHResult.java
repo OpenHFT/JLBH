@@ -145,6 +145,14 @@ public interface JLBHResult {
         @NotNull
         Map<Percentile, Duration> percentiles();
 
+        /**
+         * Returns the median latency of this run.
+         * <p>
+         * The value corresponds to the 50th percentile of all recorded
+         * measurements.
+         *
+         * @return duration representing the 50th percentile latency
+         */
         @NotNull
         Duration get50thPercentile();
 
