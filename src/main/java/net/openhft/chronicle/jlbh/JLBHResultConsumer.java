@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * Bridge between a {@link JLBH} run and the code retrieving its result.
  * <p>
  * Implementations receive the immutable {@link JLBHResult} from the harness
- * via {@link #accept(JLBHResult)} and later supply it through {@link #get()}.
+ * via {@link #accept(Object)} and later supply it through {@link #get()}.
  * This allows benchmark logic running on other threads to obtain the final
  * measurements once a run completes.
  * </p>
@@ -45,7 +45,7 @@ public interface JLBHResultConsumer extends Consumer<JLBHResult>, Supplier<JLBHR
      * <p>The returned consumer simply publishes the provided result reference
      * for other threads to read via {@link #get()} with no defensive copying.
      * Because of this the {@code JLBHResult} instance supplied to
-     * {@link #accept(JLBHResult)} <strong>must be immutable</strong> and never
+     * {@link #accept(Object)} <strong>must be immutable</strong> and never
      * mutated after publication. Failing to obey this contract would break the
      * thread-safety guarantees.</p>
      *
