@@ -731,6 +731,33 @@ public class JLBH implements NanoSampler {
             nextInvokeTime = System.nanoTime() + latencyBetweenTasks;
         }
 
+        /**
+         * Drive the benchmark state machine.
+         * <p>
+         * The handler has two states controlled by {@code waitingForEndOfRun}:
+         * scheduling iterations and waiting for a run to finish.
+         * </p>
+         * <ul>
+         *     <li><b>Scheduling iterations</b> – when not waiting for a run to
+         *     finish the handler invokes the {@link JLBHTask} at
+         *     {@code nextInvokeTime}. After each invocation counters are
+         *     updated and once all iterations have been scheduled the handler
+         *     switches to the waiting state.</li>
+         *     <li><b>Waiting for completion</b> – when all iterations of the
+         *     current run are scheduled the handler waits until the end to end
+         *     histogram contains {@code jlbhOptions.iterations} samples. The
+         *     run is then finalised and either the next run is started or, if
+         *     the last run has completed, results are reported and the handler
+         *     removes itself from the event loop by throwing an
+         *     {@link InvalidEventHandlerException}.</li>
+         * </ul>
+         *
+         * @return {@code true} if an iteration was executed, otherwise
+         * {@code false}
+         * @throws InvalidEventHandlerException if the benchmark has completed
+         *                                      all runs and the handler should
+         *                                      be removed from the loop
+         */
         @Override
         public boolean action() throws InvalidEventHandlerException {
             boolean busy = false;
