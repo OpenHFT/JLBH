@@ -651,6 +651,20 @@ public class JLBH implements NanoSampler {
         final AtomicBoolean reset = new AtomicBoolean(false);
         final AtomicBoolean running = new AtomicBoolean(false);
 
+        /**
+         * Monitor loop that samples {@code System.nanoTime()} to detect scheduling
+         * delays.
+         * <p>
+         * The thread first clears any inherited affinity and, when
+         * {@link JLBHOptions#jitterAffinity} is enabled, locks itself to a core
+         * using {@link AffinityLock}. It then repeatedly measures the gap between
+         * successive {@code nanoTime()} calls, recording values that exceed the
+         * configured {@link JLBHOptions#recordJitterGreaterThanNs} threshold into
+         * {@link #osJitterHistogram}. The histogram may be cleared via
+         * {@link #reset()} and the loop terminates when {@link #terminate()} sets
+         * {@code running} to {@code false}. Approximately once a minute the
+         * thread pauses briefly to avoid monopolising the CPU.
+         */
         @Override
         public void run() {
             running.set(true);
