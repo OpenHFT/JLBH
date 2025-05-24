@@ -30,13 +30,18 @@ package net.openhft.chronicle.jlbh;
  */
 final class ThreadSafeJLBHResultConsumer implements JLBHResultConsumer {
 
-    // the assumption is that the JLBHResult is immutable
+    // The stored JLBHResult must be immutable so it can be safely published
+    // to other threads without additional synchronisation.
     private volatile JLBHResult result;
 
     /**
-     * Must be immutable.
+     * Stores the provided result for retrieval from other threads.
+     * <p>
+     * The {@code result} <strong>must</strong> be immutable as the consumer
+     * keeps only a reference to it. Any subsequent mutation would break the
+     * thread-safety guarantees.
      *
-     * @param result Result provided by the JLBH
+     * @param result Result provided by the JLBH; must not be mutable
      */
     @Override
     public void accept(JLBHResult result) {
