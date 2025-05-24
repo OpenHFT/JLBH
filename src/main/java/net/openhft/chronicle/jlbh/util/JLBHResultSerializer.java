@@ -14,7 +14,26 @@ import java.util.Collections;
 import java.util.Optional;
 
 /**
- * Serializes JLBH result to CSV file. Useful for analytics.
+ * Utility class that writes the output of a {@link net.openhft.chronicle.jlbh.JLBH}
+ * run to a CSV file.
+ * <p>
+ * The generated CSV contains a header row followed by one line per probe.  Each
+ * line starts with the probe name and is followed by the 50th, 90th, 99th,
+ * 999th and 9999th percentile latencies as well as the worst recorded latency
+ * in nanoseconds.
+ * <p>
+ * A typical usage pattern is to obtain the {@link JLBHResult} from a
+ * {@code JLBHResultConsumer} and then call one of the {@code runResultToCSV}
+ * methods:
+ *
+ * <pre>{@code
+ * JLBHResult result = consumer.get();
+ * JLBHResultSerializer.runResultToCSV(result);
+ * }</pre>
+ *
+ * which will create a {@code result.csv} file in the working directory.  Other
+ * overloads allow specifying the file name, the set of probes to export and
+ * whether the OS jitter probe should be included.
  */
 public class JLBHResultSerializer {
     public static final String THE_PROBE = "TheProbe";
