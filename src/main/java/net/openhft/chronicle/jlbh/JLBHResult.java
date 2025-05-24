@@ -180,6 +180,15 @@ public interface JLBHResult {
         @Nullable
         Duration get999thPercentile();
 
+        /**
+         * Returns the 99.99th percentile latency recorded for the run.
+         *
+         * <p>If the benchmark did not capture this percentile a
+         * {@code null} value will be returned.</p>
+         *
+         * @return duration of the 99.99th percentile or {@code null} when
+         *         not available
+         */
         @Nullable
         Duration get9999thPercentile();
 
