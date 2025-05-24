@@ -306,6 +306,20 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    /**
+     * Spin until the provided time is reached.
+     *
+     * <p>We repeatedly invoke {@link System#nanoTime()} in a tight loop
+     * and compare the result to {@code startTimeNs}. This busy wait avoids
+     * a context switch so the benchmark can begin as close as possible to the
+     * requested start time. The method returns the last value obtained from
+     * {@code nanoTime} so the caller knows the exact timestamp at which the
+     * wait completed.</p>
+     *
+     * @param startTimeNs the target time, in nanoseconds, to wait until
+     * @return the actual timestamp returned from {@code nanoTime} once the
+     *         wait is over
+     */
     private static long busyWaitUntil(long startTimeNs) {
         long nanoTime;
         do {
