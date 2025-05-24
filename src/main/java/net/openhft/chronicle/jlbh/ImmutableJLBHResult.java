@@ -26,6 +26,15 @@ import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
 
+/**
+ * Immutable implementation of {@link JLBHResult}.
+ * <p>
+ * Instances of this class are constructed with the results of a benchmark run
+ * and provide read-only access to that data. All fields are {@code final} and
+ * collections returned are unmodifiable, so once created the contents cannot be
+ * changed. This makes the class thread safe and allows it to be freely shared
+ * between threads.
+ */
 final class ImmutableJLBHResult implements JLBHResult {
 
     @NotNull
