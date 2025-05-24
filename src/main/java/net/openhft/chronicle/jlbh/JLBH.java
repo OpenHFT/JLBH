@@ -688,9 +688,12 @@ public class JLBH implements NanoSampler {
         }
 
         /**
-         * Request that the jitter histogram be cleared and monitoring restarts
-         * from the current time. The request is processed by the monitor thread
-         * on its next iteration.
+         * Request that the jitter histogram be cleared and monitoring restarted
+         * from the current time.
+         * <p>
+         * Calling this method only sets a flag; the histogram is actually
+         * cleared by the monitor thread on its next iteration.
+         * </p>
          */
         void reset() {
             reset.set(true);
