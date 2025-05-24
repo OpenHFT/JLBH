@@ -127,6 +127,11 @@ public interface JLBHResult {
         @Nullable
         Duration get9999thPercentile();
 
+        /**
+         * Returns the maximum latency observed during this run.
+         *
+         * @return the duration of the slowest event
+         */
         @NotNull
         Duration getWorst();
 
