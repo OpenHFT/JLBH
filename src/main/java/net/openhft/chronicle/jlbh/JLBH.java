@@ -796,6 +796,11 @@ public class JLBH implements NanoSampler {
 
         @Override
         public void loopStarted() {
+            // capture the thread that the warmup is executing on.  When JLBH
+            // runs using an {@link EventLoop} this handler is invoked on the
+            // loop's thread rather than the thread that created the JLBH
+            // instance.  Storing it allows {@link #abort()} and interruption
+            // checks to operate on the correct thread.
             testThread = Thread.currentThread();
         }
     }
