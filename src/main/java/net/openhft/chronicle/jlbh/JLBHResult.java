@@ -103,6 +103,11 @@ public interface JLBHResult {
         @NotNull
         RunResult summaryOfLastRun();
 
+        /**
+         * Obtain the summary statistics for each run of this probe.
+         *
+         * @return list of run summaries in execution order
+         */
         @NotNull
         List<RunResult> eachRunSummary();
     }
