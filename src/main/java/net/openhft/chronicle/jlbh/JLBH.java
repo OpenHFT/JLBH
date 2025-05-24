@@ -340,6 +340,15 @@ public class JLBH implements NanoSampler {
         jlbhOptions.jlbhTask.warmedUp();
     }
 
+    /**
+     * Initialise the configured {@link JLBHTask} and start jitter monitoring.
+     * <p>
+     * The task's {@link JLBHTask#init(JLBH)} method is invoked giving it an
+     * opportunity to create any additional probes via {@link #addProbe(String)}.
+     * If {@link JLBHOptions#recordOSJitter} is enabled a background
+     * {@link OSJitterMonitor} thread is started to record operating system
+     * scheduling jitter.
+     */
     private void initStartOSJitterMonitor() {
         jlbhOptions.jlbhTask.init(this);
         if (jlbhOptions.recordOSJitter) {
