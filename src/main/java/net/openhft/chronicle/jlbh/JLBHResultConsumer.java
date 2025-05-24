@@ -21,6 +21,21 @@ package net.openhft.chronicle.jlbh;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Bridge between a {@link JLBH} run and the code retrieving its result.
+ * <p>
+ * Implementations receive the immutable {@link JLBHResult} from the harness
+ * via {@link #accept(JLBHResult)} and later supply it through {@link #get()}.
+ * This allows benchmark logic running on other threads to obtain the final
+ * measurements once a run completes.
+ * </p>
+ * <p>
+ * The {@link #newThreadSafeInstance()} factory returns a simple implementation
+ * that publishes the most recent result using a {@code volatile} field for
+ * safe cross-thread visibility.
+ * </p>
+ */
+
 public interface JLBHResultConsumer extends Consumer<JLBHResult>, Supplier<JLBHResult> {
 
     /**
