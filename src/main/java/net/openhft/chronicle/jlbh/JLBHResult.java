@@ -112,6 +112,13 @@ public interface JLBHResult {
         List<RunResult> eachRunSummary();
     }
 
+    /**
+     * Latency metrics recorded for a single run of a probe.
+     *
+     * <p>Implementations expose the commonly used percentile values as
+     * {@link Duration} instances and also provide access to the entire set of
+     * calculated percentiles via {@link #percentiles()}.</p>
+     */
     interface RunResult {
 
         @NotNull
