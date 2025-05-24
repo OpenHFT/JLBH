@@ -65,14 +65,21 @@ public final class TeamCityHelper {
     }
 
     /**
-     * Print statistics for the last JLBH run using TeamCity service messages.
-     * Additional probes registered with JLBH are emitted using the provided
-     * prefix as well.
+     * Prints end to end and probe specific statistics for the last benchmark
+     * run in a TeamCity friendly manner.
      *
-     * @param prefix      label prepended to each metric key
-     * @param jlbh        benchmark instance that has completed running
-     * @param iterations  number of iterations executed in the last run
-     * @param printStream output destination for the service messages
+     * <p>For each percentile a {@code buildStatisticValue} service message is
+     * emitted so that TeamCity can record the values as build statistics.</p>
+     *
+     * @param prefix     prefix used to construct the TeamCity statistic key. The
+     *                   generated key has the form
+     *                   {@code prefix.&lt;probe&gt;.&lt;percentile&gt;}
+     * @param jlbh       benchmark instance providing access to the percentile
+     *                   data for the last run
+     * @param iterations total number of iterations executed in the run; used to
+     *                   derive the set of percentiles that will be output
+     * @param printStream destination to which the TeamCity service messages are
+     *                    written
      */
     public static void teamCityStatsLastRun(@NotNull String prefix, @NotNull JLBH jlbh,
                                             long iterations, @NotNull PrintStream printStream) {
