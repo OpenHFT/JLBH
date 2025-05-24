@@ -215,7 +215,8 @@ public class JLBH implements NanoSampler {
      * <p>Once warmed up, the benchmark executes the configured number of runs.
      * For each run the method loops over all iterations invoking
      * {@link JLBHTask#run(long)} at the calculated start time. After every run
-     * {@link #endOfRun(int, long)} prints the results and resets the histograms.
+     * {@link #endOfRun(int, long)} prints run statistics and resets the histograms
+     * in preparation for the next run.
      * After the final run {@link #endOfAllRuns()} outputs the summary and calls
      * the result consumer.</p>
      */
@@ -371,6 +372,23 @@ public class JLBH implements NanoSampler {
         return percentileRuns;
     }
 
+    /**
+     * Print statistics for a single run and reset state for the next run.
+     *
+     * <p>The method waits until all samples for the run have been recorded.
+     * It then calculates the run duration and prints the end-to-end histogram
+     * along with any additional probe histograms. OS jitter information is
+     * included if recording is enabled.</p>
+     *
+     * <p>The percentile data from the end-to-end histogram is stored in
+     * {@link #percentileRuns} so that a summary can be produced once all runs
+     * complete. After invoking {@link JLBHTask#runComplete()}, all histograms
+     * and counters are cleared ready for the next run.</p>
+     *
+     * @param run      index of the run to finish (zero based)
+     * @param runStart wall clock time when the run started, used to measure the
+     *                 total run duration
+     */
     private void endOfRun(int run, long runStart) {
         while (!abortTestRun.get() && endToEndHistogram.totalCount() < jlbhOptions.iterations) {
             Thread.yield();
