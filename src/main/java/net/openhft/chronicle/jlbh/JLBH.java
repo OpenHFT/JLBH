@@ -541,6 +541,20 @@ public class JLBH implements NanoSampler {
         return s.substring(0, 9);
     }
 
+    /**
+     * Append a printf style pattern for one percentile row to {@code sb}.
+     *
+     * <p>The pattern starts with the already formatted percentile label
+     * supplied in {@code pr} and then adds a {@code %12.2f} placeholder for
+     * each run followed by one additional {@code %12.2f} for the variance. The
+     * row is terminated with {@code %n}. This pattern can later be passed to
+     * {@link String#format(String, Object...)} or a {@code printf} method to
+     * render the values.</p>
+     *
+     * @param sb   builder receiving the pattern
+     * @param pr   formatted percentile label (e.g. {@code "99.9:"})
+     * @param runs number of run value placeholders to append
+     */
     private void addPrToPrint(@NotNull StringBuilder sb, String pr, int runs) {
         sb.append(pr);
         for (int i = 0; i < runs; i++) {
