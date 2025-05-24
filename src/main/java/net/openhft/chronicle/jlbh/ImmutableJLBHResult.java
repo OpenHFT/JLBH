@@ -43,7 +43,16 @@ final class ImmutableJLBHResult implements JLBHResult {
     private final Map<String, ProbeResult> additionalProbeResults;
     private final ProbeResult osJitterResult;
 
-    ImmutableJLBHResult(@NotNull ProbeResult endToEndProbeResult, @NotNull Map<String, ? extends ProbeResult> additionalProbeResults, ProbeResult osJitterResult) {
+    /**
+     * Creates a new immutable result object.
+     *
+     * @param endToEndProbeResult    summary of the default end-to-end probe
+     * @param additionalProbeResults map of additional probe names to their results
+     * @param osJitterResult         operating system jitter probe result, may be {@code null}
+     */
+    ImmutableJLBHResult(@NotNull ProbeResult endToEndProbeResult,
+                        @NotNull Map<String, ? extends ProbeResult> additionalProbeResults,
+                        ProbeResult osJitterResult) {
         this.endToEndProbeResult = endToEndProbeResult;
         this.additionalProbeResults = unmodifiableMap(additionalProbeResults);
         this.osJitterResult = osJitterResult;
