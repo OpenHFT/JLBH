@@ -1,0 +1,36 @@
+= Chronicle JLBH - Architecture Overview
+Chronicle Software
+:revnumber: 1.0
+:revdate: 23 May 2025
+:toc:
+:lang: en-GB
+
+== Major Components
+
+* `JLBH` - orchestrates benchmark runs, records samples and prints summaries.
+* `JLBHOptions` - builder-style configuration object for `JLBH`.
+* `JLBHTask` - user-supplied workload executed once per iteration.
+* `Histogram` - latency distribution used for probes.
+  ** Provided by Chronicle Core.
+* `JLBHResult` and `JLBHResultConsumer` - immutable results and thread-safe retrieval helper.
+* `LatencyDistributor` - optional throughput shaping strategy.
+* `OSJitterMonitor` - background thread measuring operating-system jitter.
+
+== Execution Flow
+
+The harness follows the link:docs/benchmark-lifecycle.adoc[benchmark lifecycle]. A typical run:
+
+* Setup the `JLBHOptions` and probes.
+* Warm-up iterations execute to allow the JVM to reach steady state.
+* Each run schedules `JLBHTask.run` at the configured rate.
+  ** Samples are collected via `jlbh.sample` and stored in histograms.
+* After all iterations of a run complete `JLBHTask.runComplete` is invoked.
+* When the final run finishes results are published through the `JLBHResultConsumer`.
+
+== Threading Model
+
+* The harness itself is single-threaded; `JLBH.start()` runs on one thread.
+  ** The benchmark may instead be installed onto an external event loop via `eventLoopHandler`.
+* Benchmarked code may spawn its own threads but must not call `JLBH` methods from multiple threads.
+* A dedicated `OSJitterMonitor` thread records jitter when enabled.
+* Use `JLBHResultConsumer.newThreadSafeInstance()` to access results from other threads.
