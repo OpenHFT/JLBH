@@ -1,0 +1,112 @@
+= Chronicle JLBH Cookbook
+Chronicle Software
+:revnumber: 1.0
+:revdate: 27 May 2025
+:toc:
+:lang: en-GB
+
+A short set of worked examples for common benchmarking scenarios.
+
+== 1. Timing a method call
+
+*Implement the task*
+[source,java]
+----
+class CallBenchmark implements JLBHTask {
+    private JLBH jlbh;
+    @Override
+    public void init(JLBH jlbh) {
+        this.jlbh = jlbh;
+    }
+    @Override
+    public void run(long startTimeNs) {
+        myMethod();
+        jlbh.sample(System.nanoTime() - startTimeNs);
+    }
+    private void myMethod() {
+        // work to be timed
+    }
+}
+----
+
+*Set up the harness*
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .warmUpIterations(20_000)
+        .iterations(200_000)
+        .throughput(100_000)
+        .jlbhTask(new CallBenchmark());
+new JLBH(options).start();
+----
+
+== 2. Measuring a network round trip
+
+The following task times a simple send and receive using loopback.
+[source,java]
+----
+class LoopbackBenchmark implements JLBHTask {
+    private JLBH jlbh;
+    private DatagramChannel channel;
+    private ByteBuffer out = ByteBuffer.allocateDirect(32);
+    @Override
+    public void init(JLBH jlbh) {
+        this.jlbh = jlbh;
+        try {
+            channel = DatagramChannel.open();
+            channel.connect(new InetSocketAddress("localhost", 8080));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+    @Override
+    public void run(long startTimeNs) {
+        try {
+            channel.write(out.clear());
+            channel.read(out.clear());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        jlbh.sample(System.nanoTime() - startTimeNs);
+    }
+}
+----
+
+Configure the options for a low target rate to avoid bursts:
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .warmUpIterations(10_000)
+        .iterations(50_000)
+        .throughput(10_000)
+        .accountForCoordinatedOmission(true)
+        .jlbhTask(new LoopbackBenchmark());
+new JLBH(options).start();
+----
+
+== 3. Running within an event loop
+
+JLBH can be installed on an existing event loop rather than launching its own thread.
+[source,java]
+----
+class LoopTask implements JLBHTask {
+    private JLBH jlbh;
+    @Override
+    public void init(JLBH jlbh) {
+        this.jlbh = jlbh;
+    }
+    @Override
+    public void run(long startTimeNs) {
+        jlbh.sample(System.nanoTime() - startTimeNs);
+    }
+}
+EventLoop loop = new MediumEventLoop(null, "bench", Pauser.balanced(), true, null);
+loop.start();
+JLBHOptions options = new JLBHOptions()
+        .iterations(100_000)
+        .throughput(50_000)
+        .jlbhTask(new LoopTask());
+new JLBH(options).eventLoopHandler(loop);
+----
+
+These snippets provide a starting point for tailored benchmarks. Adjust the options to match your throughput and iteration goals.
