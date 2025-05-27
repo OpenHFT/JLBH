@@ -19,9 +19,9 @@ toc::[]
 
 Java Latency Benchmark Harness is a tool that allows you to benchmark your code running in context, rather than in a microbenchmark. See <<further-reading,Further Reading>> for a series of articles introducing JLBH.
 An excellent introduction can be found in http://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html[this series of articles.]
-link:src/main/adoc/jlbh-requirements.adoc[The requirements document] contains detailed feature descriptions.
+link:src/main/adoc/project-requirements.adoc[The requirements document] contains detailed feature descriptions.
 
-For terminology used throughout the project, see link:src/main/adoc/jlbh-requirements.adoc#_7-glossary[the Glossary (section 7)].
+For terminology used throughout the project, see link:src/main/adoc/project-requirements.adoc#_7-glossary[the Glossary (section 7)].
 
 Since those articles were written the main change has been to allow JLBH to be installed  to an event loop, rather than it running in its own thread. To do this, use the JLBH.eventLoopHandler method rather than JLBH.start.
 
@@ -82,7 +82,7 @@ For a visual overview of how a benchmark progresses, see the link:docs/benchmark
 == Additional Features
 
 === OS Jitter Measurement
-JLBH can optionally track operating-system jitter by running a background thread that records scheduler delays as a separate probe. This is useful when investigating latency spikes caused by kernel activity, but it incurs some overhead so it is disabled by default. You can enable it via `recordOSJitter()` when you need to quantify such noise. The feature is listed in the requirements specification around lines 52 and 56 of `jlbh-requirements.adoc`.
+JLBH can optionally track operating-system jitter by running a background thread that records scheduler delays as a separate probe. This is useful when investigating latency spikes caused by kernel activity, but it incurs some overhead so it is disabled by default. You can enable it via `recordOSJitter()` when you need to quantify such noise. The feature is listed in the requirements specification around lines 52 and 56 of `project-requirements.adoc`.
 
 === Adding custom probes
 JLBH lets you time additional stages of your benchmark using `addProbe(String)`. The returned `NanoSampler` records its own histogram.
@@ -117,9 +117,9 @@ To export JLBH results in CSV format, invoke `JLBHResultSerializer.runResultToCS
 
 == Environment and Configuration
 
-CPU affinity can be configured using the OpenHFT Affinity library as noted in the link:src/main/adoc/jlbh-requirements.adoc[requirements document].
+CPU affinity can be configured using the OpenHFT Affinity library as noted in the link:src/main/adoc/project-requirements.adoc[requirements document].
 
-Histogramming of recorded latencies is precise. As specified in the link:src/main/adoc/jlbh-requirements.adoc[jlbh-requirements], JLBH generates high-resolution histograms of at least 35 bits. This accuracy retains sub-nanosecond resolution over a wide range, so the reported percentiles closely reflect true end-to-end timings.
+Histogramming of recorded latencies is precise. As specified in the link:src/main/adoc/project-requirements.adoc[jlbh-requirements], JLBH generates high-resolution histograms of at least 35 bits. This accuracy retains sub-nanosecond resolution over a wide range, so the reported percentiles closely reflect true end-to-end timings.
 
 == Sample Benchmarks and Tests
 

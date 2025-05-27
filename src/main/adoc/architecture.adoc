@@ -1,36 +1,197 @@
 = Chronicle JLBH - Architecture Overview
 Chronicle Software
-:revnumber: 1.0
-:revdate: 23 May 2025
 :toc:
 :lang: en-GB
+:source-highlighter: rouge
 
-== Major Components
+== 1. Introduction
 
-* `JLBH` - orchestrates benchmark runs, records samples and prints summaries.
-* `JLBHOptions` - builder-style configuration object for `JLBH`.
-* `JLBHTask` - user-supplied workload executed once per iteration.
-* `Histogram` - latency distribution used for probes.
-  ** Provided by Chronicle Core.
-* `JLBHResult` and `JLBHResultConsumer` - immutable results and thread-safe retrieval helper.
-* `LatencyDistributor` - optional throughput shaping strategy.
-* `OSJitterMonitor` - background thread measuring operating-system jitter.
+Chronicle JLBH (Java Latency Benchmark Harness) is a library designed for measuring and analyzing the latency of Java applications "in context," particularly under specific throughput conditions and accounting for coordinated omission.
+This document outlines its high-level architecture, major components, and key operational flows.
 
-== Execution Flow
+== 2. Major Components
 
-The harness follows the link:docs/benchmark-lifecycle.adoc[benchmark lifecycle]. A typical run:
+The JLBH system is composed of several key classes and interfaces that work together to orchestrate and execute benchmarks:
 
-* Setup the `JLBHOptions` and probes.
-* Warm-up iterations execute to allow the JVM to reach steady state.
-* Each run schedules `JLBHTask.run` at the configured rate.
-  ** Samples are collected via `jlbh.sample` and stored in histograms.
-* After all iterations of a run complete `JLBHTask.runComplete` is invoked.
-* When the final run finishes results are published through the `JLBHResultConsumer`.
+* `JLBH`
+** The primary orchestrator of the benchmark lifecycle.
+** Manages warm-up phases, iteration loops, and multiple runs.
+** Provides the `sample(long durationNs)` method for recording end-to-end latencies.
+** Offers `addProbe(String name)` to create `NanoSampler` instances for measuring sub-components or stages within the benchmarked task.
+** Responsible for printing summaries to a `PrintStream`.
+** Implements `NanoSampler` itself for the main end-to-end timings.
 
-== Threading Model
+* `JLBHOptions`
+** A builder-style configuration object used to define all parameters for a `JLBH` instance.
+** Settings include:
+*** Number of warm-up iterations (`warmUpIterations`).
+*** Number of measurement iterations per run (`iterations`).
+*** Number of benchmark runs (`runs`).
+*** Target throughput and its time unit (`throughput`, `throughputTimeUnit`).
+*** The `JLBHTask` to be executed.
+*** Coordinated Omission accounting (`accountForCoordinatedOmission`).
+*** OS jitter recording parameters (`recordOSJitter`, `recordJitterGreaterThanNs`, `jitterAffinity`).
+*** Latency distribution strategy (`latencyDistributor`).
+*** CPU affinity for the main benchmark thread (`acquireLock`).
+*** Timeout for benchmark abortion if no samples are produced (`timeout`).
 
-* The harness itself is single-threaded; `JLBH.start()` runs on one thread.
-  ** The benchmark may instead be installed onto an external event loop via `eventLoopHandler`.
-* Benchmarked code may spawn its own threads but must not call `JLBH` methods from multiple threads.
-* A dedicated `OSJitterMonitor` thread records jitter when enabled.
-* Use `JLBHResultConsumer.newThreadSafeInstance()` to access results from other threads.
+* `JLBHTask`
+** An interface implemented by the user to define the actual workload to be benchmarked.
+** Key lifecycle methods invoked by `JLBH`:
+*** `init(JLBH jlbh)`: Called once before any iterations, used for setup and to acquire `NanoSampler` probes via `jlbh.addProbe()`.
+*** `run(long startTimeNs)`: Called for each benchmark iteration (both warm-up and measurement).
+The `startTimeNs` is the calculated ideal start time for the iteration.
+*** `warmedUp()`: Called after the warm-up phase is complete and before the first measurement run begins.
+*** `runComplete()`: Called after each measurement run finishes.
+*** `complete()`: Called once after all runs have finished, for cleanup.
+
+* `NanoSampler`
+** An interface for recording timing samples.
+** Implementations (like `JLBH` itself or those returned by `addProbe`) typically wrap a `Histogram`.
+** Primary method: `sampleNanos(long durationNs)`.
+
+* `Histogram`
+** A data structure used to record the distribution of latency samples for each probe (end-to-end, custom probes, OS jitter).
+** Provided by the `chronicle-core` library.
+** Key characteristics:
+*** Stores frequencies of samples in logarithmically scaled buckets, enabling high precision over a wide dynamic range.
+*** Configured by `JLBH` (via `createHistogram()`) for typically 35 bits of range and 8 significant figures.
+*** Provides methods to extract percentile data (e.g., `getPercentiles()`).
+
+* `JLBHResult`
+** An immutable interface representing the complete results of a benchmark execution.
+** Provides access to:
+*** `endToEnd()`: A `ProbeResult` for the main end-to-end measurements.
+*** `probe(String probeName)`: An `Optional<ProbeResult>` for any additionally registered probes.
+*** `osJitter()`: An `Optional<ProbeResult>` if OS jitter was recorded.
+** Concrete immutable implementations include `ImmutableJLBHResult`, `ImmutableProbeResult`, and `ImmutableRunResult`.
+
+* `JLBHResultConsumer`
+** A functional interface (`Consumer<JLBHResult>` and `Supplier<JLBHResult>`) used to decouple the production of `JLBHResult` from its consumption.
+** `JLBHResultConsumer.newThreadSafeInstance()` provides a `ThreadSafeJLBHResultConsumer` that allows results to be safely retrieved by a different thread after the benchmark completes.
+
+* `LatencyDistributor`
+** An optional strategy interface (`long apply(long averageLatencyNS)`) to shape the throughput by adjusting the delay between task invocations.
+** Allows simulation of different load patterns beyond a constant rate.
+** Predefined implementations are available in `LatencyDistributors` (e.g., `NORMAL`, `RANDOM`).
+
+* `OSJitterMonitor`
+** An internal background thread responsible for measuring operating system scheduling jitter.
+** Activated if `JLBHOptions.recordOSJitter` is true.
+** Repeatedly calls `System.nanoTime()` to detect delays greater than `recordJitterGreaterThanNs` and records these into a dedicated `Histogram`.
+
+== 3. Execution Flow
+
+The harness follows a well-defined lifecycle, detailed visually in link:benchmark-lifecycle.adoc[benchmark lifecycle diagram].
+A typical execution sequence is as follows:
+
+* **Initialization**:
+** The user configures `JLBHOptions` defining all benchmark parameters.
+** A `JLBH` instance is created with these options, an optional `PrintStream` for output, and an optional `JLBHResultConsumer` for programmatic result access.
+** The `JLBHTask.init(JLBH)` method is called, allowing the user's task to perform setup.
+*** During `init`, custom `NanoSampler` probes can be registered via `jlbh.addProbe(String)`.
+Each probe is backed by its own `Histogram`.
+** If `recordOSJitter` is enabled in `JLBHOptions`, the `OSJitterMonitor` background thread is started.
+
+* **Warm-up Phase**:
+** The `JLBHTask.run(System.nanoTime())` method is invoked `warmUpIterations` times.
+*** The primary purpose is to allow the JVM's JIT compiler to optimize the code and for the system to reach a steady operational state.
+*** Latency samples collected during this phase are typically added to histograms but are reset and discarded before measurement runs begin.
+** After warm-up iterations, `JLBHTask.warmedUp()` is called.
+** All probe histograms (end-to-end, custom, OS jitter) are reset.
+
+* **Measurement Runs**:
+** This phase is repeated for the number of `runs` specified in `JLBHOptions`.
+** For each run:
+*** A loop executes for the configured number of `iterations`.
+*** In each iteration:
+**** The `JLBH` orchestrator calculates the `startTimeNs` for the task invocation.
+***** This calculation is influenced by the configured `throughput` and the `LatencyDistributor` strategy.
+***** If `accountForCoordinatedOmission` is true, `startTimeNs` represents the ideal scheduled time.
+The harness may busy-wait (spin using `System.nanoTime()`) if the current time is before this ideal `startTimeNs` to ensure the task starts as close to the scheduled time as possible.
+**** `JLBHTask.run(startTimeNs)` is invoked with this calculated start time.
+***** The user's benchmark logic executes.
+***** To record the end-to-end latency, the task calls `jlbh.sample(System.nanoTime() - startTimeNs)`.
+***** To record latency for sub-stages, the task calls `sampleNanos()` on any custom `NanoSampler` probes obtained during `init`.
+**** Each call to `sample()` or `sampleNanos()` on a sampler results in the duration being recorded in its corresponding `Histogram`.
+*** After all iterations for the current run are complete:
+**** The `JLBHTask.runComplete()` method is invoked.
+**** Statistics for the completed run (percentile values from each histogram) are typically printed to the configured `PrintStream`.
+**** The percentile data for this run is stored as part of the accumulating results.
+**** All probe histograms are reset to prepare for the next measurement run (if any).
+
+* **Completion**:
+** After all measurement runs have finished:
+*** A final summary report, often comparing results across runs and showing variation, is printed to the `PrintStream`.
+*** The complete, immutable `JLBHResult` object, containing all data for all probes across all runs, is constructed.
+*** If a `JLBHResultConsumer` was provided, its `accept(JLBHResult)` method is called with the final result.
+** The `JLBHTask.complete()` method is invoked for any final cleanup by the user's task.
+** The `OSJitterMonitor` thread is terminated if it was running.
+
+== 4. Threading Model
+
+JLBH has a specific threading model that users and contributors should understand:
+
+* **Primary Harness Thread**:
+** When `JLBH.start()` is called, it orchestrates the entire benchmark lifecycle (initialization, warm-up, measurement runs, completion) on the *calling thread*.
+** All `JLBHTask` lifecycle methods (`init`, `run`, `warmedUp`, `runComplete`, `complete`) are invoked sequentially on this single harness thread.
+*** This implies that `JLBHTask` implementations generally do not need to be concerned about thread-safety for their internal state when accessed *only* by these JLBH-invoked lifecycle methods.
+** CPU affinity for this thread can be suggested via `JLBHOptions.acquireLock`.
+
+* **Event Loop Integration**:
+** As an alternative to `JLBH.start()`, the benchmark can be driven by an external `EventLoop` (e.g., from Chronicle Services) by calling `JLBH.eventLoopHandler(EventLoop)`.
+** In this mode, the warm-up and measurement iterations are scheduled and executed on the provided event loop's thread, using internal `EventHandler` implementations (`WarmupHandler`, `JLBHEventHandler`).
+
+* **User-Spawned Threads within `JLBHTask`**:
+** The code being benchmarked *within* `JLBHTask.run()` (i.e., the "business logic") *can* be multi-threaded if the application itself is multi-threaded.
+** However, critical interactions with the `JLBH` instance *must* be managed carefully.
+*** Calling `jlbh.sample()` or methods on `NanoSampler` probes (like `probe.sampleNanos()`) should ideally be done only by the thread that `JLBH` used to call `JLBHTask.run()`.
+*** The `JLBH` class is annotated `@SingleThreaded`, and its internal state (including the histograms) is generally not designed for concurrent modification from multiple user threads without external synchronization.
+Chronicle Core's `Histogram` has specific single-writer assumptions unless explicitly used with synchronization.
+
+* **`OSJitterMonitor` Thread**:
+** If OS jitter recording is enabled (`JLBHOptions.recordOSJitter == true`), a dedicated background thread (`OSJitterMonitor`) is started.
+** This thread runs independently of the main harness thread.
+** Its sole purpose is to repeatedly sample `System.nanoTime()` to detect scheduling delays or pauses exceeding `JLBHOptions.recordJitterGreaterThanNs` and record these durations into a dedicated `Histogram`.
+** Its CPU affinity can be optionally controlled via `JLBHOptions.jitterAffinity`.
+
+* **Result Consumption**:
+** The `JLBHResult` object containing all benchmark data is immutable by design.
+** To safely access this result from a thread other than the main harness thread (e.g., an application thread wanting to query results after a test run), `JLBHResultConsumer.newThreadSafeInstance()` should be used.
+This creates a `ThreadSafeJLBHResultConsumer` which uses a `volatile` field to ensure proper publication of the immutable result.
+
+== 5. Data Management and Results
+
+JLBH pays careful attention to how latency data is recorded, structured, and reported:
+
+* **Latency Recording**:
+** All latency durations are measured and recorded in nanoseconds.
+** `System.nanoTime()` is the fundamental source for time measurements, chosen for its high resolution and (on most systems) monotonic behavior.
+** For each active probe (end-to-end, user-defined additional probes, OS jitter), a `net.openhft.chronicle.core.util.Histogram` instance is maintained.
+*** These histograms are configured by `JLBH.createHistogram()` for high precision (typically 8 significant figures of value) and a wide dynamic range (typically 35 bits, covering from nanoseconds to many seconds).
+
+* **Immutable Results**:
+** A core design principle is the immutability of benchmark results.
+Once a benchmark or a run is complete, the generated data is fixed.
+** The `JLBHResult` interface and its constituent parts (`ProbeResult`, `RunResult`) are designed to be immutable.
+** This is enforced by internal implementations like `ImmutableJLBHResult`, `ImmutableProbeResult`, and `ImmutableRunResult`.
+** Immutability simplifies reasoning about results, ensures thread-safe access for consumers, and allows for reliable and repeatable reporting.
+
+* **Structure of Results (`JLBHResult`)**:
+** The top-level `JLBHResult` object provides access to:
+*** `endToEnd()`: Returns a `ProbeResult` for the overall end-to-end latency measurements.
+*** `probe(String probeName)`: Returns an `Optional<ProbeResult>` for any user-defined probe, identified by its name.
+*** `osJitter()`: Returns an `Optional<ProbeResult>` for the OS jitter measurements, if recorded.
+** Each `JLBHResult.ProbeResult` object contains:
+*** `summaryOfLastRun()`: A `RunResult` detailing the statistics of the final measurement run for that probe.
+*** `eachRunSummary()`: A `List<RunResult>`, providing the statistics for every measurement run of that probe, in execution order.
+** Each `JLBHResult.RunResult` object contains:
+*** `percentiles()`: A `Map<JLBHResult.RunResult.Percentile, java.time.Duration>`, mapping enum keys (e.g., `PERCENTILE_50TH`, `PERCENTILE_99TH`, `WORST`) to their corresponding latency `Duration` values.
+*** Convenience getter methods like `get50thPercentile()`, `get99thPercentile()`, `getWorst()`.
+
+* **Output and Serialization**:
+** Human-readable summaries are printed to the configured `PrintStream` (default `System.out`) during and after benchmark runs.
+This includes percentile tables for each probe and overall summaries.
+** Programmatic access to the structured, immutable results is provided via the `JLBHResultConsumer` and the `JLBHResult` interface.
+** Results can be serialized to CSV format using `net.openhft.chronicle.jlbh.util.JLBHResultSerializer`, facilitating offline analysis or import into spreadsheets and other tools.
+** Integration with CI systems like TeamCity is supported via `net.openhft.chronicle.jlbh.TeamCityHelper`, which can emit build statistics.

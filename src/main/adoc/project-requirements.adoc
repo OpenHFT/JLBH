@@ -191,8 +191,8 @@ public class NothingBenchmark implements JLBHTask {
 
 == 9. Appendix B – Footnotes
 
-* JLBH originated within the Chronicle Software open-source stack and is actively maintained.footnote:[Project home — GitHub repository:contentReference[oaicite:1]{index=1}]
-* The API reference highlights the focus on _co-ordinated omission_ and event-loop support.footnote:[Javadoc for class `JLBH`:contentReference[oaicite:2]{index=2}]
-* A multi-part blog series gives practical guidance on designing realistic latency tests.footnote:[RationalJava series:contentReference[oaicite:3]{index=3}]
-* Vanilla-Java’s micro-services article demonstrates embedding JLBH in an event-driven architecture.footnote:[Vanilla-Java blog:contentReference[oaicite:4]{index=4}]
-* Original discussion of co-ordinated omission by Gil Tene motivates JLBH’s default settings.footnote:[Mechanical Sympathy thread:contentReference[oaicite:5]{index=5}]
+* JLBH originated within the Chronicle Software open-source stack and is actively maintained.footnote:[Project home — GitHub repository:contentReference[oaicite:1]]
+* The API reference highlights the focus on _co-ordinated omission_ and event-loop support.footnote:[Javadoc for class `JLBH`:contentReference[oaicite:2]]
+* A multi-part blog series gives practical guidance on designing realistic latency tests.footnote:[RationalJava series:contentReference[oaicite:3]]
+* Vanilla-Java’s micro-services article demonstrates embedding JLBH in an event-driven architecture.footnote:[Vanilla-Java blog:contentReference[oaicite:4]]
+* Original discussion of co-ordinated omission by Gil Tene motivates JLBH’s default settings.footnote:[Mechanical Sympathy thread:contentReference[oaicite:5]]
