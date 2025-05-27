@@ -1,0 +1,51 @@
+= JLBH Results Interpretation Guide
+Chronicle Software
+:revnumber: 1.0
+:revdate: 23 May 2025
+:toc:
+:lang: en-GB
+
+*_Abstract_*::
+This guide explains how to read JLBH run summaries.
+
+== 1. Histogram Percentiles
+JLBH prints a table of latency percentiles for each run. The columns show the percentile value and the recorded timings for every run.
+
+* `50.0` represents the median latency.
+* `99.0` and above reveal the tail latency that often drives user experience.
+* `worst` is the highest latency observed.
+
+Values are typically shown in micro-second or nano-second units depending on the run configuration.
+
+== 2. Co-ordinated Omission
+Co-ordinated omission happens when pauses in the system hide long service times. JLBH compensates for this by adjusting the scheduled start time for each iteration.
+
+* When enabled, the histogram reflects the latency the caller would experience even if requests queued up.
+* When disabled, the histogram shows only the measured time once a request is executed.
+
+Always specify whether the runs account for co-ordinated omission when comparing results.
+
+== 3. OS Jitter
+A background thread measures the operating system jitter by recording scheduling gaps. The output lists jitter values alongside the main histogram.
+
+* High jitter suggests other processes or the scheduler are delaying the benchmark thread.
+* Low jitter indicates the CPU was granted consistently when required.
+
+Use the jitter probe to distinguish application latency from machine noise.
+
+== 4. Analysing Run to Run Variation
+Latency can fluctuate between runs even on the same host.
+
+* Run the benchmark several times and examine the variation column printed by JLBH.
+* Large spreads usually signal system noise, suboptimal warmup, or GC pauses.
+* Tight spreads suggest a stable environment and repeatable behaviour.
+
+Look for systematic differences rather than chasing a single best score.
+
+== 5. Common Pitfalls
+These issues often lead to misleading results.
+
+* Failing to pin the benchmark thread to a dedicated core can inflate jitter.
+* Running other workloads concurrently skews the worst percentile.
+* Neglecting to account for JVM warmup may hide initial overheads.
+* Forgetting whether co-ordinated omission was enabled leads to incomparable runs.
