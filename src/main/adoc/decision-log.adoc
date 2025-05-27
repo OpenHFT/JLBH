@@ -1,0 +1,37 @@
+= Chronicle JLBH - Decision Log
+Chronicle Software
+:revnumber: 1.0
+:revdate: 24 May 2025
+:toc:
+:lang: en-GB
+
+This document records key architectural and project choices made during the development of Chronicle JLBH. Entries follow the Decision Record Template so that contributors can trace why a change occurred.
+
+== Decisions
+
+=== [JL-DOC-001] Adopt AsciiDoc for project documentation
+
+Date:: 2025-05-24
+Context::
+* Project requires easily maintainable, version-controlled documentation.
+* Contributors need a text format that is readable in raw form and convertible to HTML.
+Decision Statement::
+* Adopt AsciiDoc as the canonical format for all project documentation.
+Alternatives Considered::
+* Markdown:
+** *Description:* Common lightweight markup; widely supported.
+** *Pros:* Familiar to many developers; simple syntax.
+** *Cons:* Limited features for complex documents; inconsistent rendering across tools.
+* Plain text files:
+** *Description:* Minimalistic approach with no markup.
+** *Pros:* Simplest possible format; no tooling required.
+** *Cons:* Hard to express structure or cross references; not suitable for large docs.
+Rationale for Decision::
+* AsciiDoc provides structured markup without sacrificing readability.
+* The format integrates well with our build tooling and supports the Nine-Box tagging used in requirements.
+Impact & Consequences::
+* Contributors must learn basic AsciiDoc syntax.
+* Build pipeline processes `.adoc` files to publish HTML.
+- Some external tools may expect Markdown, requiring conversion.
+Notes/Links::
+** https://asciidoctor.org[AsciiDoc project page]
