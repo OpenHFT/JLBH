@@ -14,7 +14,26 @@ import java.util.Collections;
 import java.util.Optional;
 
 /**
- * Serializes JLBH result to CSV file. Useful for analytics.
+ * Utility class that writes the output of a {@link net.openhft.chronicle.jlbh.JLBH}
+ * run to a CSV file.
+ * <p>
+ * The generated CSV contains a header row followed by one line per probe.  Each
+ * line starts with the probe name and is followed by the 50th, 90th, 99th,
+ * 999th and 9999th percentile latencies as well as the worst recorded latency
+ * in nanoseconds.
+ * <p>
+ * A typical usage pattern is to obtain the {@link JLBHResult} from a
+ * {@code JLBHResultConsumer} and then call one of the {@code runResultToCSV}
+ * methods:
+ *
+ * <pre>{@code
+ * JLBHResult result = consumer.get();
+ * JLBHResultSerializer.runResultToCSV(result);
+ * }</pre>
+ *
+ * which will create a {@code result.csv} file in the working directory.  Other
+ * overloads allow specifying the file name, the set of probes to export and
+ * whether the OS jitter probe should be included.
  */
 public class JLBHResultSerializer {
     public static final String THE_PROBE = "TheProbe";
@@ -22,18 +41,59 @@ public class JLBHResultSerializer {
     public static final String END_TO_END = "endToEnd";
     public static final String OS_JITTER = "OSJitter";
 
+    /**
+     * Write the summary results for all probes to {@link #RESULT_CSV}.
+     * <p>
+     * The CSV contains an {@code endToEnd} row followed by one row for each
+     * additional probe in {@code jlbhResult}. Metrics from the OS jitter
+     * monitor are also appended.
+     *
+     * @param jlbhResult benchmark output to serialise
+     * @throws IOException if the file cannot be written
+     */
     public static void runResultToCSV(JLBHResult jlbhResult) throws IOException {
         runResultToCSV(jlbhResult, RESULT_CSV, jlbhResult.probeNames(), true);
     }
 
+    /**
+     * Write the summary results for all probes to the supplied file.
+     * <p>
+     * OS jitter metrics are included by default.
+     *
+     * @param jlbhResult the benchmark result to serialise
+     * @param fileName   path of the CSV file to create
+     * @throws IOException if the file cannot be written
+     */
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName) throws IOException {
         runResultToCSV(jlbhResult, fileName, jlbhResult.probeNames(), true);
     }
 
+    /**
+     * Write the summary results for the named probe and the end-to-end probe to
+     * the supplied file.  OS jitter metrics are also included.
+     *
+     * @param jlbhResult the benchmark result to serialise
+     * @param fileName   path of the CSV file to create
+     * @param probeName  name of the additional probe to export
+     * @throws IOException if the file cannot be written
+     */
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName, String probeName) throws IOException {
         runResultToCSV(jlbhResult, fileName, Collections.singletonList(probeName), true);
     }
 
+    /**
+     * Serialize the last run results for the selected probes to the given file.
+     * <p>
+     * The CSV always starts with the {@code endToEnd} results. For each entry in
+     * {@code namesOfProbes} a row is written if that probe exists. When
+     * {@code includeOSJitter} is {@code true} the OS jitter probe is appended.
+     *
+     * @param jlbhResult       the benchmark result to serialise
+     * @param fileName         path of the CSV file to create
+     * @param namesOfProbes    additional probes to export
+     * @param includeOSJitter  whether to include OS jitter metrics
+     * @throws IOException if the file cannot be written
+     */
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName, Iterable<String> namesOfProbes, boolean includeOSJitter) throws IOException {
         try (Writer pw = new BufferedWriter(new PrintWriter(Files.newOutputStream(Paths.get(fileName))))) {
             writeHeader(pw);

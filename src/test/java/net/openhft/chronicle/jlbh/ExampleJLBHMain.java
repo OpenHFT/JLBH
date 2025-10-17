@@ -1,7 +1,5 @@
 /*
- * Copyright 2016-2020 chronicle.software
- *
- *       https://chronicle.software
+ * Copyright 2016-2025 chronicle.software
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +15,25 @@
  */
 
 package net.openhft.chronicle.jlbh;
+
+/**
+ * <p>A minimal command line example demonstrating how to configure and invoke the
+ * Java Latency Benchmark Harness (JLBH). The benchmark performs a {@code Math.sin}
+ * calculation on each iteration and after {@code 160_000} calls deliberately
+ * pauses for 100&nbsp;ms to create a visible latency spike. The {@link JLBHOptions}
+ * used in {@link #main(String[])} run two iterations with a target throughput of
+ * 500&nbsp;000 operations per second and account for coordinated omission.</p>
+ *
+ * <p>Run the class from your IDE or via Maven:</p>
+ *
+ * <pre>{@code
+ * mvn -q test-compile exec:java \
+ *   -Dexec.classpathScope=test \
+ *   -Dexec.mainClass=net.openhft.chronicle.jlbh.ExampleJLBHMain
+ * }</pre>
+ *
+ * <p>The harness will print percentile summaries for each run to {@code System.out}.</p>
+ */
 
 import net.openhft.chronicle.core.Jvm;
 import org.jetbrains.annotations.NotNull;

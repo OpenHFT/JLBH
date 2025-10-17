@@ -1,7 +1,5 @@
 /*
- * Copyright 2016-2020 chronicle.software
- *
- *       https://chronicle.software
+ * Copyright 2016-2025 chronicle.software
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,8 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
+
 package net.openhft.chronicle.jlbh;
 
 import org.jetbrains.annotations.NotNull;
@@ -29,10 +27,25 @@ import static java.time.temporal.ChronoUnit.NANOS;
 import static java.util.Collections.unmodifiableMap;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
 
+/**
+ * Immutable summary of the latency statistics gathered during a single run of a probe.
+ *
+ * <p>Instances are created from the percentile values produced by the benchmark's
+ * {@code Histogram} and expose these values as {@link Duration} objects via the
+ * {@link JLBHResult.RunResult} interface. The underlying map returned by
+ * {@link #percentiles()} is unmodifiable so that {@code ImmutableRunResult}
+ * objects can be freely shared between threads after a run completes.</p>
+ */
 final class ImmutableRunResult implements JLBHResult.RunResult {
 
     private final Map<Percentile, Duration> percentiles;
 
+    /**
+     * Construct a result from an array of percentile values expressed in
+     * nanoseconds.
+     *
+     * @param percentiles percentile values returned for a single run
+     */
     public ImmutableRunResult(double[] percentiles) {
         this.percentiles = asMap(percentiles);
     }

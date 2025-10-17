@@ -1,7 +1,5 @@
 /*
- * Copyright 2016-2020 chronicle.software
- *
- *       https://chronicle.software
+ * Copyright 2016-2025 chronicle.software
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,8 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
+
 
 package net.openhft.chronicle.jlbh;
 
@@ -161,6 +159,13 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Variant of {@link #iterations(int)} that accepts a {@code long} so that
+     * iteration counts greater than {@code Integer#MAX_VALUE} can be specified.
+     *
+     * @param iterations total number of iterations to run
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
     @NotNull
     public JLBHOptions iterations(long iterations) {
         this.iterations = iterations;
@@ -214,11 +219,29 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Sets the supplier used to acquire an {@link AffinityLock} when the
+     * benchmark starts.
+     *
+     * @param acquireLock supplier that provides the lock, defaults to
+     *                    {@code Affinity::acquireLock}
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
     public JLBHOptions acquireLock(Supplier<AffinityLock> acquireLock) {
         this.acquireLock = acquireLock;
         return this;
     }
 
+    /**
+     * Sets the maximum time to wait for the next sample to be produced.
+     * <p>
+     * If no additional samples are recorded within the specified number of
+     * milliseconds the running benchmark is aborted. A value of {@code 0}
+     * disables the timeout check.
+     *
+     * @param timeout timeout in milliseconds
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
     public JLBHOptions timeout(long timeout) {
         this.timeout = timeout;
         return this;
@@ -246,6 +269,17 @@ public class JLBHOptions {
         return sb.toString();
     }
 
+    /**
+     * Options controlling whether the results of the first run are included
+     * when calculating run-to-run variation.
+     * <ul>
+     *     <li>{@link #NOT_SET} - behaviour is chosen automatically based on the
+     *     number of runs (the first run is skipped if there are more than three
+     *     runs).</li>
+     *     <li>{@link #SKIP} - always skip the first run.</li>
+     *     <li>{@link #NO_SKIP} - always include the first run.</li>
+     * </ul>
+     */
     enum SKIP_FIRST_RUN {
         NOT_SET, SKIP, NO_SKIP
     }
