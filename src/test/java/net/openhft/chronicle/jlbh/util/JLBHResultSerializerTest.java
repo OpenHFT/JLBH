@@ -29,7 +29,7 @@ public class JLBHResultSerializerTest {
     public void shouldWriteSelectedProbesWithoutOsJitter() throws IOException {
         FakeRunResult endToEnd = new FakeRunResult(P50, P90, P99, P999, null, WORST);
         FakeRunResult probe = new FakeRunResult(P50.multipliedBy(2), P90, P99, P999, null, WORST);
-        FakeResult result = new FakeResult(endToEnd, Map.of("TheProbe", probe), Optional.empty());
+        FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("TheProbe", probe), Optional.empty());
 
         Path out = tmp.newFile("subset.csv").toPath();
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Collections.singletonList("TheProbe"), false);
@@ -48,7 +48,7 @@ public class JLBHResultSerializerTest {
         FakeRunResult osJitter = new FakeRunResult(Duration.ofNanos(10), Duration.ofNanos(20), Duration.ofNanos(30),
                 Duration.ofNanos(40), Duration.ofNanos(50), Duration.ofNanos(60));
 
-        FakeResult result = new FakeResult(endToEnd, Map.of("Custom", probe), Optional.of(osJitter));
+        FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("Custom", probe), Optional.of(osJitter));
 
         Path out = tmp.newFile("full.csv").toPath();
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Arrays.asList("Custom", "Missing"), true);
@@ -63,7 +63,7 @@ public class JLBHResultSerializerTest {
     @Test
     public void shouldDefaultToResultCsvInWorkingDirectory() throws IOException {
         FakeRunResult runResult = new FakeRunResult(P50, P90, P99, P999, Duration.ofNanos(500), WORST);
-        FakeResult result = new FakeResult(runResult, Map.of("Probe", runResult), Optional.of(runResult));
+        FakeResult result = new FakeResult(runResult, Collections.singletonMap("Probe", runResult), Optional.of(runResult));
 
         Path output = Paths.get(JLBHResultSerializer.RESULT_CSV);
         Files.deleteIfExists(output);
