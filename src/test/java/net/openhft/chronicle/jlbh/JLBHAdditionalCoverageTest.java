@@ -1,7 +1,6 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.util.NanoSampler;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
