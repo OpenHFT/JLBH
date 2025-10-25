@@ -66,7 +66,7 @@ Co-ordinated Omission is a critical concept in latency measurement, especially f
 JLBH can optionally measure Operating System (OS) jitter, which refers to delays caused by the OS scheduler or other system activities interrupting the benchmark process.
 
 * **Mechanism**:
-** When `recordOSJitter = true` in `JLBHOptions`, a dedicated background thread (`OSJitterMonitor`) is started.
+** Jitter monitoring is enabled by default (`recordOSJitter` defaults to true); a dedicated background thread (`OSJitterMonitor`) starts unless you explicitly disable it with `recordOSJitter(false)`.
 ** This thread repeatedly calls `System.nanoTime()` in a tight loop and measures the time difference between consecutive calls.
 ** If this difference (a "gap") exceeds a configurable threshold (`recordJitterGreaterThanNs`, default 1 microsecond), it's recorded as an OS jitter event in a separate "OS Jitter" histogram.
 * **Interpreting Jitter Output**:

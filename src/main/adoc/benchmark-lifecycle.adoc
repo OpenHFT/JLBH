@@ -22,7 +22,7 @@ This initial phase prepares the benchmark environment:
 * **Task Initialization**: The `JLBHTask.init(JLBH jlbh)` method of the user-provided task is invoked.
 ** This allows the benchmark task to perform its own one-time setup, such as initializing resources or fixtures.
 ** Crucially, this is where additional measurement probes can be registered by calling `jlbh.addProbe("probeName")` to get `NanoSampler` instances for specific sub-sections of the task.
-* **OS Jitter Monitoring**: If configured in `JLBHOptions` (`recordOSJitter = true`), the `OSJitterMonitor` background thread is started to begin measuring operating system scheduling jitter independently.
+* **OS Jitter Monitoring**: Jitter tracking is enabled by default (`recordOSJitter` defaults to true); unless disabled via `recordOSJitter(false)`, the `OSJitterMonitor` background thread starts to measure operating system scheduling jitter independently.
 * **Affinity**: If an `acquireLock` supplier is configured in `JLBHOptions`, an attempt to acquire CPU affinity for the main benchmark thread might occur.
 
 == 2. Warmup
