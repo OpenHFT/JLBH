@@ -32,6 +32,6 @@ Rationale for Decision::
 Impact & Consequences::
 * Contributors must learn basic AsciiDoc syntax.
 * Build pipeline processes `.adoc` files to publish HTML.
-- Some external tools may expect Markdown, requiring conversion.
+* Some external tools may expect Markdown, requiring conversion.
 Notes/Links::
 ** https://asciidoctor.org[AsciiDoc project page]

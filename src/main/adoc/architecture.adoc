@@ -77,7 +77,7 @@ The `startTimeNs` is the calculated ideal start time for the iteration.
 
 * `OSJitterMonitor`
 ** An internal background thread responsible for measuring operating system scheduling jitter.
-** Activated if `JLBHOptions.recordOSJitter` is true.
+** Monitoring is enabled by default (`JLBHOptions.recordOSJitter` defaults to true) and can be disabled via `recordOSJitter(false)`.
 ** Repeatedly calls `System.nanoTime()` to detect delays greater than `recordJitterGreaterThanNs` and records these into a dedicated `Histogram`.
 
 == 3. Execution Flow
@@ -140,6 +140,7 @@ JLBH has a specific threading model that users and contributors should understan
 
 * **Event Loop Integration**:
 ** As an alternative to `JLBH.start()`, the benchmark can be driven by an external `EventLoop` (e.g., from Chronicle Services) by calling `JLBH.eventLoopHandler(EventLoop)`.
+** Coordinated omission accounting must remain enabled; calling `eventLoopHandler` with `accountForCoordinatedOmission(false)` throws an `UnsupportedOperationException`.
 ** In this mode, the warm-up and measurement iterations are scheduled and executed on the provided event loop's thread, using internal `EventHandler` implementations (`WarmupHandler`, `JLBHEventHandler`).
 
 * **User-Spawned Threads within `JLBHTask`**:

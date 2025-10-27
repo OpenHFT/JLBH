@@ -520,8 +520,8 @@ public class MainApp {
                 .iterations(10_000)   // Shorter for quick demo
                 .throughput(50_000)
                 .jlbhTask(new CallBenchmark())
-                // Enable OS Jitter recording
-                .recordOSJitter(true)
+                // OS jitter recording is enabled by default; use recordOSJitter(false)
+                // if you want to disable the background monitor.
                 // Optional: Only record jitter events greater than a specific threshold (default 1_000 ns)
                 // .recordJitterGreaterThanNs(5_000)
                 // Optional: Pin the OS Jitter monitoring thread to a specific CPU core (if supported)
@@ -535,7 +535,8 @@ public class MainApp {
 
 *Interpreting OS Jitter Results*:
 
-* When `recordOSJitter(true)` is set, JLBH starts a background thread that continuously measures the time elapsed between calls to `System.nanoTime()`.
+* JLBH records OS jitter by default and starts a background thread that continuously measures the time elapsed between calls to `System.nanoTime()`.
+Use `recordOSJitter(false)` only when you want to suppress this monitoring.
 * If this measured gap exceeds `recordJitterGreaterThanNs`, it's considered an OS-induced pause/jitter event and is recorded in a special "OS Jitter" probe.
 * The JLBH output (both console and `JLBHResult`) will include a section for the "OS Jitter" probe, showing its own percentile distribution.
 * These jitter values represent pauses that are *not* caused by your application code but by the operating system or other processes interfering with the JLBH process's execution.
