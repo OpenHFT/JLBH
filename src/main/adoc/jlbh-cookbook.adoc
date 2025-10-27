@@ -1,13 +1,14 @@
 = Chronicle JLBH Cookbook
 Chronicle Software
 :toc:
+:sectnums:
 :lang: en-GB
 :source-highlighter: rouge
 
 A collection of worked examples for common benchmarking scenarios using Chronicle JLBH.
 These recipes aim to provide practical starting points for your own benchmarks.
 
-== 1. Timing a Simple Method Call
+== Timing a Simple Method Call
 
 This is the most basic use case: measuring the latency of a self-contained Java method.
 
@@ -81,7 +82,7 @@ Avoid including unrelated logic within the timed section.
 If `myMethod()` is very fast, high throughput might be achievable.
 If it's slower, adjust throughput accordingly.
 
-== 2. Measuring a Network Round Trip (UDP Loopback)
+== Measuring a Network Round Trip (UDP Loopback)
 
 This recipe demonstrates timing a UDP message send and receive on loopback.
 
@@ -220,7 +221,7 @@ public class MainApp {
 * Consider TCP for connection-oriented tests; its performance characteristics (e.g., Nagle's algorithm, ACK delays) differ from UDP.
 * Packet loss and retransmissions (for UDP, if implementing reliability) can heavily affect latency distributions.
 
-== 3. Running Within an Existing Event Loop
+== Running Within an Existing Event Loop
 
 JLBH can integrate with Chronicle's event loop mechanism, useful for benchmarking components that are already part of an event-driven architecture.
 
@@ -311,7 +312,7 @@ public class MainApp {
 * `JLBHOptions.accountForCoordinatedOmission(true)` (the default) is essential for `eventLoopHandler` to function correctly.
 ---
 
-== 4. Using Multiple Probes for Staged Operations
+== Using Multiple Probes for Staged Operations
 
 JLBH allows timing multiple stages within a single benchmark iteration using custom probes.
 
@@ -407,7 +408,7 @@ public class MainApp {
 
 ---
 
-== 5. Recording and Exporting Results
+== Recording and Exporting Results
 
 JLBH allows programmatic access to results and provides utilities for serialization, such as to CSV.
 
@@ -489,7 +490,7 @@ public class MainApp {
 * The `JLBHResult` object is immutable and contains rich data for all probes and runs.
 * `JLBHResultSerializer` provides a convenient way to get data out for external analysis.
 
-== 6. Enabling and Understanding OS Jitter Measurement
+== Enabling and Understanding OS Jitter Measurement
 
 Operating system jitter can significantly impact low-latency applications.
 JLBH can measure this independently.

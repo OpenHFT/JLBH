@@ -1,15 +1,16 @@
 = Chronicle JLBH - Architecture Overview
 Chronicle Software
 :toc:
+:sectnums:
 :lang: en-GB
 :source-highlighter: rouge
 
-== 1. Introduction
+== Introduction
 
 Chronicle JLBH (Java Latency Benchmark Harness) is a library designed for measuring and analyzing the latency of Java applications "in context," particularly under specific throughput conditions and accounting for coordinated omission.
 This document outlines its high-level architecture, major components, and key operational flows.
 
-== 2. Major Components
+== Major Components
 
 The JLBH system is composed of several key classes and interfaces that work together to orchestrate and execute benchmarks:
 
@@ -80,7 +81,7 @@ The `startTimeNs` is the calculated ideal start time for the iteration.
 ** Monitoring is enabled by default (`JLBHOptions.recordOSJitter` defaults to true) and can be disabled via `recordOSJitter(false)`.
 ** Repeatedly calls `System.nanoTime()` to detect delays greater than `recordJitterGreaterThanNs` and records these into a dedicated `Histogram`.
 
-== 3. Execution Flow
+== Execution Flow
 
 The harness follows a well-defined lifecycle, detailed visually in link:benchmark-lifecycle.adoc[benchmark lifecycle diagram].
 A typical execution sequence is as follows:
@@ -128,7 +129,7 @@ The harness may busy-wait (spin using `System.nanoTime()`) if the current time i
 ** The `JLBHTask.complete()` method is invoked for any final cleanup by the user's task.
 ** The `OSJitterMonitor` thread is terminated if it was running.
 
-== 4. Threading Model
+== Threading Model
 
 JLBH has a specific threading model that users and contributors should understand:
 
@@ -161,7 +162,7 @@ Chronicle Core's `Histogram` has specific single-writer assumptions unless expli
 ** To safely access this result from a thread other than the main harness thread (e.g., an application thread wanting to query results after a test run), `JLBHResultConsumer.newThreadSafeInstance()` should be used.
 This creates a `ThreadSafeJLBHResultConsumer` which uses a `volatile` field to ensure proper publication of the immutable result.
 
-== 5. Data Management and Results
+== Data Management and Results
 
 JLBH pays careful attention to how latency data is recorded, structured, and reported:
 
