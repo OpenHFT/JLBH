@@ -5,9 +5,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
@@ -95,7 +96,8 @@ public class JLBHResultSerializer {
      * @throws IOException if the file cannot be written
      */
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName, Iterable<String> namesOfProbes, boolean includeOSJitter) throws IOException {
-        try (Writer pw = new BufferedWriter(new PrintWriter(Files.newOutputStream(Paths.get(fileName))))) {
+        Path output = Paths.get(fileName);
+        try (BufferedWriter pw = Files.newBufferedWriter(output, StandardCharsets.UTF_8)) {
             writeHeader(pw);
 
             JLBHResult.ProbeResult probeResult = jlbhResult.endToEnd();
