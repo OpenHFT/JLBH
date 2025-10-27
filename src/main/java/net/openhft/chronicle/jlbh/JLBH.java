@@ -318,7 +318,7 @@ public class JLBH implements NanoSampler {
      *
      * @param startTimeNs the target time, in nanoseconds, to wait until
      * @return the actual timestamp returned from {@code nanoTime} once the
-     *         wait is over
+     * wait is over
      */
     private static long busyWaitUntil(long startTimeNs) {
         long nanoTime;
@@ -340,7 +340,7 @@ public class JLBH implements NanoSampler {
     private void waitForWarmupToComplete(long warmupStart) {
         while (!warmUpComplete.get()) {
             Jvm.pause(500);
-        printStream.println("Complete: " + sampleCount.get());
+            printStream.println("Complete: " + sampleCount.get());
             if (testThread.isInterrupted()) {
                 return;
             }
@@ -522,7 +522,7 @@ public class JLBH implements NanoSampler {
      * worst:          12.56        12.56        10.61        10.93
      * ----
      * </pre>
-     *
+     * <p>
      * Each percentile value is printed in microseconds with two decimal places.
      * The final column displays the percentage variation between the largest and
      * smallest values present in the row. The number of {@code run} columns is
