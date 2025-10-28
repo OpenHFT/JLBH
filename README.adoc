@@ -7,7 +7,7 @@ Chronicle Software
 
 image:https://maven-badges.herokuapp.com/maven-central/net.openhft/jlbh/badge.svg[caption="",link=https://maven-badges.herokuapp.com/maven-central/net.openhft/jlbh]
 image:https://javadoc.io/badge2/net.openhft/JLBH/javadoc.svg[link="https://www.javadoc.io/doc/net.openhft/chronicle-wire/latest/index.html"]
-//image:https://javadoc-badge.appspot.com/net.openhft/jlbh.svg?label=javadoc[JavaDoc, link=https://www.javadoc.io/doc/net.openhft/jlbh]
+// image:https://javadoc-badge.appspot.com/net.openhft/jlbh.svg?label=javadoc[JavaDoc, link=https://www.javadoc.io/doc/net.openhft/jlbh]
 image:https://img.shields.io/github/license/OpenHFT/JLBH[GitHub]
 image:https://img.shields.io/badge/release%20notes-subscribe-brightgreen[link="https://chronicle.software/release-notes/"]
 image:https://sonarcloud.io/api/project_badges/measure?project=OpenHFT_JLBH&metric=alert_status[link="https://sonarcloud.io/dashboard?id=OpenHFT_JLBH"]
@@ -173,10 +173,10 @@ The following table summarises the main non-functional quality attributes derive
 
 http://www.rationaljava.com/2016/04/jlbh-introducing-java-latency.html[Introducing JLBH]
 
-- What is JLBH
-- What was the motivation for JLBH
-- Differences between JMH and JLBH
-- Quick start guide
+* What is JLBH
+* What was the motivation for JLBH
+* Differences between JMH and JLBH
+* Quick start guide
 
 === Sample percentile output
 
@@ -194,43 +194,43 @@ worst:          12.56        12.56        10.61        10.93
 
 http://www.rationaljava.com/2016/04/jlbh-examples-1-why-code-should-be.html[Why Code Should be Benchmarked in Context]
 
-- A side by side example using JMH and JLBH for Date serialisation
-- Measuring Date serialisation in a microbenchmark
-- Measuring Date serialisation as part of a proper application
-- How to add a probe to your JLBH benchmark
-- Understanding the importance of measuring code in context
+* A side by side example using JMH and JLBH for Date serialisation
+* Measuring Date serialisation in a microbenchmark
+* Measuring Date serialisation as part of a proper application
+* How to add a probe to your JLBH benchmark
+* Understanding the importance of measuring code in context
 
 Co-ordinated omission occurs when latency measurements ignore the time requests wait to be serviced, leading to unrealistically low results.
 
 http://www.rationaljava.com/2016/04/jlbh-examples-2-accounting-for.html[Accounting for Coordinated Omission]
 
-- Running JLBH with and without accounting for coordinated omission
-- An example illustrating the numerical impact of coordinated omission
-- A discussion about flow control
+* Running JLBH with and without accounting for coordinated omission
+* An example illustrating the numerical impact of coordinated omission
+* A discussion about flow control
 
 http://www.rationaljava.com/2016/04/jlbh-examples-3-affects-of-throughput.html[The Affects of Throughput on Latency]
 Note: the blog deliberately uses "Affects" in the title while describing the effects of throughput on latency.
 
-- A discussion about the effects of throughput on latency
-- How to use JLBH to measure TCP loopback
-- Adding probes to test both halves of the TCP round trip
-- Watching the effect of increasing throughput on latency
-- Understanding that you have to drop throughput to achieve good latencies at high percentiles.
+* A discussion about the effects of throughput on latency
+* How to use JLBH to measure TCP loopback
+* Adding probes to test both halves of the TCP round trip
+* Watching the effect of increasing throughput on latency
+* Understanding that you have to drop throughput to achieve good latencies at high percentiles.
 
 http://www.rationaljava.com/2016/04/jlbh-examples-4-benchmarking-quickfix.html[Benchmarking QuickFix vs ChronicleFix]
 
-- Using JLBH to benchmark QuickFIX
-- Observing how QuickFix latencies degrade through the percentiles
-- Comparing QuickFIX with Chronicle FIX
+* Using JLBH to benchmark QuickFIX
+* Observing how QuickFix latencies degrade through the percentiles
+* Comparing QuickFIX with Chronicle FIX
 
 == Common Questions
 
 === Using JLBH as part of automated performance/performance regression testing
 
-- Extract latency percentiles from `net.openhft.chronicle.jlbh.JLBHTest::shouldProvideResultData` for xUnit tests.
-- Run them on a production-like CI server.
-- When local hardware is adequate, execute them along with other tests.
-- Integrate these benchmarks into the TDD cycle to expose latency-related design issues early.
+* Extract latency percentiles from `net.openhft.chronicle.jlbh.JLBHTest::shouldProvideResultData` for xUnit tests.
+* Run them on a production-like CI server.
+* When local hardware is adequate, execute them along with other tests.
+* Integrate these benchmarks into the TDD cycle to expose latency-related design issues early.
 
 === Warm-up iterations
 

@@ -310,7 +310,7 @@ public class MainApp {
 * The `eventLoopHandler` method installs handlers that drive the benchmark lifecycle on the `EventLoop`'s thread.
 * This is useful when the code being benchmarked is designed to run on a specific event loop.
 * `JLBHOptions.accountForCoordinatedOmission(true)` (the default) is essential for `eventLoopHandler` to function correctly.
----
+'''
 
 == Using Multiple Probes for Staged Operations
 
@@ -406,7 +406,7 @@ public class MainApp {
 * This approach is excellent for identifying bottlenecks within a larger operation.
 * The JLBH output will include separate percentile summaries for "Stage1_Processing", "Stage2_Persistence", and the default "end to end" probe.
 
----
+'''
 
 == Recording and Exporting Results
 
