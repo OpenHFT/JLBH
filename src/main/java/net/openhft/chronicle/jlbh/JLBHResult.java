@@ -56,7 +56,7 @@ public interface JLBHResult {
      *
      * @param probeName name of the probe for which results are requested
      * @return an {@code Optional} containing the probe results or
-     *         {@link Optional#empty()} if the probe is not present
+     * {@link Optional#empty()} if the probe is not present
      */
     @NotNull
     Optional<ProbeResult> probe(String probeName);
@@ -185,7 +185,7 @@ public interface JLBHResult {
          * {@code null} value will be returned.</p>
          *
          * @return duration of the 99.99th percentile or {@code null} when
-         *         not available
+         * not available
          */
         @Nullable
         Duration get9999thPercentile();
@@ -199,23 +199,41 @@ public interface JLBHResult {
         Duration getWorst();
 
         enum Percentile {
-            /** 50th percentile (median). */
+            /**
+             * 50th percentile (median).
+             */
             PERCENTILE_50TH,
-            /** 90th percentile. */
+            /**
+             * 90th percentile.
+             */
             PERCENTILE_90TH,
-            /** 99th percentile. */
+            /**
+             * 99th percentile.
+             */
             PERCENTILE_99TH,
-            /** 99.7th percentile. */
+            /**
+             * 99.7th percentile.
+             */
             PERCENTILE_99_7TH,
-            /** 99.9th percentile. */
+            /**
+             * 99.9th percentile.
+             */
             PERCENTILE_99_9TH,
-            /** 99.97th percentile. */
+            /**
+             * 99.97th percentile.
+             */
             PERCENTILE_99_97TH,
-            /** 99.99th percentile. */
+            /**
+             * 99.99th percentile.
+             */
             PERCENTILE_99_99TH,
-            /** 99.999th percentile. */
+            /**
+             * 99.999th percentile.
+             */
             PERCENTILE_99_999TH,
-            /** Highest (worst) observed latency. */
+            /**
+             * Highest (worst) observed latency.
+             */
             WORST
         }
     }

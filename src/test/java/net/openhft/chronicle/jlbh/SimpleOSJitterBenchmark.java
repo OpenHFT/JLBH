@@ -35,7 +35,7 @@ public class SimpleOSJitterBenchmark implements JLBHTask {
                 .recordOSJitter(true)
                 .runs(4)
                 .jlbhTask(new SimpleOSJitterBenchmark());
-        new JLBH(lth,System.out, jlbhResult -> {
+        new JLBH(lth, System.out, jlbhResult -> {
             jlbhResult.osJitter().ifPresent(probeResult -> {
                 JLBHResult.RunResult runResult = probeResult.summaryOfLastRun();
                 System.out.println("runResult = " + runResult);

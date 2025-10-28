@@ -49,6 +49,7 @@ public class JLBHOptions {
     boolean jitterAffinity;
     Supplier<AffinityLock> acquireLock = Affinity::acquireLock;
     long timeout;
+
     /**
      * Number of iterations per second to be pushed through the benchmark
      *

@@ -31,7 +31,7 @@ import java.util.Optional;
  * JLBHResult result = consumer.get();
  * JLBHResultSerializer.runResultToCSV(result);
  * }</pre>
- *
+ * <p>
  * which will create a {@code result.csv} file in the working directory.  Other
  * overloads allow specifying the file name, the set of probes to export and
  * whether the OS jitter probe should be included.
@@ -89,10 +89,10 @@ public class JLBHResultSerializer {
      * {@code namesOfProbes} a row is written if that probe exists. When
      * {@code includeOSJitter} is {@code true} the OS jitter probe is appended.
      *
-     * @param jlbhResult       the benchmark result to serialise
-     * @param fileName         path of the CSV file to create
-     * @param namesOfProbes    additional probes to export
-     * @param includeOSJitter  whether to include OS jitter metrics
+     * @param jlbhResult      the benchmark result to serialise
+     * @param fileName        path of the CSV file to create
+     * @param namesOfProbes   additional probes to export
+     * @param includeOSJitter whether to include OS jitter metrics
      * @throws IOException if the file cannot be written
      */
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName, Iterable<String> namesOfProbes, boolean includeOSJitter) throws IOException {

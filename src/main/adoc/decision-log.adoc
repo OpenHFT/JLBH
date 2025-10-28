@@ -5,7 +5,8 @@ Chronicle Software
 :toc:
 :lang: en-GB
 
-This document records key architectural and project choices made during the development of Chronicle JLBH. Entries follow the Decision Record Template so that contributors can trace why a change occurred.
+This document records key architectural and project choices made during the development of Chronicle JLBH.
+Entries follow the Decision Record Template so that contributors can trace why a change occurred.
 
 == Decisions
 

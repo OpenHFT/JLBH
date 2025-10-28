@@ -96,10 +96,10 @@ public class PercentileSummaryTest {
         final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, percentiles);
         percentileSummary.printSummary();
 
-        assertEquals((0.009 - 0.002) / (0.009 + 0.002 /2) * 100, percentileSummary.calculateVariance(0), DELTA);
-        assertEquals((0.009 - 0.003) / (0.009 + 0.003 /2) * 100, percentileSummary.calculateVariance(1), DELTA);
-        assertEquals((0.009 - 0.004) / (0.009 + 0.004 /2) * 100, percentileSummary.calculateVariance(2), DELTA);
-        assertEquals((0.009 - 0.005) / (0.009 + 0.005 /2) * 100, percentileSummary.calculateVariance(3), DELTA);
+        assertEquals((0.009 - 0.002) / (0.009 + 0.002 / 2) * 100, percentileSummary.calculateVariance(0), DELTA);
+        assertEquals((0.009 - 0.003) / (0.009 + 0.003 / 2) * 100, percentileSummary.calculateVariance(1), DELTA);
+        assertEquals((0.009 - 0.004) / (0.009 + 0.004 / 2) * 100, percentileSummary.calculateVariance(2), DELTA);
+        assertEquals((0.009 - 0.005) / (0.009 + 0.005 / 2) * 100, percentileSummary.calculateVariance(3), DELTA);
         assertEquals(0, percentileSummary.calculateVariance(percentiles.length - 2), DELTA);
     }
 
@@ -119,9 +119,9 @@ public class PercentileSummaryTest {
         percentileSummary.printSummary();
 
         // 50th percentile
-        assertEquals((0.009 - 0.003) / (0.009 + 0.003 /2) * 100, percentileSummary.calculateVariance(0), DELTA);
+        assertEquals((0.009 - 0.003) / (0.009 + 0.003 / 2) * 100, percentileSummary.calculateVariance(0), DELTA);
         // 90th has no value in the first run, so nothing to skip?
-        assertEquals((0.009 - 0.003) / (0.009 + 0.003 /2) * 100, percentileSummary.calculateVariance(1), DELTA);
+        assertEquals((0.009 - 0.003) / (0.009 + 0.003 / 2) * 100, percentileSummary.calculateVariance(1), DELTA);
     }
 
     @Test
@@ -144,10 +144,10 @@ public class PercentileSummaryTest {
             receivedValues.add(values);
             receivedVariances.add(variance);
         });
-        assertArrayEquals(new Double[] {0.5, 0.9, 1.0}, receivedPercentiles.toArray(new Double[] {}));
-        assertArrayEquals(new double[] {0.002, 0.003}, receivedValues.get(0), DELTA);
-        assertArrayEquals(new double[] {POSITIVE_INFINITY, 0.003}, receivedValues.get(1), DELTA);
-        assertArrayEquals(new double[] {0.002, 0.003}, receivedValues.get(2), DELTA);
-        assertArrayEquals(new Double[] {25.0, 0.0, 25.0}, receivedVariances.toArray(new Double[] {}));
+        assertArrayEquals(new Double[]{0.5, 0.9, 1.0}, receivedPercentiles.toArray(new Double[]{}));
+        assertArrayEquals(new double[]{0.002, 0.003}, receivedValues.get(0), DELTA);
+        assertArrayEquals(new double[]{POSITIVE_INFINITY, 0.003}, receivedValues.get(1), DELTA);
+        assertArrayEquals(new double[]{0.002, 0.003}, receivedValues.get(2), DELTA);
+        assertArrayEquals(new Double[]{25.0, 0.0, 25.0}, receivedVariances.toArray(new Double[]{}));
     }
 }

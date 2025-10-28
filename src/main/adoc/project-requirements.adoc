@@ -14,9 +14,11 @@ Key features include compensation for *co-ordinated omission*, configurable thro
 == Introduction
 
 === Purpose
+
 This document specifies functional and non-functional requirements for Chronicle JLBH, ensuring that contributors and integrators share a common understanding of the product's goals and constraints.
 
 === Scope
+
 The harness targets _low-latency_ Java applications (trading systems, micro-services, real-time analytics) that must quantify latencies at extreme percentiles under realistic load patterns.
 
 === Definitions, Acronyms and Abbreviations
@@ -40,13 +42,16 @@ The harness targets _low-latency_ Java applications (trading systems, micro-serv
 * Chronicle blog post on JLBH in event loops: https://vanilla-java.github.io/2016/04/02/Microservices-in-the-Chronicle-World-Part-5.html[Vanilla-Java article]
 
 === Overview
+
 Sections 2-5 describe the product context, interfaces, detailed system features, and quality attributes.
 Section 6 captures licensing, whilst Section 7 presents the glossary.
 
 == Overall Description
 
 === Product Perspective
-JLBH is delivered as a *Maven* artefact (`net.openhft:jlbh`) and depends on Chronicle Core for low-level utilities. It may be embedded in unit tests, standalone mains, or invoked as an _EventLoop_ handler.
+
+JLBH is delivered as a *Maven* artefact (`net.openhft:jlbh`) and depends on Chronicle Core for low-level utilities.
+It may be embedded in unit tests, standalone mains, or invoked as an _EventLoop_ handler.
 
 === Product Functions
 
@@ -100,10 +105,13 @@ JLBH is delivered as a *Maven* artefact (`net.openhft:jlbh`) and depends on Chro
 * `JLBHResultSerializer` - CSV writer for analytics pipelines.
 
 === User Interface
+
 CLI usage is demonstrated in _ExampleJLBHMain_ and test fixtures; no dedicated GUI is provided.
 
 === Hardware Interfaces
-None. The harness interacts with OS timers and CPU affinity via JNI where available.
+
+None.
+The harness interacts with OS timers and CPU affinity via JNI where available.
 
 === Software Interfaces
 
@@ -115,49 +123,65 @@ None. The harness interacts with OS timers and CPU affinity via JNI where availa
 == System Features
 
 === FN-001 Latency Sampling
+
 *Description*: Collect nanosecond deltas from user code via `sample(long)` or `sampleNanos(long)`.
 *Stimulus/Response*: Upon each iteration, `JLBHTask.run` calls `jlbh.sample(...)`; histogram updates occur; run summary printed at completion.
 *Priority*: *Essential*.
 
 === FN-002 Coordinated-Omission Compensation
-Ensures that queue back-log does not under-represent tail latency. Enabled by default; opt-out via `accountForCoordinatedOmission(false)`.
+
+Ensures that queue back-log does not under-represent tail latency.
+Enabled by default; opt-out via `accountForCoordinatedOmission(false)`.
 
 === FN-003 Additional Probes
+
 Developers may time sub-stages (e.g., serialisation, network round-trip) through `addProbe(String)` and record them independently.
 
 === FN-004 OS Jitter Tracking
-A background thread measures scheduling gaps exceeding a configured threshold (`recordJitterGreaterThanNs`). Monitoring is enabled by default and can be disabled via `recordOSJitter(false)`. Results are summarised alongside core latencies.
+
+A background thread measures scheduling gaps exceeding a configured threshold (`recordJitterGreaterThanNs`).
+Monitoring is enabled by default and can be disabled via `recordOSJitter(false)`.
+Results are summarised alongside core latencies.
 
 === FN-005 CSV Serialisation
+
 Post-run, results can be persisted for offline analysis (`result.csv` by default).
 
 === FN-006 Event Loop Integration
+
 `eventLoopHandler(EventLoop)` allows benchmarks to operate inside Chronicle threading framework, avoiding extra threads.
 
 == Non-Functional Requirements
 
 === NF-P-001 Performance
+
 * Overhead per sample must remain below 100 ns when no additional probes are active.
 * Histogram generation must support >=200 M iterations without heap pressure.
 
 === NF-R-001 Reliability
+
 * Harness must abort gracefully on thread interruptions or sample time-outs (`timeout(long)`).
 * Immutable result objects ensure thread-safe publication to external consumers.
 
 === NF-UX-001 Usability
+
 * Fluent builder API; sensible defaults provide a runnable benchmark in ≤10 LOC.
 * ASCII table outputs are human-readable and CI-friendly.
 
 === NF-O-001 Portability
+
 * Pure-Java codebase; no native compilation steps.
 * JDK-specific optimisations (e.g., *Zing* support) are runtime-detected.
 
 === NF-O-002 Maintainability
+
 * 80 %+ unit-test line coverage with deterministic fixtures.
 * Code adheres to Chronicle parent POM style and SonarCloud quality gates.
 
 === NF-S-001 Security
-No executable deserialisation; harness operates in-process. Users remain responsible for securing benchmarked code.
+
+No executable deserialisation; harness operates in-process.
+Users remain responsible for securing benchmarked code.
 
 == Licensing
 
@@ -192,8 +216,13 @@ public class NothingBenchmark implements JLBHTask {
 
 == Appendix B - Footnotes
 
-* JLBH originated within the Chronicle Software open-source stack and is actively maintained. See https://github.com/OpenHFT/JLBH.
-* The API reference highlights the focus on _co-ordinated omission_ and event-loop support. See https://www.javadoc.io/doc/net.openhft/chronicle-core/latest/net/openhft/chronicle/jlbh/JLBH.html.
-* A multi-part blog series gives practical guidance on designing realistic latency tests. See http://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html.
-* Vanilla-Java's micro-services article demonstrates embedding JLBH in an event-driven architecture. See https://vanilla-java.github.io/2016/04/02/Microservices-in-the-Chronicle-World-Part-5.html.
-* Original discussion of co-ordinated omission by Gil Tene motivates JLBH's default settings. See https://groups.google.com/g/mechanical-sympathy/c/icNZJejUHfE.
+* JLBH originated within the Chronicle Software open-source stack and is actively maintained.
+See https://github.com/OpenHFT/JLBH.
+* The API reference highlights the focus on _co-ordinated omission_ and event-loop support.
+See https://www.javadoc.io/doc/net.openhft/chronicle-core/latest/net/openhft/chronicle/jlbh/JLBH.html.
+* A multi-part blog series gives practical guidance on designing realistic latency tests.
+See http://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html.
+* Vanilla-Java's micro-services article demonstrates embedding JLBH in an event-driven architecture.
+See https://vanilla-java.github.io/2016/04/02/Microservices-in-the-Chronicle-World-Part-5.html.
+* Original discussion of co-ordinated omission by Gil Tene motivates JLBH's default settings.
+See https://groups.google.com/g/mechanical-sympathy/c/icNZJejUHfE.

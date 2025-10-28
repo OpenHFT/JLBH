@@ -73,13 +73,13 @@ public final class TeamCityHelper {
      * <p>For each percentile a {@code buildStatisticValue} service message is
      * emitted so that TeamCity can record the values as build statistics.</p>
      *
-     * @param prefix     prefix used to construct the TeamCity statistic key. The
-     *                   generated key has the form
-     *                   {@code prefix.&lt;probe&gt;.&lt;percentile&gt;}
-     * @param jlbh       benchmark instance providing access to the percentile
-     *                   data for the last run
-     * @param iterations total number of iterations executed in the run; used to
-     *                   derive the set of percentiles that will be output
+     * @param prefix      prefix used to construct the TeamCity statistic key. The
+     *                    generated key has the form
+     *                    {@code prefix.&lt;probe&gt;.&lt;percentile&gt;}
+     * @param jlbh        benchmark instance providing access to the percentile
+     *                    data for the last run
+     * @param iterations  total number of iterations executed in the run; used to
+     *                    derive the set of percentiles that will be output
      * @param printStream destination to which the TeamCity service messages are
      *                    written
      */

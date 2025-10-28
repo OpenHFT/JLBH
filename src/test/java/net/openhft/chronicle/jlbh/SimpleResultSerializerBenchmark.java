@@ -33,8 +33,8 @@ public class SimpleResultSerializerBenchmark implements JLBHTask {
                 .throughput(100_000)
 //                .accountForCoordinatedOmission(true)
                 .runs(2)
-                .jlbhTask(new SimpleResultSerializerBenchmark() );
-        new JLBH(lth, System.out,jlbhResult -> {
+                .jlbhTask(new SimpleResultSerializerBenchmark());
+        new JLBH(lth, System.out, jlbhResult -> {
             try {
                 System.out.println("Serializing result...");
                 JLBHResultSerializer.runResultToCSV(jlbhResult);

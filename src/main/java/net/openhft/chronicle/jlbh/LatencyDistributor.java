@@ -29,9 +29,9 @@ public interface LatencyDistributor {
      * Adjust the delay between benchmark iterations.
      *
      * @param averageLatencyNS the nominal delay in nanoseconds derived from the
-     *                          configured throughput
+     *                         configured throughput
      * @return the actual number of nanoseconds to wait before the next
-     *         iteration is executed
+     * iteration is executed
      */
     long apply(long averageLatencyNS);
 }

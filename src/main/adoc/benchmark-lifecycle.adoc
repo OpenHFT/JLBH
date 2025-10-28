@@ -13,13 +13,15 @@ graph LR
     D --> E[Cleanup];
 ----
 
-A typical JLBH (Java Latency Benchmark Harness) execution follows a distinct lifecycle designed to ensure accurate and repeatable latency measurements. The key phases are:
+A typical JLBH (Java Latency Benchmark Harness) execution follows a distinct lifecycle designed to ensure accurate and repeatable latency measurements.
+The key phases are:
 
 == Setup
 
 This initial phase prepares the benchmark environment:
 
-* **JLBH Configuration**: The user instantiates `JLBHOptions` to define all benchmark parameters (e.g., iterations, throughput, runs, coordinated omission settings). An instance of `JLBH` is then created using these options.
+* **JLBH Configuration**: The user instantiates `JLBHOptions` to define all benchmark parameters (e.g., iterations, throughput, runs, coordinated omission settings).
+An instance of `JLBH` is then created using these options.
 * **Task Initialization**: The `JLBHTask.init(JLBH jlbh)` method of the user-provided task is invoked.
 ** This allows the benchmark task to perform its own one-time setup, such as initializing resources or fixtures.
 ** Crucially, this is where additional measurement probes can be registered by calling `jlbh.addProbe("probeName")` to get `NanoSampler` instances for specific sub-sections of the task.
@@ -30,24 +32,29 @@ This initial phase prepares the benchmark environment:
 
 Before any measurements are formally recorded, the harness executes a warm-up phase:
 
-* **Warmup Iterations**: The `JLBHTask.run(long startTimeNs)` method is called `warmUpIterations` times (as specified in `JLBHOptions`). The `startTimeNs` passed is typically just `System.nanoTime()` for this phase.
+* **Warmup Iterations**: The `JLBHTask.run(long startTimeNs)` method is called `warmUpIterations` times (as specified in `JLBHOptions`).
+The `startTimeNs` passed is typically just `System.nanoTime()` for this phase.
 ** The primary goal is to allow the Java Virtual Machine (JVM) to perform Just-In-Time (JIT) compilation and optimize the benchmarked code paths.
 ** It also helps in bringing caches to a "warm" state and letting the system reach a more stable performance profile.
-* **Sample Discarding**: Latency samples generated during the warmup phase are usually recorded into the histograms but are *not* part of the final reported results. The histograms are reset after this phase.
+* **Sample Discarding**: Latency samples generated during the warmup phase are usually recorded into the histograms but are *not* part of the final reported results.
+The histograms are reset after this phase.
 * **Task Notification**: After all warmup iterations are complete, the `JLBHTask.warmedUp()` method is called.
 * **Optional Pause**: If `JLBHOptions.pauseAfterWarmupMS` is greater than zero, JLBH will pause for the specified duration before proceeding to the execution phase.
 
 == Execution (Measurement Runs)
 
-This is the core phase where timed iterations are performed and latency data is collected. This phase consists of one or more "runs" (as configured by `JLBHOptions.runs`):
+This is the core phase where timed iterations are performed and latency data is collected.
+This phase consists of one or more "runs" (as configured by `JLBHOptions.runs`):
 
 * **Per Run**:
 ** The following steps are repeated for each configured run.
 ** **Iteration Loop**: The `JLBH` orchestrator executes a loop for the number of `iterations` specified in `JLBHOptions`.
-*** **Start Time Calculation**: For each iteration, JLBH calculates an ideal `startTimeNs`. This calculation considers:
+*** **Start Time Calculation**: For each iteration, JLBH calculates an ideal `startTimeNs`.
+This calculation considers:
 **** The configured `throughput` (e.g., messages per second).
 **** The `LatencyDistributor` strategy, if one is set, to potentially vary the inter-iteration delay.
-**** If `accountForCoordinatedOmission` is true (the default), `startTimeNs` represents the ideal scheduled time for the operation. JLBH will then busy-wait (spin) until `System.nanoTime()` reaches this `startTimeNs`, ensuring the task is dispatched as close as possible to its intended schedule, thus accounting for delays that might otherwise be missed.
+**** If `accountForCoordinatedOmission` is true (the default), `startTimeNs` represents the ideal scheduled time for the operation.
+JLBH will then busy-wait (spin) until `System.nanoTime()` reaches this `startTimeNs`, ensuring the task is dispatched as close as possible to its intended schedule, thus accounting for delays that might otherwise be missed.
 *** **Task Invocation**: The `JLBHTask.run(startTimeNs)` method is invoked with the calculated (and potentially waited-for) `startTimeNs`.
 *** **Sample Recording**:
 **** Within the `JLBHTask.run()` method, the user's code is executed.
@@ -65,8 +72,10 @@ This is the core phase where timed iterations are performed and latency data is 
 After all measurement runs are completed, the aggregated results are finalized and made available:
 
 * **Final Summary**: A comprehensive summary, often comparing results across all runs and highlighting percentile variations, is printed to the `PrintStream`.
-* **Result Object Creation**: The final, immutable `JLBHResult` object is constructed. This object encapsulates all recorded data for all probes across all runs.
-* **Result Consumption**: If a `JLBHResultConsumer` was provided during JLBH setup, its `accept(JLBHResult)` method is called, passing the `JLBHResult` object. This allows for programmatic access to the detailed results, for example, for assertion in automated tests or for custom serialization.
+* **Result Object Creation**: The final, immutable `JLBHResult` object is constructed.
+This object encapsulates all recorded data for all probes across all runs.
+* **Result Consumption**: If a `JLBHResultConsumer` was provided during JLBH setup, its `accept(JLBHResult)` method is called, passing the `JLBHResult` object.
+This allows for programmatic access to the detailed results, for example, for assertion in automated tests or for custom serialization.
 * **External Tools**: Users can further process the `JLBHResult` using utilities like:
 ** `JLBHResultSerializer` to write results to a CSV file for analysis in spreadsheets or other tools.
 ** `TeamCityHelper` to output statistics in a format suitable for TeamCity CI server integration.

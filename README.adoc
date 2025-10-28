@@ -17,13 +17,15 @@ toc::[]
 
 == About
 
-Java Latency Benchmark Harness is a tool that allows you to benchmark your code running in context, rather than in a microbenchmark. See <<further-reading,Further Reading>> for a series of articles introducing JLBH.
+Java Latency Benchmark Harness is a tool that allows you to benchmark your code running in context, rather than in a microbenchmark.
+See <<further-reading,Further Reading>> for a series of articles introducing JLBH.
 An excellent introduction can be found in http://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html[this series of articles.]
 link:src/main/adoc/project-requirements.adoc[The requirements document] contains detailed feature descriptions.
 
 For terminology used throughout the project, see link:src/main/adoc/project-requirements.adoc#_7-glossary[the Glossary (section 7)].
 
-Since those articles were written the main change has been to allow JLBH to be installed  to an event loop, rather than it running in its own thread. To do this, use the JLBH.eventLoopHandler method rather than JLBH.start.
+Since those articles were written the main change has been to allow JLBH to be installed to an event loop, rather than it running in its own thread.
+To do this, use the JLBH.eventLoopHandler method rather than JLBH.start.
 
 NOTE: The JLBH harness itself runs on a single thread; benchmarked code may spawn threads, but the harness thread is unique.
 
@@ -82,10 +84,16 @@ For a visual overview of how a benchmark progresses, see the link:src/main/adoc/
 == Additional Features
 
 === OS Jitter Measurement
-JLBH can optionally track operating-system jitter by running a background thread that records scheduler delays as a separate probe. This is useful when investigating latency spikes caused by kernel activity, but it incurs some overhead so it is enabled by default. Disable it via `recordOSJitter(false)` when you want to avoid the extra monitoring. The feature is listed in the requirements specification around lines 52 and 56 of `project-requirements.adoc`.
+
+JLBH can optionally track operating-system jitter by running a background thread that records scheduler delays as a separate probe.
+This is useful when investigating latency spikes caused by kernel activity, but it incurs some overhead so it is enabled by default.
+Disable it via `recordOSJitter(false)` when you want to avoid the extra monitoring.
+The feature is listed in the requirements specification around lines 52 and 56 of `project-requirements.adoc`.
 
 === Adding custom probes
-JLBH lets you time additional stages of your benchmark using `addProbe(String)`. The returned `NanoSampler` records its own histogram.
+
+JLBH lets you time additional stages of your benchmark using `addProbe(String)`.
+The returned `NanoSampler` records its own histogram.
 
 [source,java]
 ----
@@ -113,17 +121,22 @@ class ProbedTask implements JLBHTask {
 For a runnable example see `src/test/java/net/openhft/chronicle/jlbh/SimpleOSJitterBenchmark.java`.
 
 === CSV Output
-To export JLBH results in CSV format, invoke `JLBHResultSerializer.runResultToCSV(jlbhResult)`. This writes the output to `result.csv` by default, as defined in `JLBHResultSerializer.RESULT_CSV`.
+
+To export JLBH results in CSV format, invoke `JLBHResultSerializer.runResultToCSV(jlbhResult)`.
+This writes the output to `result.csv` by default, as defined in `JLBHResultSerializer.RESULT_CSV`.
 
 == Environment and Configuration
 
 CPU affinity can be configured using the OpenHFT Affinity library as noted in the link:src/main/adoc/project-requirements.adoc[requirements document].
 
-Histogramming of recorded latencies is precise. As specified in the link:src/main/adoc/project-requirements.adoc[jlbh-requirements], JLBH generates high-resolution histograms of at least 35 bits. This accuracy retains sub-nanosecond resolution over a wide range, so the reported percentiles closely reflect true end-to-end timings.
+Histogramming of recorded latencies is precise.
+As specified in the link:src/main/adoc/project-requirements.adoc[jlbh-requirements], JLBH generates high-resolution histograms of at least 35 bits.
+This accuracy retains sub-nanosecond resolution over a wide range, so the reported percentiles closely reflect true end-to-end timings.
 
 == Sample Benchmarks and Tests
 
-The project ships with several example tasks and tests located under `src/test/java/net/openhft/chronicle/jlbh`. They can serve as a starting point when writing your own benchmarks.
+The project ships with several example tasks and tests located under `src/test/java/net/openhft/chronicle/jlbh`.
+They can serve as a starting point when writing your own benchmarks.
 
 |===
 | Class | Purpose
@@ -181,10 +194,10 @@ worst:          12.56        12.56        10.61        10.93
 
 http://www.rationaljava.com/2016/04/jlbh-examples-1-why-code-should-be.html[Why Code Should be Benchmarked in Context]
 
- - A side by side example using JMH and JLBH for Date serialisation
- - Measuring Date serialisation in a microbenchmark
- - Measuring Date serialisation as part of a proper application
- - How to add a probe to your JLBH benchmark
+- A side by side example using JMH and JLBH for Date serialisation
+- Measuring Date serialisation in a microbenchmark
+- Measuring Date serialisation as part of a proper application
+- How to add a probe to your JLBH benchmark
 - Understanding the importance of measuring code in context
 
 Co-ordinated omission occurs when latency measurements ignore the time requests wait to be serviced, leading to unrealistically low results.
@@ -221,12 +234,16 @@ http://www.rationaljava.com/2016/04/jlbh-examples-4-benchmarking-quickfix.html[B
 
 === Warm-up iterations
 
-JLBH performs a warm-up phase before measurements start. A rule of thumb is to warm up for about 30% of the run iterations. Override this with `warmUpIterations(int)` if needed.
+JLBH performs a warm-up phase before measurements start.
+A rule of thumb is to warm up for about 30% of the run iterations.
+Override this with `warmUpIterations(int)` if needed.
 
 === Throughput modelling
 
-Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns. Start with your production rate and tune to study latency trade-offs.
+Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns.
+Start with your production rate and tune to study latency trade-offs.
 
 == Licensing and Release Information
 
-The code is licensed under the terms described in the link:LICENSE.adoc[Apache 2.0 License]. Releases are available on link:https://github.com/OpenHFT/JLBH/releases[GitHub].
+The code is licensed under the terms described in the link:LICENSE.adoc[Apache 2.0 License].
+Releases are available on link:https://github.com/OpenHFT/JLBH/releases[GitHub].
