@@ -1,3 +1,7 @@
+//
+// Copyright 2013-2025 chronicle.software; SPDX-License-Identifier: Apache-2.0
+//
+
 /*
  * Copyright 2016-2025 chronicle.software
  *
@@ -39,8 +43,8 @@ import net.openhft.chronicle.core.Jvm;
 import org.jetbrains.annotations.NotNull;
 
 public class ExampleJLBHMain implements JLBHTask {
-    int count = 0;
-    double sin;
+    private int count = 0;
+    private double sin;
     //private NanoSampler nanoSamplerSin;
     //private NanoSampler nanoSamplerWait;
     private JLBH lth;

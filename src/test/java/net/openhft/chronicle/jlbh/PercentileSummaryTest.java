@@ -1,3 +1,7 @@
+//
+// Copyright 2013-2025 chronicle.software; SPDX-License-Identifier: Apache-2.0
+//
+
 /*
  * Copyright 2016-2025 chronicle.software
  *
@@ -27,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 
 public class PercentileSummaryTest {
 
-    public static final double DELTA = 0.00001;
+    private static final double DELTA = 0.00001;
 
     @Test
     public void testThatMissingPercentilesAreOmitted() {

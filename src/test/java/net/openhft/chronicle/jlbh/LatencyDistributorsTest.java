@@ -1,3 +1,7 @@
+//
+// Copyright 2013-2025 chronicle.software; SPDX-License-Identifier: Apache-2.0
+//
+
 /*
  * Copyright 2016-2025 chronicle.software
  *
@@ -29,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class LatencyDistributorsTest {
 
-    final LatencyDistributor ld;
+    private final LatencyDistributor ld;
 
     public LatencyDistributorsTest(LatencyDistributor ld) {
         this.ld = ld;
