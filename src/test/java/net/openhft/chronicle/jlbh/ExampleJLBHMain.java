@@ -25,8 +25,8 @@ import org.jetbrains.annotations.NotNull;
  * <p>The harness will print percentile summaries for each run to {@code System.out}.</p>
  */
 public class ExampleJLBHMain implements JLBHTask {
-    int count = 0;
-    double sin;
+    private int count = 0;
+    private double sin;
     //private NanoSampler nanoSamplerSin;
     //private NanoSampler nanoSamplerWait;
     private JLBH lth;

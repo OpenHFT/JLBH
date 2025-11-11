@@ -15,11 +15,6 @@
         <relativePath />
     </parent>
 
-    <properties>
-      <sonar.organization>openhft</sonar.organization>
-      <sonar.host.url>https://sonarcloud.io</sonar.host.url>   
-    </properties>
-  
     <artifactId>jlbh</artifactId>
     <version>1.27ea2-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
@@ -109,20 +104,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <showWarnings>true</showWarnings>
-                    <failOnWarning>false</failOnWarning>
-                    <compilerArgs>
-                        <arg>-Xlint:all</arg>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-
             <!--
                 generate maven dependencies versions file that can be used later
                 to install the right bundle in test phase.
@@ -139,27 +120,6 @@
                         <id>generate-depends-file</id>
                         <goals>
                             <goal>generate-depends-file</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.14</version>
-                <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>

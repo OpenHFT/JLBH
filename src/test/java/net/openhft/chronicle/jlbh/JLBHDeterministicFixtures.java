@@ -7,10 +7,10 @@ import net.openhft.chronicle.core.util.NanoSampler;
 
 public class JLBHDeterministicFixtures {
 
-    static final int WARM_UP_ITERATIONS = 500;
+    private static final int WARM_UP_ITERATIONS = 500;
     static final int ITERATIONS = 9_000;
-    static final int THROUGHPUT = 1_000_000;
-    static final int RUNS = 3;
+    private static final int THROUGHPUT = 1_000_000;
+    private static final int RUNS = 3;
     private final static String expectedOutput = "" +
             "Warm up complete ...\n" +
             "-------------------------------- BENCHMARK RESULTS (RUN 1) us --------------------------------------\n" +
@@ -88,7 +88,7 @@ public class JLBHDeterministicFixtures {
 
     static class PredictableJLBHTask implements JLBHTask {
 
-        protected int nanoTime = 1_000_000;
+        int nanoTime = 1_000_000;
         private int latency;
         private JLBH lth;
         private NanoSampler additionalSamplerA;
@@ -114,7 +114,7 @@ public class JLBHDeterministicFixtures {
         public void complete() {
         }
 
-        protected boolean sampleB() {
+        boolean sampleB() {
             return true;
         }
     }

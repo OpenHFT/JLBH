@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class LatencyDistributorsTest {
 
-    final LatencyDistributor ld;
+    private final LatencyDistributor ld;
 
     public LatencyDistributorsTest(LatencyDistributor ld) {
         this.ld = ld;
