@@ -1,8 +1,10 @@
-//
-// Copyright 2013-2025 chronicle.software; SPDX-License-Identifier: Apache-2.0
-//
-
+/*
+ * Copyright 2013-2025 chronicle.software; SPDX-License-Identifier: Apache-2.0
+ */
 package net.openhft.chronicle.jlbh;
+
+import net.openhft.chronicle.core.Jvm;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>A minimal command line example demonstrating how to configure and invoke the
@@ -22,10 +24,6 @@ package net.openhft.chronicle.jlbh;
  *
  * <p>The harness will print percentile summaries for each run to {@code System.out}.</p>
  */
-
-import net.openhft.chronicle.core.Jvm;
-import org.jetbrains.annotations.NotNull;
-
 public class ExampleJLBHMain implements JLBHTask {
     private int count = 0;
     private double sin;

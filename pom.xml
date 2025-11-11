@@ -104,20 +104,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <showWarnings>true</showWarnings>
-                    <failOnWarning>false</failOnWarning>
-                    <compilerArgs>
-                        <arg>-Xlint:all</arg>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-
             <!--
                 generate maven dependencies versions file that can be used later
                 to install the right bundle in test phase.
