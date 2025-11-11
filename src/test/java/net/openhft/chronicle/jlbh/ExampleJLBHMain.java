@@ -3,6 +3,9 @@
  */
 package net.openhft.chronicle.jlbh;
 
+import net.openhft.chronicle.core.Jvm;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * <p>A minimal command line example demonstrating how to configure and invoke the
  * Java Latency Benchmark Harness (JLBH). The benchmark performs a {@code Math.sin}
@@ -21,10 +24,6 @@ package net.openhft.chronicle.jlbh;
  *
  * <p>The harness will print percentile summaries for each run to {@code System.out}.</p>
  */
-
-import net.openhft.chronicle.core.Jvm;
-import org.jetbrains.annotations.NotNull;
-
 public class ExampleJLBHMain implements JLBHTask {
     int count = 0;
     double sin;
