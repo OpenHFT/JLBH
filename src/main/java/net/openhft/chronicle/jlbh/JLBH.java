@@ -133,8 +133,9 @@ public class JLBH implements NanoSampler {
                 : jlbhOptions.iterations > 50_000_000 ? 20_000_000_000L
                 : jlbhOptions.iterations > 10_000_000 ? 10_000_000_000L
                 : 5_000_000_000L;
-        long mod2;
-        for (mod2 = 1000; mod2 <= jlbhOptions.iterations / 200; mod2 *= 10) {
+        long mod2 = 1000;
+        while (mod2 <= jlbhOptions.iterations / 200) {
+            mod2 *= 10;
         }
         this.mod = mod2;
     }
@@ -418,8 +419,6 @@ public class JLBH implements NanoSampler {
                 List<double[]> ds = additionalPercentileRuns.computeIfAbsent(key,
                         i -> new ArrayList<>());
                 ds.add(value.getPercentiles());
-//                if (value.totalCount() != jlbhOptions.iterations)
-//                    warning = " WARNING " + value.totalCount() + "!=" + jlbhOptions.iterations;
                 printStream.printf("%-48s", format("%s (%,d)", key, value.totalCount()));
                 printStream.println(value.toMicrosFormat());
             });
@@ -529,9 +528,9 @@ public class JLBH implements NanoSampler {
                     .append("\n");
             double[] percentiles = Histogram.percentilesFor(jlbhOptions.iterations);
             boolean skipFirst = percentiles.length > 3;
-            if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.SKIP) {
+            if (jlbhOptions.skipFirstRun == JLBHOptions.SkipFirstRun.SKIP) {
                 skipFirst = true;
-            } else if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.NO_SKIP) {
+            } else if (jlbhOptions.skipFirstRun == JLBHOptions.SkipFirstRun.NO_SKIP) {
                 skipFirst = false;
             }
             PercentileSummary percentileSummary = new PercentileSummary(skipFirst, percentileRuns, percentiles);

@@ -138,7 +138,6 @@ public class JLBHTest {
         assertEquals(5_106L, probeALastRunSummary.get50thPercentile().toNanos(), 20);
         assertEquals(8_708L, probeALastRunSummary.get90thPercentile().toNanos(), 30);
         assertEquals(9_516L, probeALastRunSummary.get99thPercentile().toNanos(), 30);
-//        assertEquals(9_604L, probeALastRunSummary.get9999thPercentile().toNanos());
         assertEquals(9_604L, probeALastRunSummary.getWorst().toNanos(), 30);
         assertEquals(probeALastRunSummary.get50thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_50TH));
         assertEquals(probeALastRunSummary.get90thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_90TH));

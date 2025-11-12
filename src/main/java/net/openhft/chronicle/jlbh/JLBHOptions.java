@@ -31,7 +31,7 @@ public class JLBHOptions {
     JLBHTask jlbhTask;
     int pauseAfterWarmupMS = 0;
     @NotNull
-    SKIP_FIRST_RUN skipFirstRun = SKIP_FIRST_RUN.NOT_SET;
+    SkipFirstRun skipFirstRun = SkipFirstRun.NOT_SET;
     boolean jitterAffinity;
     Supplier<AffinityLock> acquireLock = Affinity::acquireLock;
     long timeout;
@@ -164,8 +164,8 @@ public class JLBHOptions {
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
     @NotNull
-    public JLBHOptions jlbhTask(JLBHTask JLBHTask) {
-        this.jlbhTask = JLBHTask;
+    public JLBHOptions jlbhTask(JLBHTask jlbhTask) {
+        this.jlbhTask = jlbhTask;
         return this;
     }
 
@@ -189,7 +189,7 @@ public class JLBHOptions {
      */
     @NotNull
     public JLBHOptions skipFirstRun(boolean skip) {
-        skipFirstRun = skip ? SKIP_FIRST_RUN.SKIP : SKIP_FIRST_RUN.NO_SKIP;
+        skipFirstRun = skip ? SkipFirstRun.SKIP : SkipFirstRun.NO_SKIP;
         return this;
     }
 
@@ -266,7 +266,7 @@ public class JLBHOptions {
      *     <li>{@link #NO_SKIP} - always include the first run.</li>
      * </ul>
      */
-    enum SKIP_FIRST_RUN {
+    enum SkipFirstRun {
         NOT_SET, SKIP, NO_SKIP
     }
 }

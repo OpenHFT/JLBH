@@ -13,15 +13,16 @@ public class SimpleResultSerializerBenchmark implements JLBHTask {
     private JLBH jlbh;
 
     public static void main(String[] args) {
-        //Create the JLBH options you require for the benchmark
+        // Create the JLBH options you require for the benchmark
         JLBHOptions lth = new JLBHOptions()
                 .warmUpIterations(20_000)
                 .iterations(1_000_000)
                 .throughput(100_000)
-//                .accountForCoordinatedOmission(true)
+                // enable this if you need to compensate for coordinated omission
+                // .accountForCoordinatedOmission(true)
                 .runs(2)
-                .jlbhTask(new SimpleResultSerializerBenchmark() );
-        new JLBH(lth, System.out,jlbhResult -> {
+                .jlbhTask(new SimpleResultSerializerBenchmark());
+        new JLBH(lth, System.out, jlbhResult -> {
             try {
                 System.out.println("Serializing result...");
                 JLBHResultSerializer.runResultToCSV(jlbhResult);
@@ -40,7 +41,8 @@ public class SimpleResultSerializerBenchmark implements JLBHTask {
 
     @Override
     public void run(long startTimeNS) {
-//        long start = System.nanoTime();          // (1)
+        // Use System.nanoTime() here if you only want to measure the local work.
+        // long start = System.nanoTime();          // (1)
         long start = startTimeNS;                       // (2)
         LockSupport.parkNanos(1);
 

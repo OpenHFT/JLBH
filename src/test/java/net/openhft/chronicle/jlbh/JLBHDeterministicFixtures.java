@@ -11,7 +11,7 @@ public class JLBHDeterministicFixtures {
     static final int ITERATIONS = 9_000;
     private static final int THROUGHPUT = 1_000_000;
     private static final int RUNS = 3;
-    private final static String expectedOutput = "" +
+    private static final String expectedOutput = "" +
             "Warm up complete ...\n" +
             "-------------------------------- BENCHMARK RESULTS (RUN 1) us --------------------------------------\n" +
             "Run time: ...s, distribution: NORMAL\n" +
