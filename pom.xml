@@ -15,6 +15,11 @@
         <relativePath />
     </parent>
 
+    <properties>
+        <jacoco.line.coverage>0.883</jacoco.line.coverage>
+        <jacoco.branch.coverage>0.786</jacoco.branch.coverage>
+    </properties>
+
     <artifactId>jlbh</artifactId>
     <version>1.27ea2-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
