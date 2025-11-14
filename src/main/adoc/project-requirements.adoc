@@ -1,9 +1,11 @@
 = Chronicle JLBH - Software Requirements Specification
 Chronicle Software
+:revnumber: 1.0
+:revdate: 23 May 2025
 :toc:
-:sectnums:
 :lang: en-GB
 :source-highlighter: rouge
+:sectnums:
 
 *_Abstract_*::
 Chronicle JLBH is an open-source Java library, released under the Apache Licence 2.0, that provides a high-resolution latency benchmark harness.

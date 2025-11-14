@@ -1,8 +1,11 @@
 = JLBH Results Interpretation Guide
 Chronicle Software
+:revnumber: 1.0
+:revdate: 23 May 2025
 :toc:
-:sectnums:
 :lang: en-GB
+:icons: font
+:sectnums:
 :source-highlighter: rouge
 
 *_Abstract_*::
@@ -67,7 +70,7 @@ JLBH can optionally measure Operating System (OS) jitter, which refers to delays
 * **Mechanism**:
 ** Jitter monitoring is enabled by default (`recordOSJitter` defaults to true); a dedicated background thread (`OSJitterMonitor`) starts unless you explicitly disable it with `recordOSJitter(false)`.
 ** This thread repeatedly calls `System.nanoTime()` in a tight loop and measures the time difference between consecutive calls.
-** If this difference (a "gap") exceeds a configurable threshold (`recordJitterGreaterThanNs`, default 1 µs), it's recorded as an OS jitter event in a separate "OS Jitter" histogram.
+** If this difference (a "gap") exceeds a configurable threshold (`recordJitterGreaterThanNs`, default 1 microsecond), it's recorded as an OS jitter event in a separate "OS Jitter" histogram.
 * **Interpreting Jitter Output**:
 ** The "OS Jitter" probe will have its own percentile table in the JLBH output.
 ** *High jitter values* (e.g., multiple milliseconds at p99 or worst) suggest that the OS, other processes, or hardware interrupts are frequently pausing the benchmark threads for significant periods. This is "machine noise."

@@ -1,8 +1,8 @@
 = Benchmark Lifecycle
-:toc:
-:sectnums:
 :lang: en-GB
 :source-highlighter: rouge
+:toc:
+:sectnums:
 
 [mermaid]
 ----

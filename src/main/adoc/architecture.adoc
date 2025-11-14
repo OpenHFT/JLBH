@@ -4,6 +4,7 @@ Chronicle Software
 :sectnums:
 :lang: en-GB
 :source-highlighter: rouge
+:sectnums:
 
 == Introduction
 
