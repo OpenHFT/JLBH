@@ -11,9 +11,9 @@ LLM-based agents can accelerate development only if they respect our house rules
 | Requirement  | Rationale |
 |--------------|-----------|
 | **British English** spelling (`organisation`, `licence`, *not* `organization`, `license`) except technical US spellings like `synchronized` | Keeps wording consistent with Chronicle's London HQ and existing docs. See the [University of Oxford style guide](https://www.ox.ac.uk/public-affairs/style-guide) for reference. |
-| **ISO-8859-1** (code-points 0-255). Avoid smart quotes, non-breaking spaces and accented characters. | ISO-8859-1 survives every toolchain Chronicle uses. |
-| If a symbol is not available in ISO-8859-1, use a textual form such as `>=`, `:alpha:`, `:yes:`. This is the preferred approach and Unicode must not be inserted. | Extended or '8-bit ASCII' variants are *not* portable and are therefore disallowed. |
-| Tools to check ASCII compliance include `iconv -f ascii -t ascii` and IDE settings that flag non-ASCII characters. | These help catch stray Unicode characters before code review. |
+| **ISO-8859-1 (Latin-1) only** (code-points 0-255). Avoid smart quotes, non-breaking spaces and characters outside this range. | ISO-8859-1 survives every toolchain Chronicle uses, incl. low-latency binary wire formats that expect predictable 8-bit characters. |
+| If a symbol is not available in ISO-8859-1, use a textual form such as `>=`, `:alpha:`, `:yes:`. This is the preferred approach and Unicode outside Latin-1 must not be inserted. | Extended encodings outside ISO-8859-1 are *not* portable and are therefore disallowed. |
+| Tools to check ISO-8859-1 compliance include `iconv -f ISO-8859-1 -t ISO-8859-1` and IDE settings that flag characters outside Latin-1. | These help catch stray characters before code review. |
 
 ## Javadoc guidelines
 
