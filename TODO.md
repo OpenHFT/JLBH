@@ -2,7 +2,7 @@
 
 **📋 Part of:** [Chronicle Architecture Documentation](../ARCH_TODO.md)
 **Module Layer:** Infrastructure (Benchmarking)
-**Priority:** 🟡 P2
+**Priority:** 🟢 P3
 **Last Updated:** 2025-11-16
 
 ## Purpose
@@ -232,13 +232,16 @@ This TODO file tracks work specific to JLBH that feeds into the master [ARCH_TOD
 
 **Reference:** [../QUALITY_PLAYBOOK.md](../QUALITY_PLAYBOOK.md)
 
-- [ ] Run Checkstyle scan and document violations
-- [ ] Run SpotBugs scan and document issues
+- [x] Run Checkstyle scan and document violations
+  - Latest command: `mvn checkstyle:check` from `JLBH` with Java 21 (see `verify-jlbh-java21-checkstyle-latest.log`); Checkstyle reports `You have 0 Checkstyle violations.` for this module.
+- [x] Run SpotBugs scan and document issues
+  - A Java 21 SpotBugs run (`mvn com.github.spotbugs:spotbugs-maven-plugin:4.9.8.1:check -DskipTests`, see `verify-jlbh-java21-spotbugs-latest.log`) completes with `BugInstance size is 0` and `No errors/warnings found` for JLBH.
 - [ ] Identify any code review follow-ups from CODE_REVIEW_STATUS.md
+  - JLBH does not currently have a dedicated section in `CODE_REVIEW_STATUS.md`; any future review actions (for example around new benchmarks or harness features) should be recorded there and linked from this TODO.
 
 ## Notes
 
-[Add any module-specific notes, blockers, or context here]
+- 2025-11-18: JLBH is Checkstyle- and SpotBugs-clean on Java 21 (`verify-jlbh-java21-checkstyle-latest.log`, `verify-jlbh-java21-spotbugs-latest.log`). Remaining documentation/requirements/compliance TODOs are longer-running work and are tracked as deferred in `TODO_STATUS.md`.
 
 ## Completion Checklist
 

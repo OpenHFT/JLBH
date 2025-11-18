@@ -3,6 +3,7 @@
  */
 package net.openhft.chronicle.jlbh.util;
 
+import java.io.OutputStreamWriter;
 import net.openhft.chronicle.jlbh.JLBHResult;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +16,8 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Optional;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * Utility class that writes the output of a {@link net.openhft.chronicle.jlbh.JLBH}
@@ -98,7 +101,7 @@ public class JLBHResultSerializer {
      * @throws IOException if the file cannot be written
      */
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName, Iterable<String> namesOfProbes, boolean includeOSJitter) throws IOException {
-        try (Writer pw = new BufferedWriter(new PrintWriter(Files.newOutputStream(Paths.get(fileName))))) {
+        try (Writer pw = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get(fileName)), ISO_8859_1))) {
             writeHeader(pw);
 
             JLBHResult.ProbeResult probeResult = jlbhResult.endToEnd();
