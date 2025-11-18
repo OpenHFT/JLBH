@@ -3,6 +3,7 @@
  */
 package net.openhft.chronicle.jlbh;
 
+import java.nio.charset.StandardCharsets;
 import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.core.io.Closeable;
 import net.openhft.chronicle.core.threads.EventLoop;

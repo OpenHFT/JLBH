@@ -81,6 +81,7 @@ public class JLBH implements NanoSampler {
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
     private final long mod;
     private final long length;
+    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
     private final AtomicLong noResultsReturned = new AtomicLong();
     //Use non-atomic when so thread synchronisation is necessary
     private boolean warmedUp;
