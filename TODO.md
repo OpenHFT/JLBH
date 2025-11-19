@@ -18,12 +18,17 @@ This TODO file tracks work specific to JLBH that feeds into the master [ARCH_TOD
 ## Module Information for Architecture Overview
 
 ### Basic Information
-- [ ] **Module Name:** JLBH
-- [ ] **Maven Artifact ID:** jlbh
-- [ ] **Primary Purpose:** [1-2 sentence description]
-- [ ] **Layer in Chronicle Stack:** Infrastructure (Benchmarking)
-- [ ] **Dependencies (Chronicle modules):** [List key Chronicle dependencies]
-- [ ] **Key Classes/Interfaces:** [List 3-5 most important public APIs]
+- [x] **Module Name:** JLBH
+- [x] **Maven Artifact ID:** jlbh
+- [x] **Primary Purpose:** Provide a Java latency benchmark harness for measuring end-to-end response times under realistic workloads rather than micro-benchmarks.
+- [x] **Layer in Chronicle Stack:** Infrastructure (Benchmarking and performance analysis)
+- [x] **Dependencies (Chronicle modules):** `affinity`, `chronicle-core`, `chronicle-threads` (test-only)
+- [x] **Key Classes/Interfaces:** `JLBH`, `JLBHOptions`, `JLBHTask`, `JLBHResult`, `JLBHResultConsumer`
+
+### ISO Alignment and Trust Zone
+
+- [x] **Trust zone identified (Edge/Core/Foundation):** JLBH is a *Foundation (Zone C)* benchmarking and latency measurement tool used to characterise Chronicle components rather than process untrusted production traffic directly.
+- [x] **Shared standards reviewed:** Align JLBH documentation with the shared standards in `Chronicle-Quality-Rules/src/main/docs`, focusing on its role in validating latency budgets and performance envelopes rather than enforcing security policies.
 
 ### Architecture Information for ARCH_TODO.md Stage 3
 
