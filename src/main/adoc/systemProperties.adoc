@@ -1,0 +1,24 @@
+= JLBH System Properties
+:toc:
+:lang: en-GB
+:source-highlighter: rouge
+
+== System Properties
+
+JLBH is a micro-benchmark harness that is sensitive to any extra work done by the JVM.
+It checks the `jvm.resource.tracing` property to avoid running when intrusive resource tracing is enabled.
+
+.System properties
+[cols="2a,1,3a,2a",options="header"]
+|===
+| Property Key
+| Default Value
+| Description
+| Usage (Type)
+
+| `jvm.resource.tracing`
+| not set or `false`
+| When this property is set with an empty value or `true`, JLBH prints a warning and terminates the JVM rather than running the benchmark, because resource tracing would distort latency and allocation measurements. Ensure this property is unset or explicitly `false` when running JLBH.
+| Checked in the `JLBH` constructor (`String` value parsed as `boolean`)
+|===
+

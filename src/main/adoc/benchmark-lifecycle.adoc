@@ -1,7 +1,8 @@
 = Benchmark Lifecycle
+:toc:
+:sectnums:
 :lang: en-GB
 :source-highlighter: rouge
-:toc:
 
 [mermaid]
 ----
@@ -14,7 +15,7 @@ graph LR
 
 A typical JLBH (Java Latency Benchmark Harness) execution follows a distinct lifecycle designed to ensure accurate and repeatable latency measurements. The key phases are:
 
-== 1. Setup
+== Setup
 
 This initial phase prepares the benchmark environment:
 
@@ -25,7 +26,7 @@ This initial phase prepares the benchmark environment:
 * **OS Jitter Monitoring**: Jitter tracking is enabled by default (`recordOSJitter` defaults to true); unless disabled via `recordOSJitter(false)`, the `OSJitterMonitor` background thread starts to measure operating system scheduling jitter independently.
 * **Affinity**: If an `acquireLock` supplier is configured in `JLBHOptions`, an attempt to acquire CPU affinity for the main benchmark thread might occur.
 
-== 2. Warmup
+== Warmup
 
 Before any measurements are formally recorded, the harness executes a warm-up phase:
 
@@ -36,7 +37,7 @@ Before any measurements are formally recorded, the harness executes a warm-up ph
 * **Task Notification**: After all warmup iterations are complete, the `JLBHTask.warmedUp()` method is called.
 * **Optional Pause**: If `JLBHOptions.pauseAfterWarmupMS` is greater than zero, JLBH will pause for the specified duration before proceeding to the execution phase.
 
-== 3. Execution (Measurement Runs)
+== Execution (Measurement Runs)
 
 This is the core phase where timed iterations are performed and latency data is collected. This phase consists of one or more "runs" (as configured by `JLBHOptions.runs`):
 
@@ -59,7 +60,7 @@ This is the core phase where timed iterations are performed and latency data is 
 *** The collected histogram data for this run is processed and stored internally for the final `JLBHResult`.
 *** All probe histograms are then reset to ensure that measurements for the next run (if any) are independent.
 
-== 4. Reporting
+== Reporting
 
 After all measurement runs are completed, the aggregated results are finalized and made available:
 
@@ -70,7 +71,7 @@ After all measurement runs are completed, the aggregated results are finalized a
 ** `JLBHResultSerializer` to write results to a CSV file for analysis in spreadsheets or other tools.
 ** `TeamCityHelper` to output statistics in a format suitable for TeamCity CI server integration.
 
-== 5. Cleanup
+== Cleanup
 
 The final phase ensures that any resources are properly released:
 
