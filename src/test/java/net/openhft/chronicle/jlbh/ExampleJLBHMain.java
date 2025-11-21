@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ExampleJLBHMain implements JLBHTask {
     private int count = 0;
-    private double sin;
     //private NanoSampler nanoSamplerSin;
     //private NanoSampler nanoSamplerWait;
     private JLBH lth;
@@ -46,13 +45,10 @@ public class ExampleJLBHMain implements JLBHTask {
         count++;
         if (count == 160_000) {
             System.out.println("PAUSE");
-            //long now = System.nanoTime();
             Jvm.pause(100);
-            //nanoSamplerWait.sampleNanos(System.nanoTime()-now);
         }
 
-        long now = System.nanoTime();
-        sin = Math.sin(count);
+        Jvm.safepoint(); // used to keep Math.sin side-effect free path removed
         //nanoSamplerSin.sampleNanos(System.nanoTime()-now);
 
         lth.sample(System.nanoTime() - startTimeNS);

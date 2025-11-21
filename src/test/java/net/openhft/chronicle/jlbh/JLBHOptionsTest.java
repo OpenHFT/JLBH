@@ -49,7 +49,7 @@ public class JLBHOptionsTest {
         assertEquals(1_000_000L, getField(options, "iterations", Long.class).longValue());
         assertSame(task, getField(options, "jlbhTask", JLBHTask.class));
         assertEquals(77, getField(options, "pauseAfterWarmupMS", Integer.class).intValue());
-        assertEquals(JLBHOptions.SKIP_FIRST_RUN.SKIP, getField(options, "skipFirstRun", JLBHOptions.SKIP_FIRST_RUN.class));
+        assertEquals(JLBHOptions.SkipFirstRun.SKIP, getField(options, "skipFirstRun", JLBHOptions.SkipFirstRun.class));
         assertTrue(getField(options, "jitterAffinity", Boolean.class));
         assertSame(customSupplier, getField(options, "acquireLock", Supplier.class));
         assertEquals(9876L, getField(options, "timeout", Long.class).longValue());
@@ -63,7 +63,7 @@ public class JLBHOptionsTest {
     @Test
     public void shouldRespectSkipFirstRunFalse() throws Exception {
         JLBHOptions options = new JLBHOptions().skipFirstRun(false);
-        assertEquals(JLBHOptions.SKIP_FIRST_RUN.NO_SKIP, getField(options, "skipFirstRun", JLBHOptions.SKIP_FIRST_RUN.class));
+        assertEquals(JLBHOptions.SkipFirstRun.NO_SKIP, getField(options, "skipFirstRun", JLBHOptions.SkipFirstRun.class));
     }
 
     private static <T> T getField(JLBHOptions options, String name, Class<T> type) throws Exception {

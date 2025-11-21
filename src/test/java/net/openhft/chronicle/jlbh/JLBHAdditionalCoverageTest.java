@@ -104,7 +104,11 @@ public class JLBHAdditionalCoverageTest {
     }
 
     private static PrintStream silentPrintStream() {
-        return new PrintStream(new ByteArrayOutputStream());
+        try {
+            return new PrintStream(new ByteArrayOutputStream(), true, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
     }
 
     private static final class AbortOnRunTask implements JLBHTask {

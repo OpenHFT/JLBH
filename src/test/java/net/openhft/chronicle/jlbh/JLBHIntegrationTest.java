@@ -47,7 +47,12 @@ public class JLBHIntegrationTest {
         jlbh.start();
 
         // then
-        String stdOut = outContent.toString();
+        String stdOut;
+        try {
+            stdOut = outContent.toString("UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
         resetSystemOut();
         assertThat(stdOut, containsString("OS Jitter"));
         assertThat(stdOut, containsString("Warm up complete (500 iterations took "));
@@ -59,8 +64,12 @@ public class JLBHIntegrationTest {
     }
 
     private void redirectSystemOut() {
-        System.setOut(new PrintStream(outContent));
-        System.setErr(new PrintStream(errContent));
+        try {
+            System.setOut(new PrintStream(outContent, true, "UTF-8"));
+            System.setErr(new PrintStream(errContent, true, "UTF-8"));
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
     }
 
     private void resetSystemOut() {

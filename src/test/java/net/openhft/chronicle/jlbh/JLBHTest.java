@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,14 +62,25 @@ public class JLBHTest {
     public void shouldWriteResultToTheOutputProvided() {
 
         // given
-        final OutputStream outputStream = new ByteArrayOutputStream();
-        final JLBH jlbh = new JLBH(options(), new PrintStream(outputStream), resultConsumer());
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final PrintStream ps;
+        try {
+            ps = new PrintStream(outputStream, true, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
+        final JLBH jlbh = new JLBH(options(), ps, resultConsumer());
 
         // when
         start(jlbh);
 
         // then
-        String result = outputStream.toString().replace("\r", "");
+        String result;
+        try {
+            result = outputStream.toString("UTF-8").replace("\r", "");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
         assertThat(result, containsString("OS Jitter"));
         assertThat(result, containsString("Warm up complete (500 iterations took "));
         assertThat(result, containsString("Run time: "));
@@ -138,7 +148,6 @@ public class JLBHTest {
         assertEquals(5_106L, probeALastRunSummary.get50thPercentile().toNanos(), 20);
         assertEquals(8_708L, probeALastRunSummary.get90thPercentile().toNanos(), 30);
         assertEquals(9_516L, probeALastRunSummary.get99thPercentile().toNanos(), 30);
-//        assertEquals(9_604L, probeALastRunSummary.get9999thPercentile().toNanos());
         assertEquals(9_604L, probeALastRunSummary.getWorst().toNanos(), 30);
         assertEquals(probeALastRunSummary.get50thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_50TH));
         assertEquals(probeALastRunSummary.get90thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_90TH));
@@ -187,10 +196,20 @@ public class JLBHTest {
 
         // then
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (final PrintStream printStream = new PrintStream(baos)) {
-            TeamCityHelper.teamCityStatsLastRun("prefix", jlbh, jlbhOptions.iterations, printStream);
+        try {
+            try (final PrintStream printStream = new PrintStream(baos, true, "UTF-8")) {
+                TeamCityHelper.teamCityStatsLastRun("prefix", jlbh, jlbhOptions.iterations, printStream);
+            }
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
         }
         String extra = Jvm.isAzulZing() ? ".zing" : Jvm.isJava15Plus() ? ".java17" : "";
+        String stats;
+        try {
+            stats = baos.toString("UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
         assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5" + extra + "' value='8.072']\n" +
                 "##teamcity[buildStatisticValue key='prefix.end-to-end.0.9" + extra + "' value='11.664']\n" +
                 "##teamcity[buildStatisticValue key='prefix.end-to-end.0.99" + extra + "' value='12.464']\n" +
@@ -204,7 +223,7 @@ public class JLBHTest {
                 "##teamcity[buildStatisticValue key='prefix.B.0.5" + extra + "' value='0.100125']\n" +
                 "##teamcity[buildStatisticValue key='prefix.B.0.9" + extra + "' value='0.100125']\n" +
                 "##teamcity[buildStatisticValue key='prefix.B.0.99" + extra + "' value='0.100125']\n" +
-                "##teamcity[buildStatisticValue key='prefix.B.1.0" + extra + "' value='0.100125']\n", baos.toString().replace("\r", ""));
+                "##teamcity[buildStatisticValue key='prefix.B.1.0" + extra + "' value='0.100125']\n", stats.replace("\r", ""));
     }
 
     @Test
@@ -212,14 +231,25 @@ public class JLBHTest {
         final JLBHResultConsumer resultConsumer = resultConsumer();
         JLBHOptions jlbhOptions = options().jlbhTask(new PredictableJLBHTaskDifferentShape()).iterations(ITERATIONS * 2);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream printStream = new PrintStream(baos);
+        final PrintStream printStream;
+        try {
+            printStream = new PrintStream(baos, true, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
         final JLBH jlbh = new JLBH(jlbhOptions, printStream, resultConsumer);
 
         // when
         start(jlbh);
 
         System.out.println(baos);
-        assertTrue(baos.toString().replace("\r", "").contains(
+        String summary;
+        try {
+            summary = baos.toString("UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
+        assertTrue(summary.replace("\r", "").contains(
                 "-------------------------------- SUMMARY (B) us ----------------------------------------------------\n" +
                 "Percentile   run1         run2         run3      % Variation\n" +
                 "50.0:            0.10         0.10         0.10         0.00\n" +
@@ -307,6 +337,10 @@ public class JLBHTest {
 
     @NotNull
     private PrintStream printStream() {
-        return new PrintStream(new ByteArrayOutputStream());
+        try {
+            return new PrintStream(new ByteArrayOutputStream(), true, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError("UTF-8 not supported", e);
+        }
     }
 }

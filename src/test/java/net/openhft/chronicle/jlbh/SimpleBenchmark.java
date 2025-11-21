@@ -15,7 +15,8 @@ public class SimpleBenchmark implements JLBHTask {
                 .warmUpIterations(20_000)
                 .iterations(1_000_000)
                 .throughput(100_000)
-//                .accountForCoordinatedOmission(true)
+                // enable this if you need to compensate for coordinated omission
+                // .accountForCoordinatedOmission(true)
                 .runs(2)
                 .jlbhTask(new SimpleBenchmark());
         new JLBH(lth).start();
@@ -28,11 +29,12 @@ public class SimpleBenchmark implements JLBHTask {
 
     @Override
     public void run(long startTimeNS) {
-//        long start = System.nanoTime();          // (1)
-        long start = startTimeNS;                       // (2)
+        // Use System.nanoTime() here if you only want to include work done inside this method.
+        // long start = System.nanoTime();          // (1)
+        // (2)
         LockSupport.parkNanos(1);
 
-        final long delta = System.nanoTime() - start;
+        final long delta = System.nanoTime() - startTimeNS;
         jlbh.sample(delta);
     }
 }

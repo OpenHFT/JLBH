@@ -11,7 +11,7 @@ public class JLBHDeterministicFixtures {
     static final int ITERATIONS = 9_000;
     private static final int THROUGHPUT = 1_000_000;
     private static final int RUNS = 3;
-    private final static String expectedOutput = "" +
+    private static final String expectedOutput = "" +
             "Warm up complete ...\n" +
             "-------------------------------- BENCHMARK RESULTS (RUN 1) us --------------------------------------\n" +
             "Run time: ...s, distribution: NORMAL\n" +
@@ -89,14 +89,13 @@ public class JLBHDeterministicFixtures {
     static class PredictableJLBHTask implements JLBHTask {
 
         int nanoTime = 1_000_000;
-        private int latency;
         private JLBH lth;
         private NanoSampler additionalSamplerA;
         private NanoSampler additionalSamplerB;
 
         @Override
         public void run(long startTimeNS) {
-            latency = 1000 + (++this.nanoTime % 11567);
+            int latency = 1000 + (++this.nanoTime % 11567);
             lth.sample(latency);
             additionalSamplerA.sampleNanos(latency - 1000);
             if (sampleB())

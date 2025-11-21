@@ -43,11 +43,12 @@ public class SimpleOSJitterBenchmark implements JLBHTask {
 
     @Override
     public void run(long startTimeNS) {
-//        long start = System.nanoTime();          // (1)
-        long start = startTimeNS;                       // (2)
+        // Use System.nanoTime() here if you only want to measure the local work.
+        // long start = System.nanoTime();          // (1)
+        // (2)
         LockSupport.parkNanos(1);
 
-        final long delta = System.nanoTime() - start;
+        final long delta = System.nanoTime() - startTimeNS;
         jlbh.sample(delta);
         myProbe.sampleNanos(delta);
     }
