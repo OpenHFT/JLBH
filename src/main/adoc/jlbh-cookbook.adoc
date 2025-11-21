@@ -406,7 +406,7 @@ public class MainApp {
 * This approach is excellent for identifying bottlenecks within a larger operation.
 * The JLBH output will include separate percentile summaries for "Stage1_Processing", "Stage2_Persistence", and the default "end to end" probe.
 
----
+'''
 
 == Recording and Exporting Results
 

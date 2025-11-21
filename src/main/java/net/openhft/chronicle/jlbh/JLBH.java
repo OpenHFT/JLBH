@@ -368,7 +368,7 @@ public class JLBH implements NanoSampler {
 
     private void endOfAllRuns() {
         printPercentilesSummary("end to end", percentileRuns, printStream);
-        if (additionalPercentileRuns.size() > 0) {
+        if (!additionalPercentileRuns.isEmpty()) {
             additionalPercentileRuns.forEach((label, percentileRuns1) -> printPercentilesSummary(label, percentileRuns1, printStream));
         }
 
@@ -414,7 +414,7 @@ public class JLBH implements NanoSampler {
         printStream.printf("%-48s", format("End to End: (%,d)", endToEndHistogram.totalCount()));
         printStream.println(endToEndHistogram.toMicrosFormat());
 
-        if (additionHistograms.size() > 0) {
+        if (!additionHistograms.isEmpty()) {
             additionHistograms.forEach((key, value) -> {
                 List<double[]> ds = additionalPercentileRuns.computeIfAbsent(key,
                         i -> new ArrayList<>());

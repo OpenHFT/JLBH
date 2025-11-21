@@ -89,14 +89,13 @@ public class JLBHDeterministicFixtures {
     static class PredictableJLBHTask implements JLBHTask {
 
         int nanoTime = 1_000_000;
-        private int latency;
         private JLBH lth;
         private NanoSampler additionalSamplerA;
         private NanoSampler additionalSamplerB;
 
         @Override
         public void run(long startTimeNS) {
-            latency = 1000 + (++this.nanoTime % 11567);
+            int latency = 1000 + (++this.nanoTime % 11567);
             lth.sample(latency);
             additionalSamplerA.sampleNanos(latency - 1000);
             if (sampleB())

@@ -3,7 +3,6 @@
  */
 package net.openhft.chronicle.jlbh;
 
-import java.nio.charset.StandardCharsets;
 import net.openhft.chronicle.core.util.NanoSampler;
 import org.junit.Test;
 

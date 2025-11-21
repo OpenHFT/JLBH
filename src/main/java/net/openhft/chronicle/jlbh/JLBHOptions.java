@@ -235,24 +235,22 @@ public class JLBHOptions {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("JLBHOptions{");
-        sb.append("runs=").append(runs);
-        sb.append(", iterations=").append(iterations);
-        sb.append(", warmUpIterations=").append(warmUpIterations);
-        sb.append(", pauseAfterWarmupMS=").append(pauseAfterWarmupMS);
-        sb.append(", accountForCoordinatedOmission=").append(accountForCoordinatedOmission);
-        sb.append(", skipFirstRun=").append(skipFirstRun);
-        sb.append(", recordOSJitter=").append(recordOSJitter);
-        sb.append(", recordJitterGreaterThanNs=").append(recordJitterGreaterThanNs);
-        sb.append(", throughput=").append(throughput);
-        sb.append(", throughputTimeUnit=").append(throughputTimeUnit);
-        sb.append(", latencyDistributor=").append(latencyDistributor);
-        sb.append(", jitterAffinity=").append(jitterAffinity);
-        sb.append(", timeout=").append(timeout);
-        sb.append(", jlbhTask=").append(jlbhTask);
-        sb.append(", acquireLock=").append(acquireLock);
-        sb.append('}');
-        return sb.toString();
+        return "JLBHOptions{" + "runs=" + runs +
+                ", iterations=" + iterations +
+                ", warmUpIterations=" + warmUpIterations +
+                ", pauseAfterWarmupMS=" + pauseAfterWarmupMS +
+                ", accountForCoordinatedOmission=" + accountForCoordinatedOmission +
+                ", skipFirstRun=" + skipFirstRun +
+                ", recordOSJitter=" + recordOSJitter +
+                ", recordJitterGreaterThanNs=" + recordJitterGreaterThanNs +
+                ", throughput=" + throughput +
+                ", throughputTimeUnit=" + throughputTimeUnit +
+                ", latencyDistributor=" + latencyDistributor +
+                ", jitterAffinity=" + jitterAffinity +
+                ", timeout=" + timeout +
+                ", jlbhTask=" + jlbhTask +
+                ", acquireLock=" + acquireLock +
+                '}';
     }
 
     /**
