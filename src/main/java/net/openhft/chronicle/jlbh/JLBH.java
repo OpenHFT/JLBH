@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -80,8 +81,7 @@ public class JLBH implements NanoSampler {
     private final AtomicBoolean abortTestRun = new AtomicBoolean();
     private final long mod;
     private final long length;
-    // Todo: Remove all concurrent constructs such as volatile and AtomicBoolean
-    private volatile long noResultsReturned;
+    private final AtomicLong noResultsReturned = new AtomicLong();
     //Use non-atomic when so thread synchronisation is necessary
     private boolean warmedUp;
     private volatile Thread testThread;
@@ -116,8 +116,8 @@ public class JLBH implements NanoSampler {
         final String resourceTracing = System.getProperty("jvm.resource.tracing");
 
         if (resourceTracing != null && (resourceTracing.isEmpty() || Boolean.parseBoolean(resourceTracing))) {
-            System.out.println("***** WARNING : JLBH can not be run if jvm.resource.tracing=" + resourceTracing + ", please remove all \"jvm.resource.tracing\" as this will corrupt your stats *****");
-            System.exit(-1);
+            throw new IllegalStateException("JLBH can not be run if jvm.resource.tracing=" + resourceTracing
+                    + ", please remove all \"jvm.resource.tracing\" as this will corrupt your stats");
         }
 
         this.jlbhOptions = jlbhOptions;
@@ -133,8 +133,9 @@ public class JLBH implements NanoSampler {
                 : jlbhOptions.iterations > 50_000_000 ? 20_000_000_000L
                 : jlbhOptions.iterations > 10_000_000 ? 10_000_000_000L
                 : 5_000_000_000L;
-        long mod2;
-        for (mod2 = 1000; mod2 <= jlbhOptions.iterations / 200; mod2 *= 10) {
+        long mod2 = 1000;
+        while (mod2 <= jlbhOptions.iterations / 200) {
+            mod2 *= 10;
         }
         this.mod = mod2;
     }
@@ -251,7 +252,6 @@ public class JLBH implements NanoSampler {
 
                         } else {
                             if (latencyBetweenTasks > 2e6) {
-                                long end = System.nanoTime() + latencyBetweenTasks;
                                 Jvm.pause(latencyBetweenTasks / 1_000_000 - 1);
                                 // account for jitter in Thread.sleep() and wait until a fixed point in time
                                 startTimeNs = busyWaitUntil(startTimeNs);
@@ -367,7 +367,7 @@ public class JLBH implements NanoSampler {
 
     private void endOfAllRuns() {
         printPercentilesSummary("end to end", percentileRuns, printStream);
-        if (additionalPercentileRuns.size() > 0) {
+        if (!additionalPercentileRuns.isEmpty()) {
             additionalPercentileRuns.forEach((label, percentileRuns1) -> printPercentilesSummary(label, percentileRuns1, printStream));
         }
 
@@ -413,13 +413,11 @@ public class JLBH implements NanoSampler {
         printStream.printf("%-48s", format("End to End: (%,d)", endToEndHistogram.totalCount()));
         printStream.println(endToEndHistogram.toMicrosFormat());
 
-        if (additionHistograms.size() > 0) {
+        if (!additionHistograms.isEmpty()) {
             additionHistograms.forEach((key, value) -> {
                 List<double[]> ds = additionalPercentileRuns.computeIfAbsent(key,
                         i -> new ArrayList<>());
                 ds.add(value.getPercentiles());
-//                if (value.totalCount() != jlbhOptions.iterations)
-//                    warning = " WARNING " + value.totalCount() + "!=" + jlbhOptions.iterations;
                 printStream.printf("%-48s", format("%s (%,d)", key, value.totalCount()));
                 printStream.println(value.toMicrosFormat());
             });
@@ -432,7 +430,7 @@ public class JLBH implements NanoSampler {
 
         jlbhOptions.jlbhTask.runComplete();
 
-        noResultsReturned = 0;
+        noResultsReturned.set(0);
         additionHistograms.values().forEach(Histogram::reset);
         endToEndHistogram.reset();
         osJitterMonitor.reset();
@@ -445,8 +443,9 @@ public class JLBH implements NanoSampler {
         while (true) {
             Jvm.pause(TimeUnit.SECONDS.toMillis(10));
 
-            if (previousSampleCount < noResultsReturned) {
-                previousSampleCount = noResultsReturned;
+            long currentSampleCount = noResultsReturned.get();
+            if (previousSampleCount < currentSampleCount) {
+                previousSampleCount = currentSampleCount;
                 previousSampleTime = System.currentTimeMillis();
             } else {
                 if (previousSampleTime < (System.currentTimeMillis() - jlbhOptions.timeout)) {
@@ -529,9 +528,9 @@ public class JLBH implements NanoSampler {
                     .append("\n");
             double[] percentiles = Histogram.percentilesFor(jlbhOptions.iterations);
             boolean skipFirst = percentiles.length > 3;
-            if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.SKIP) {
+            if (jlbhOptions.skipFirstRun == JLBHOptions.SkipFirstRun.SKIP) {
                 skipFirst = true;
-            } else if (jlbhOptions.skipFirstRun == JLBHOptions.SKIP_FIRST_RUN.NO_SKIP) {
+            } else if (jlbhOptions.skipFirstRun == JLBHOptions.SkipFirstRun.NO_SKIP) {
                 skipFirst = false;
             }
             PercentileSummary percentileSummary = new PercentileSummary(skipFirst, percentileRuns, percentiles);
@@ -581,7 +580,8 @@ public class JLBH implements NanoSampler {
      * @param pr   formatted percentile label (e.g. {@code "99.9:"})
      * @param runs number of run value placeholders to append
      */
-    private void addPrToPrint(@NotNull StringBuilder sb, String pr, int runs) {
+    // Visible for tests via reflection to verify percentile summary patterns.
+    void addPrToPrint(@NotNull StringBuilder sb, String pr, int runs) {
         sb.append(pr);
         for (int i = 0; i < runs; i++) {
             sb.append("%12.2f ");
@@ -646,12 +646,12 @@ public class JLBH implements NanoSampler {
      * @param durationNs latency in nanoseconds
      */
     public void sample(long durationNs) {
-        noResultsReturned++;
-        if (noResultsReturned < jlbhOptions.warmUpIterations && !warmedUp) {
+        long sampleIndex = noResultsReturned.incrementAndGet();
+        if (sampleIndex < jlbhOptions.warmUpIterations && !warmedUp) {
             endToEndHistogram.sample(durationNs);
             return;
         }
-        if (noResultsReturned == jlbhOptions.warmUpIterations && !warmedUp) {
+        if (sampleIndex == jlbhOptions.warmUpIterations && !warmedUp) {
             warmedUp = true;
             endToEndHistogram.reset();
             if (!additionHistograms.isEmpty()) {
