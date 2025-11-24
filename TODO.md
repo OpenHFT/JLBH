@@ -105,7 +105,6 @@ This TODO file tracks work specific to JLBH that feeds into the master [ARCH_TOD
   - [ ] Term 2: [Definition]
   - [ ] [Add more as needed]
 
-
 ## ISO 9001 Quality Management Considerations
 
 **Reference:** [../COMPLIANCE_QUICK_REFERENCE.md](../COMPLIANCE_QUICK_REFERENCE.md)

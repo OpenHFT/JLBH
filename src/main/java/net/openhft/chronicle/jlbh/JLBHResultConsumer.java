@@ -20,7 +20,6 @@ import java.util.function.Supplier;
  * safe cross-thread visibility.
  * </p>
  */
-
 public interface JLBHResultConsumer extends Consumer<JLBHResult>, Supplier<JLBHResult> {
 
     /**
