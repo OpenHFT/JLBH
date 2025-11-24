@@ -34,25 +34,25 @@ This TODO file tracks work specific to JLBH that feeds into the master [ARCH_TOD
 
 **Feeds into:** ARCH_TODO.md Stage 3 - Module Deep Dives (ARCH-MOD-JLBH)
 
-- [ ] **Core Abstractions:** [List primary abstractions this module provides]
-- [ ] **Interactions with other modules:** [Which Chronicle modules does this use/integrate with?]
-- [ ] **Typical use cases:** [List 2-3 common scenarios where this module is used]
-- [ ] **Performance characteristics:** [Key performance metrics if applicable]
-- [ ] **Design patterns used:** [e.g., flyweight, single writer, etc.]
+- [ ] [P2] [E:M] **Core Abstractions:** [List primary abstractions this module provides]
+- [ ] [P2] [E:M] **Interactions with other modules:** [Which Chronicle modules does this use/integrate with?]
+- [ ] [P2] [E:M] **Typical use cases:** [List 2-3 common scenarios where this module is used]
+- [ ] [P2] [E:M] **Performance characteristics:** [Key performance metrics if applicable]
+- [ ] [P2] [E:M] **Design patterns used:** [e.g., flyweight, single writer, etc.]
 
 ### Existing Documentation Audit
 
-- [ ] Check if `src/main/docs/architecture-overview.adoc` exists
+- [ ] [P2] [E:S] Check if `src/main/docs/architecture-overview.adoc` exists
   - [ ] If yes: Review quality (compare to Chronicle-Bytes standard)
   - [ ] If no: Note as gap for ARCH_TODO Stage 5.5
-- [ ] Check if `src/main/docs/project-requirements.adoc` exists
+- [ ] [P2] [E:S] Check if `src/main/docs/project-requirements.adoc` exists
   - [ ] If yes: Review for ARCH_TODO Stage 1.75 (Requirements Overview)
   - [ ] If no: Note as gap for FUNC_TODO.md
-- [ ] Check if `src/main/docs/decision-log.adoc` exists
+- [ ] [P2] [E:S] Check if `src/main/docs/decision-log.adoc` exists
   - [ ] If yes: Review for ARCH_TODO Stage 1.85 (Decision Log Overview)
   - [ ] If no: Note as gap for DECISION_TODO.md
-- [ ] Check if `README.adoc` provides good module overview
-- [ ] Check if `AGENTS.md` exists and follows canonical template
+- [ ] [P2] [E:S] Check if `README.adoc` provides good module overview
+- [ ] [P2] [E:S] Check if `AGENTS.md` exists and follows canonical template
 
 ### Documentation Gaps (for ARCH_TODO Stage 5.5)
 
@@ -74,33 +74,33 @@ This TODO file tracks work specific to JLBH that feeds into the master [ARCH_TOD
 
 **Feeds into:** Requirements Overview consolidation
 
-- [ ] **Identify key functional requirements:** [List 3-5 most important]
+- [ ] [P1] [E:L] **Identify key functional requirements:** [List 3-5 most important]
 - [ ] **Identify key non-functional requirements:**
-  - [ ] Performance targets: [e.g., latency, throughput]
-  - [ ] Security obligations: [e.g., bounds checking, input validation]
-  - [ ] Operability requirements: [e.g., monitoring, logging]
-- [ ] **Map requirements to architecture patterns:** [How do requirements drive design?]
+  - [ ] [P1] [E:M] Performance targets: [e.g., latency, throughput]
+  - [ ] [P1] [E:M] Security obligations: [e.g., bounds checking, input validation]
+  - [ ] [P1] [E:M] Operability requirements: [e.g., monitoring, logging]
+- [ ] [P1] [E:L] **Map requirements to architecture patterns:** [How do requirements drive design?]
 
 ## Decisions for Architecture Overview (ARCH_TODO Stage 1.85)
 
 **Feeds into:** Decision Log Overview consolidation
 
-- [ ] **Identify key architectural decisions:** [List 2-4 major decisions]
+- [ ] [P1] [E:M] **Identify key architectural decisions:** [List 2-4 major decisions]
   - [ ] Decision ID (if in decision-log.adoc):
   - [ ] Brief description:
   - [ ] Rationale:
   - [ ] Alternatives considered:
 - [ ] **Identify decision patterns used:**
-  - [ ] Off-heap memory? [Y/N - explain]
-  - [ ] Single writer principle? [Y/N - explain]
-  - [ ] Reference counting? [Y/N - explain]
-  - [ ] Flyweight pattern? [Y/N - explain]
+  - [ ] [P1] [E:S] Off-heap memory? [Y/N - explain]
+  - [ ] [P1] [E:S] Single writer principle? [Y/N - explain]
+  - [ ] [P1] [E:S] Reference counting? [Y/N - explain]
+  - [ ] [P1] [E:S] Flyweight pattern? [Y/N - explain]
 
 ## Glossary Terms (ARCH_TODO Stage 1.5)
 
 **Feeds into:** Cross-module glossary
 
-- [ ] **Module-specific terms to include in glossary:**
+- [ ] [P2] [E:S] **Module-specific terms to include in glossary:**
   - [ ] Term 1: [Definition]
   - [ ] Term 2: [Definition]
   - [ ] [Add more as needed]
@@ -210,27 +210,32 @@ This TODO file tracks work specific to JLBH that feeds into the master [ARCH_TOD
   - [ ] Security controls described?
   - [ ] Known limitations documented?
 
+## Automation Tasks
+
+- [x] [P1] [E:S] Create `scripts/generate-progress.sh` to track TODO completion.
+- [x] [P1] [E:S] Create `scripts/housekeeping.sh` to archive completed tasks.
+
 ## Improvement Tasks (ARCH_TODO Stage 5.5)
 
 **Feeds into:** Improve Existing Module Documentation
 
 ### High Priority
-- [ ] Create missing architecture-overview.adoc (if needed)
-- [ ] Add missing front-matter to existing docs
-- [ ] Fix broken cross-references
-- [ ] Add `:sectnums:` where appropriate
+- [ ] [P1] [E:M] Create missing architecture-overview.adoc (if needed)
+- [x] [P1] [E:S] Add missing front-matter to existing docs
+- [ ] [P1] [E:M] Fix broken cross-references
+- [x] [P1] [E:S] Add `:sectnums:` where appropriate
 
 ### Medium Priority
-- [ ] Expand brief architecture docs (if < 75 lines)
-- [ ] Add "Trade-offs and Alternatives" section (following Chronicle-Bytes pattern)
-- [ ] Add performance characteristics section
-- [ ] Create decision log entries for undocumented decisions
+- [ ] [P2] [E:L] Expand brief architecture docs (if < 75 lines)
+- [ ] [P2] [E:L] Add "Trade-offs and Alternatives" section (following Chronicle-Bytes pattern)
+- [ ] [P2] [E:M] Add performance characteristics section
+- [ ] [P2] [E:M] Create decision log entries for undocumented decisions
 
 ### Low Priority
-- [ ] Add diagrams (PlantUML or draw.io)
-- [ ] Create example code snippets
-- [ ] Expand requirements documentation
-- [ ] Add cross-references to other module docs
+- [ ] [P3] [E:L] Add diagrams (PlantUML or draw.io)
+- [ ] [P3] [E:M] Create example code snippets
+- [ ] [P3] [E:L] Expand requirements documentation
+- [ ] [P3] [E:M] Add cross-references to other module docs
 
 ## Code Quality Tasks
 
@@ -240,7 +245,7 @@ This TODO file tracks work specific to JLBH that feeds into the master [ARCH_TOD
   - Latest command: `mvn checkstyle:check` from `JLBH` with Java 21 (see `verify-jlbh-java21-checkstyle-latest.log`); Checkstyle reports `You have 0 Checkstyle violations.` for this module.
 - [x] Run SpotBugs scan and document issues
   - A Java 21 SpotBugs run (`mvn com.github.spotbugs:spotbugs-maven-plugin:4.9.8.1:check -DskipTests`, see `verify-jlbh-java21-spotbugs-latest.log`) completes with `BugInstance size is 0` and `No errors/warnings found` for JLBH.
-- [ ] Identify any code review follow-ups from CODE_REVIEW_STATUS.md
+- [ ] [P1] [E:S] Identify any code review follow-ups from CODE_REVIEW_STATUS.md
   - JLBH does not currently have a dedicated section in `CODE_REVIEW_STATUS.md`; any future review actions (for example around new benchmarks or harness features) should be recorded there and linked from this TODO.
 
 ## Notes
