@@ -587,18 +587,15 @@ public class JLBH implements NanoSampler {
         for (int i = 0; i < runs; i++) {
             sb.append("%12.2f ");
         }
-        sb.append("%12.2f");
-        sb.append("%n");
+        sb.append("%12.2f").append("%n");
     }
 
     private String generateRunSummaryHeader(int runs) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(32 + runs * 12);
         sb.append("Percentile");
         for (int i = 1; i < runs + 1; i++) {
-            if (i == 1)
-                sb.append("   run").append(i);
-            else
-                sb.append("         run").append(i);
+            String label = (i == 1 ? "   run" : "         run") + i;
+            sb.append(label);
         }
         sb.append("      % Variation");
         return sb.toString();
@@ -719,7 +716,8 @@ public class JLBH implements NanoSampler {
             }
 
             try {
-                long lastTime = System.nanoTime(), start = lastTime;
+                long lastTime = System.nanoTime();
+                long start = lastTime;
                 //noinspection InfiniteLoopStatement
                 while (running.get()) {
                     if (reset.compareAndSet(true, false)) {

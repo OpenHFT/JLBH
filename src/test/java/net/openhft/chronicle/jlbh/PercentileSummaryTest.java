@@ -26,7 +26,7 @@ public class PercentileSummaryTest {
             }
             percentileSummaries.add(summary);
         }
-        double[] percentiles = new double[]{0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
+        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
 
         final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, percentiles);
         percentileSummary.printSummary();
@@ -53,7 +53,7 @@ public class PercentileSummaryTest {
             }
             percentileSummaries.add(summary);
         }
-        double[] percentiles = new double[]{0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
+        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
 
         final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, percentiles);
         percentileSummary.printSummary();
@@ -78,7 +78,7 @@ public class PercentileSummaryTest {
             }
             percentileSummaries.add(summary);
         }
-        double[] percentiles = new double[]{0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
+        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
 
         final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, percentiles);
         percentileSummary.printSummary();
@@ -100,7 +100,7 @@ public class PercentileSummaryTest {
             }
             percentileSummaries.add(summary);
         }
-        double[] percentiles = new double[]{0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
+        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
 
         final PercentileSummary percentileSummary = new PercentileSummary(true, percentileSummaries, percentiles);
         percentileSummary.printSummary();
@@ -114,7 +114,7 @@ public class PercentileSummaryTest {
     @Test
     public void testForEachRow() {
         List<double[]> percentileSummaries = new ArrayList<>();
-        double[] percentiles = new double[]{0.5, 0.9, 0.97, 1.0};
+        double[] percentiles = {0.5, 0.9, 0.97, 1.0};
         for (int i = 2; i < percentiles.length; i++) {
             double[] summary = new double[i];
             for (int j = 0; j < i; j++) {
