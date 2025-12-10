@@ -6,6 +6,7 @@ package net.openhft.chronicle.jlbh;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Double.POSITIVE_INFINITY;
@@ -15,20 +16,11 @@ import static org.junit.Assert.assertEquals;
 public class PercentileSummaryTest {
 
     private static final double DELTA = 0.00001;
+    private static final double[] PERCENTILES = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
 
     @Test
     public void testThatMissingPercentilesAreOmitted() {
-        List<double[]> percentileSummaries = new ArrayList<>();
-        for (int i = 2; i < 10; i++) {
-            double[] summary = new double[i];
-            for (int j = 0; j < i; j++) {
-                summary[j] = i;
-            }
-            percentileSummaries.add(summary);
-        }
-        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
-
-        final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, percentiles);
+        final PercentileSummary percentileSummary = new PercentileSummary(false, constantSummaries(), defaultPercentiles());
         percentileSummary.printSummary();
 
         // first run
@@ -53,9 +45,7 @@ public class PercentileSummaryTest {
             }
             percentileSummaries.add(summary);
         }
-        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
-
-        final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, percentiles);
+        final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, defaultPercentiles());
         percentileSummary.printSummary();
 
         assertEquals(0.003, percentileSummary.getPercentileForRun(8, 0), DELTA);
@@ -70,39 +60,19 @@ public class PercentileSummaryTest {
 
     @Test
     public void testThatVarianceIsCalculatedCorrectly() {
-        List<double[]> percentileSummaries = new ArrayList<>();
-        for (int i = 2; i < 10; i++) {
-            double[] summary = new double[i];
-            for (int j = 0; j < i; j++) {
-                summary[j] = i;
-            }
-            percentileSummaries.add(summary);
-        }
-        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
-
-        final PercentileSummary percentileSummary = new PercentileSummary(false, percentileSummaries, percentiles);
+        final PercentileSummary percentileSummary = new PercentileSummary(false, constantSummaries(), defaultPercentiles());
         percentileSummary.printSummary();
 
         assertEquals((0.009 - 0.002) / (0.009 + 0.002 /2) * 100, percentileSummary.calculateVariance(0), DELTA);
         assertEquals((0.009 - 0.003) / (0.009 + 0.003 /2) * 100, percentileSummary.calculateVariance(1), DELTA);
         assertEquals((0.009 - 0.004) / (0.009 + 0.004 /2) * 100, percentileSummary.calculateVariance(2), DELTA);
         assertEquals((0.009 - 0.005) / (0.009 + 0.005 /2) * 100, percentileSummary.calculateVariance(3), DELTA);
-        assertEquals(0, percentileSummary.calculateVariance(percentiles.length - 2), DELTA);
+        assertEquals(0, percentileSummary.calculateVariance(PERCENTILES.length - 2), DELTA);
     }
 
     @Test
     public void testVarianceSkipFirst() {
-        List<double[]> percentileSummaries = new ArrayList<>();
-        for (int i = 2; i < 10; i++) {
-            double[] summary = new double[i];
-            for (int j = 0; j < i; j++) {
-                summary[j] = i;
-            }
-            percentileSummaries.add(summary);
-        }
-        double[] percentiles = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
-
-        final PercentileSummary percentileSummary = new PercentileSummary(true, percentileSummaries, percentiles);
+        final PercentileSummary percentileSummary = new PercentileSummary(true, constantSummaries(), defaultPercentiles());
         percentileSummary.printSummary();
 
         // 50th percentile
@@ -136,5 +106,19 @@ public class PercentileSummaryTest {
         assertArrayEquals(new double[] {POSITIVE_INFINITY, 0.003}, receivedValues.get(1), DELTA);
         assertArrayEquals(new double[] {0.002, 0.003}, receivedValues.get(2), DELTA);
         assertArrayEquals(new Double[] {25.0, 0.0, 25.0}, receivedVariances.toArray(new Double[] {}));
+    }
+
+    private static List<double[]> constantSummaries() {
+        List<double[]> percentileSummaries = new ArrayList<>();
+        for (int i = 2; i < 10; i++) {
+            double[] summary = new double[i];
+            Arrays.fill(summary, i);
+            percentileSummaries.add(summary);
+        }
+        return percentileSummaries;
+    }
+
+    private static double[] defaultPercentiles() {
+        return Arrays.copyOf(PERCENTILES, PERCENTILES.length);
     }
 }
