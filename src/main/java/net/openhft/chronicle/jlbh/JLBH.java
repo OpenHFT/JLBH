@@ -56,6 +56,9 @@ import static java.lang.String.format;
 @SingleThreaded
 @SuppressWarnings({"unused", "this-escape"})
 public class JLBH implements NanoSampler {
+    /**
+     * Estimated nanoseconds taken by a {@link System#nanoTime()} call.
+     */
     public static final int TIME_CALL_NANO_TIME = 18;
     private final SortedMap<String, Histogram> additionHistograms = new ConcurrentSkipListMap<>();
     // wait time between invocations in nanoseconds
@@ -377,6 +380,11 @@ public class JLBH implements NanoSampler {
         jlbhOptions.jlbhTask.complete();
     }
 
+    /**
+     * Returns the percentile samples captured for each completed run.
+     *
+     * @return list of percentile arrays, one entry per run
+     */
     public List<double[]> percentileRuns() {
         return percentileRuns;
     }

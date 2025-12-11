@@ -16,12 +16,16 @@ import java.util.concurrent.ThreadLocalRandom;
  * </ul>
  */
 public enum LatencyDistributors implements LatencyDistributor {
+    /**
+     * Return the supplied latency unchanged.
+     */
     NORMAL {
         @Override
         public long apply(long averageLatencyNS) {
             return averageLatencyNS;
         }
     },
+    /** Uniformly random latency between ~1us and roughly double the average. */
     RANDOM {
         @Override
         public long apply(long averageLatencyNS) {
@@ -29,6 +33,7 @@ public enum LatencyDistributors implements LatencyDistributor {
                     .nextLong(1000, 2 * averageLatencyNS - 1000);
         }
     },
+    /** Skewed random latency favouring smaller values but allowing larger spikes. */
     RANDOM2 {
         @Override
         public long apply(long averageLatencyNS) {

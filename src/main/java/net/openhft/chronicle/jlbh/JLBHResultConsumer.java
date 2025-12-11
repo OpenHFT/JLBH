@@ -35,6 +35,8 @@ public interface JLBHResultConsumer extends Consumer<JLBHResult>, Supplier<JLBHR
      *
      * <p>When using this consumer outside of {@link JLBH}, ensure that every
      * result passed to it is immutable.</p>
+     *
+     * @return consumer that safely exposes the last result across threads
      */
     static JLBHResultConsumer newThreadSafeInstance() {
         return new ThreadSafeJLBHResultConsumer();

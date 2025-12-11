@@ -185,6 +185,9 @@ public interface JLBHResult {
         @NotNull
         Duration getWorst();
 
+        /**
+         * Common percentile points and maximum latency reported by JLBH.
+         */
         enum Percentile {
             /** 50th percentile (median). */
             PERCENTILE_50TH,

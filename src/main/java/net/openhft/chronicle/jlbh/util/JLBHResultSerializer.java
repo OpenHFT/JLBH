@@ -41,10 +41,22 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
  * whether the OS jitter probe should be included.
  */
 public class JLBHResultSerializer {
+    /**
+     * Header text used when a probe name is not specified.
+     */
     public static final String THE_PROBE = "TheProbe";
+    /** Default filename for exported results. */
     public static final String RESULT_CSV = "result.csv";
+    /** Probe name for end-to-end latency. */
     public static final String END_TO_END = "endToEnd";
+    /** Probe name for OS jitter metrics. */
     public static final String OS_JITTER = "OSJitter";
+
+    /**
+     * Utility class; prevent instantiation.
+     */
+    private JLBHResultSerializer() {
+    }
 
     /**
      * Write the summary results for all probes to {@link #RESULT_CSV}.

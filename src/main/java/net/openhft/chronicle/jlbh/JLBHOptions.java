@@ -35,6 +35,12 @@ public class JLBHOptions {
     boolean jitterAffinity;
     Supplier<AffinityLock> acquireLock = Affinity::acquireLock;
     long timeout;
+
+    /**
+     * Creates options with sensible defaults for running JLBH benchmarks.
+     */
+    public JLBHOptions() {
+    }
     /**
      * Number of iterations per second to be pushed through the benchmark
      *
@@ -64,6 +70,7 @@ public class JLBHOptions {
      * Allow the distribution to be altered pseudo-randomly
      *
      * @param latencyDistributor function to take the average latency and multiply it by a function.
+     * @return this instance for chaining
      */
     public JLBHOptions latencyDistributor(LatencyDistributor latencyDistributor) {
         this.latencyDistributor = latencyDistributor;
@@ -161,6 +168,7 @@ public class JLBHOptions {
     /**
      * The latency benchmark to be run.
      *
+     * @param jlbhTask task that drives the benchmark
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
     @NotNull
