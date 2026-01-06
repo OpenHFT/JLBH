@@ -4,7 +4,7 @@
 package net.openhft.chronicle.jlbh;
 
 /**
- * Interface for tasks using the JLBH framework.
+ * Defines the lifecycle hooks that a JLBH benchmark task must implement.
  */
 public interface JLBHTask {
     /**

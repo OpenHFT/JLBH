@@ -12,7 +12,7 @@ import java.util.Set;
 import static java.util.Collections.unmodifiableMap;
 
 /**
- * Immutable implementation of {@link JLBHResult}.
+ * Immutable snapshot of JLBH run results with thread-safe, read-only access.
  * <p>
  * Instances of this class are constructed with the results of a benchmark run
  * and provide read-only access to that data. All fields are {@code final} and
@@ -29,7 +29,7 @@ final class ImmutableJLBHResult implements JLBHResult {
     private final ProbeResult osJitterResult;
 
     /**
-     * Creates a new immutable result object.
+     * Creates an immutable snapshot of a JLBH run's probe data.
      *
      * @param endToEndProbeResult    summary of the default end-to-end probe
      * @param additionalProbeResults map of additional probe names to their results

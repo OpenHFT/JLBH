@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public enum LatencyDistributors implements LatencyDistributor {
     /**
-     * Return the supplied latency unchanged.
+     * Returns the supplied latency unchanged, preserving the configured nanosecond interval.
      */
     NORMAL {
         @Override

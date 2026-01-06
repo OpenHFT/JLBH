@@ -129,7 +129,7 @@ public class JLBHOptions {
     }
 
     /**
-     * Number of runs of the benchmark
+     * Number of benchmark runs used to build variation statistics.
      *
      * @param runs Defaults to 3
      * @return Instance of the JLBHOptions to be used in the builder pattern.
@@ -166,7 +166,7 @@ public class JLBHOptions {
     }
 
     /**
-     * The latency benchmark to be run.
+     * Benchmark task that drives each iteration and records probe samples.
      *
      * @param jlbhTask task that drives the benchmark
      * @return Instance of the JLBHOptions to be used in the builder pattern.
@@ -202,7 +202,7 @@ public class JLBHOptions {
     }
 
     /**
-     * Should the jitter thread set affinity or not
+     * Controls whether the jitter monitoring thread pins itself to a CPU.
      *
      * @param jitterAffinity default is false
      * @return Instance of the JLBHOptions to be used in the builder pattern.

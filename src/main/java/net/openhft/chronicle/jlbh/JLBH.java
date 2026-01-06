@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 /**
- * Java Latency Benchmark Harness (JLBH).
+ * Java Latency Benchmark Harness for measuring end-to-end latency under controlled throughput.
  * <p>
  * JLBH is designed to measure end to end latency of a workload under a
  * configured throughput.  It is intended for benchmarks where coordinated
@@ -194,7 +194,7 @@ public class JLBH implements NanoSampler {
     }
 
     /**
-     * Start benchmark.
+     * Starts the benchmark run and drives the configured warm-up and measurement phases.
      *
      * <p>The start method performs an initial warm up phase before collecting
      * any timings. {@link #warmup()} runs the configured number of warm-up
@@ -796,7 +796,7 @@ public class JLBH implements NanoSampler {
         }
 
         /**
-         * Drive the benchmark state machine.
+         * Drives the benchmark state machine across scheduling and completion phases.
          * <p>
          * The handler has two states controlled by {@code waitingForEndOfRun}:
          * scheduling iterations and waiting for a run to finish.
@@ -855,7 +855,7 @@ public class JLBH implements NanoSampler {
                     waitingForEndOfRun = false;
                     if (run == jlbhOptions.runs) {
                         endOfAllRuns();
-                        throw new InvalidEventHandlerException();
+                        throw new InvalidEventHandlerException("All benchmark runs completed; remove handler from event loop.");
                     }
                 }
             }

@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Immutable view of the data produced by a {@link JLBH} run.
+ * Immutable, thread-safe view of data captured during a {@link JLBH} run.
  * <p>
  * A typical usage pattern is to provide a {@link JLBHResultConsumer} when
  * constructing the benchmark. Once {@link JLBH#start()} completes the
@@ -131,7 +131,7 @@ public interface JLBHResult {
         Map<Percentile, Duration> percentiles();
 
         /**
-         * Returns the median latency of this run.
+         * Returns the median latency for this run, expressed as a {@link Duration}.
          * <p>
          * The value corresponds to the 50th percentile of all recorded
          * measurements.
@@ -189,23 +189,25 @@ public interface JLBHResult {
          * Common percentile points and maximum latency reported by JLBH.
          */
         enum Percentile {
-            /** 50th percentile (median). */
+            /**
+             * Latency at the 50th percentile (median) for the run.
+             */
             PERCENTILE_50TH,
-            /** 90th percentile. */
+            /** Latency at the 90th percentile for the run. */
             PERCENTILE_90TH,
-            /** 99th percentile. */
+            /** Latency at the 99th percentile for the run. */
             PERCENTILE_99TH,
-            /** 99.7th percentile. */
+            /** Latency at the 99.7th percentile for the run. */
             PERCENTILE_99_7TH,
-            /** 99.9th percentile. */
+            /** Latency at the 99.9th percentile for the run. */
             PERCENTILE_99_9TH,
-            /** 99.97th percentile. */
+            /** Latency at the 99.97th percentile for the run. */
             PERCENTILE_99_97TH,
-            /** 99.99th percentile. */
+            /** Latency at the 99.99th percentile for the run. */
             PERCENTILE_99_99TH,
-            /** 99.999th percentile. */
+            /** Latency at the 99.999th percentile for the run. */
             PERCENTILE_99_999TH,
-            /** Highest (worst) observed latency. */
+            /** Highest observed latency for the run, also called the worst. */
             WORST
         }
     }

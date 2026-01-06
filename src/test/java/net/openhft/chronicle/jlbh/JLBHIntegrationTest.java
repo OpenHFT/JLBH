@@ -4,18 +4,18 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.OS;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class JLBHIntegrationTest {
 
@@ -24,20 +24,21 @@ public class JLBHIntegrationTest {
     private ByteArrayOutputStream outContent;
     private ByteArrayOutputStream errContent;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         rememberOriginalStdErrOut();
-        Assume.assumeTrue(!OS.isMacOSX());
+        assumeTrue(!OS.isMacOSX(), "not supported on macOS");
         outContent = new ByteArrayOutputStream();
         errContent = new ByteArrayOutputStream();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         resetSystemOut();
     }
 
     @Test
+    @DisplayName("Measures latency output and matches deterministic fixture")
     public void shouldMeasureLatency() {
         // given
         redirectSystemOut();
@@ -51,16 +52,19 @@ public class JLBHIntegrationTest {
         try {
             stdOut = outContent.toString("UTF-8");
         } catch (java.io.UnsupportedEncodingException e) {
-            throw new AssertionError("UTF-8 not supported", e);
+            throw new AssertionError("UTF-8 not supported in captured output", e);
         }
         resetSystemOut();
-        assertThat(stdOut, containsString("OS Jitter"));
-        assertThat(stdOut, containsString("Warm up complete (500 iterations took "));
-        assertThat(stdOut, containsString("Run time: "));
+        assertTrue(stdOut.contains("OS Jitter"),
+                stdOut + " should contain OS Jitter section");
+        assertTrue(stdOut.contains("Warm up complete (500 iterations took "),
+                stdOut + " should contain warmup summary");
+        assertTrue(stdOut.contains("Run time: "),
+                stdOut + " should contain run time");
         String actual = withoutNonDeterministicFields(stdOut);
         String expected = withoutNonDeterministicFields(predictableTaskExpectedResult());
 
-        assertEquals(expected, actual);
+        assertEquals(expected, actual, "normalised output should match fixture");
     }
 
     private void redirectSystemOut() {
@@ -68,7 +72,7 @@ public class JLBHIntegrationTest {
             System.setOut(new PrintStream(outContent, true, "UTF-8"));
             System.setErr(new PrintStream(errContent, true, "UTF-8"));
         } catch (java.io.UnsupportedEncodingException e) {
-            throw new AssertionError("UTF-8 not supported", e);
+            throw new AssertionError("UTF-8 not supported while redirecting standard streams", e);
         }
     }
 

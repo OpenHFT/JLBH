@@ -11,7 +11,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Immutable implementation of {@link JLBHResult.ProbeResult}.
+ * Immutable snapshot of percentile summaries for a probe across all runs.
  *
  * <p>Each probe run is supplied as an array of percentile values which is
  * converted to an {@link ImmutableRunResult} and stored in an unmodifiable

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Calculates values for the run summary.
+ * Calculates per-percentile summaries across runs, including variation metrics for reporting.
  * <p>
  * Handle runs with differing number of samples (and hence, percentiles) correctly
  */
@@ -19,7 +19,7 @@ public final class PercentileSummary {
     private final double[] percentiles;
 
     /**
-     * Constructor
+     * Creates a summary calculator for percentile rows across multiple runs.
      *
      * @param skipFirst      Whether to skip the value from the first run when calculating variance
      * @param percentileRuns The values for the individual runs
@@ -116,12 +116,12 @@ public final class PercentileSummary {
     }
 
     /**
-     * Consumer of summary rows
+     * Callback interface for consuming rendered summary rows during reporting output.
      */
     public interface RowConsumer {
 
         /**
-         * Consume a row of the summary
+         * Consumes a single percentile row and its variance values together.
          *
          * @param percentile The percentile for the row
          * @param values     The values for the respective runs

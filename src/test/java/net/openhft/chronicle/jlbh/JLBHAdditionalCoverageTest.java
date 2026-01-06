@@ -4,7 +4,7 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.util.NanoSampler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JLBHAdditionalCoverageTest {
     /**
@@ -29,8 +29,8 @@ public class JLBHAdditionalCoverageTest {
 
         jlbh.start();
 
-        assertTrue("abort was not triggered", task.abortCount() > 0);
-        assertTrue("task should finish quickly after abort", task.totalRuns() < 5 * 20);
+        assertTrue(task.abortCount() > 0, "abort was not triggered");
+        assertTrue(task.totalRuns() < 5 * 20, "task should finish quickly after abort");
     }
 
     /**
@@ -49,20 +49,22 @@ public class JLBHAdditionalCoverageTest {
 
         jlbh.start();
 
-        assertTrue("samples should have been recorded", task.totalRuns() >= 1);
+        assertTrue(task.totalRuns() >= 1, "samples should have been recorded");
     }
 
     /**
      * Ensures {@link JLBH#eventLoopHandler(net.openhft.chronicle.core.threads.EventLoop)} rejects use when
      * coordinated omission compensation is disabled.
      */
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
         JLBHOptions options = newHarness(new NoOpTask())
                 .accountForCoordinatedOmission(false)
                 .recordOSJitter(false);
         JLBH jlbh = new JLBH(options, silentPrintStream(), null);
-        jlbh.eventLoopHandler(null);
+        assertThrows(UnsupportedOperationException.class,
+                () -> jlbh.eventLoopHandler(null),
+                "eventLoopHandler should reject when coordinated omission is disabled");
     }
 
     /**
@@ -76,21 +78,21 @@ public class JLBHAdditionalCoverageTest {
         addPr.setAccessible(true);
         StringBuilder sb = new StringBuilder();
         addPr.invoke(jlbh, sb, "99.9:     ", 2);
-        assertEquals("99.9:     %12.2f %12.2f %12.2f%n", sb.toString());
+        assertEquals("99.9:     %12.2f %12.2f %12.2f%n", sb.toString(), "addPrToPrint output");
 
         Method header = JLBH.class.getDeclaredMethod("generateRunSummaryHeader", int.class);
         header.setAccessible(true);
-        assertEquals("Percentile   run1         run2      % Variation", header.invoke(jlbh, 2));
+        assertEquals("Percentile   run1         run2      % Variation", header.invoke(jlbh, 2), "generateRunSummaryHeader output");
 
         Method unit = JLBH.class.getDeclaredMethod("timeUnitToString", TimeUnit.class);
         unit.setAccessible(true);
-        assertEquals("ns", unit.invoke(jlbh, TimeUnit.NANOSECONDS));
-        assertEquals("us", unit.invoke(jlbh, TimeUnit.MICROSECONDS));
-        assertEquals("ms", unit.invoke(jlbh, TimeUnit.MILLISECONDS));
-        assertEquals("s", unit.invoke(jlbh, TimeUnit.SECONDS));
-        assertEquals("min", unit.invoke(jlbh, TimeUnit.MINUTES));
-        assertEquals("h", unit.invoke(jlbh, TimeUnit.HOURS));
-        assertEquals("day", unit.invoke(jlbh, TimeUnit.DAYS));
+        assertEquals("ns", unit.invoke(jlbh, TimeUnit.NANOSECONDS), "timeUnitToString NANOSECONDS");
+        assertEquals("us", unit.invoke(jlbh, TimeUnit.MICROSECONDS), "timeUnitToString MICROSECONDS");
+        assertEquals("ms", unit.invoke(jlbh, TimeUnit.MILLISECONDS), "timeUnitToString MILLISECONDS");
+        assertEquals("s", unit.invoke(jlbh, TimeUnit.SECONDS), "timeUnitToString SECONDS");
+        assertEquals("min", unit.invoke(jlbh, TimeUnit.MINUTES), "timeUnitToString MINUTES");
+        assertEquals("h", unit.invoke(jlbh, TimeUnit.HOURS), "timeUnitToString HOURS");
+        assertEquals("day", unit.invoke(jlbh, TimeUnit.DAYS), "timeUnitToString DAYS");
     }
 
     private static JLBHOptions newHarness(JLBHTask task) {

@@ -19,8 +19,7 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
- * Utility class that writes the output of a {@link net.openhft.chronicle.jlbh.JLBH}
- * run to a CSV file.
+ * Utility for writing JLBH run summaries to a CSV file for analysis.
  * <p>
  * The generated CSV contains a header row followed by one line per probe.  Each
  * line starts with the probe name and is followed by the 50th, 90th, 99th,
@@ -45,7 +44,9 @@ public class JLBHResultSerializer {
      * Header text used when a probe name is not specified.
      */
     public static final String THE_PROBE = "TheProbe";
-    /** Default filename for exported results. */
+    /**
+     * Default filename used when exporting results to CSV.
+     */
     public static final String RESULT_CSV = "result.csv";
     /** Probe name for end-to-end latency. */
     public static final String END_TO_END = "endToEnd";
@@ -53,7 +54,7 @@ public class JLBHResultSerializer {
     public static final String OS_JITTER = "OSJitter";
 
     /**
-     * Utility class; prevent instantiation.
+     * Utility class with static helpers only; prevent instantiation.
      */
     private JLBHResultSerializer() {
     }

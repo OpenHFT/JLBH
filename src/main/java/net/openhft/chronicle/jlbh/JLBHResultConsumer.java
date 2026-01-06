@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Bridge between a {@link JLBH} run and the code retrieving its result.
+ * Bridge between a {@link JLBH} run and the code that retrieves its final result snapshot.
  * <p>
  * Implementations receive the immutable {@link JLBHResult} from the harness
  * via {@link #accept(Object)} and later supply it through {@link #get()}.

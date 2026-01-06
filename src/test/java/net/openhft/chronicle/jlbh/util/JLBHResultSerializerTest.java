@@ -4,9 +4,8 @@
 package net.openhft.chronicle.jlbh.util;
 
 import net.openhft.chronicle.jlbh.JLBHResult;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,12 +14,12 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JLBHResultSerializerTest {
 
-    @Rule
-    public final TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    Path tmp;
 
     private static final Duration P50 = Duration.ofNanos(100);
     private static final Duration P90 = Duration.ofNanos(200);
@@ -34,14 +33,14 @@ public class JLBHResultSerializerTest {
         FakeRunResult probe = new FakeRunResult(P50.multipliedBy(2), P90, P99, P999, null, WORST);
         FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("TheProbe", probe), Optional.empty());
 
-        Path out = tmp.newFile("subset.csv").toPath();
+        Path out = tmp.resolve("subset.csv");
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Collections.singletonList("TheProbe"), false);
 
         List<String> lines = Files.readAllLines(out);
-        assertEquals(3, lines.size());
-        assertEquals(",50th p-le,90th p-le,99th p-le,999th p-le,9999th p-le,Worst,", lines.get(0));
-        assertEquals("endToEnd,100,200,300,400,,600,", lines.get(1));
-        assertEquals("TheProbe,200,200,300,400,,600,", lines.get(2));
+        assertEquals(3, lines.size(), "csv lines count");
+        assertEquals(",50th p-le,90th p-le,99th p-le,999th p-le,9999th p-le,Worst,", lines.get(0), "csv header");
+        assertEquals("endToEnd,100,200,300,400,,600,", lines.get(1), "endToEnd row");
+        assertEquals("TheProbe,200,200,300,400,,600,", lines.get(2), "TheProbe row");
     }
 
     @Test
@@ -53,14 +52,14 @@ public class JLBHResultSerializerTest {
 
         FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("Custom", probe), Optional.of(osJitter));
 
-        Path out = tmp.newFile("full.csv").toPath();
+        Path out = tmp.resolve("full.csv");
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Arrays.asList("Custom", "Missing"), true);
 
         List<String> lines = Files.readAllLines(out);
-        assertEquals(4, lines.size());
-        assertEquals("endToEnd,100,200,300,400,500,600,", lines.get(1));
-        assertEquals("Custom,100,400,300,400,700,600,", lines.get(2));
-        assertEquals("OSJitter,10,20,30,40,50,60,", lines.get(3));
+        assertEquals(4, lines.size(), "csv lines count");
+        assertEquals("endToEnd,100,200,300,400,500,600,", lines.get(1), "endToEnd row");
+        assertEquals("Custom,100,400,300,400,700,600,", lines.get(2), "Custom row");
+        assertEquals("OSJitter,10,20,30,40,50,60,", lines.get(3), "OSJitter row");
     }
 
     @Test
@@ -71,9 +70,9 @@ public class JLBHResultSerializerTest {
         Path output = Paths.get(JLBHResultSerializer.RESULT_CSV);
         Files.deleteIfExists(output);
         JLBHResultSerializer.runResultToCSV(result);
-        assertTrue(Files.exists(output));
+        assertTrue(Files.exists(output), "default output file should exist");
         List<String> lines = Files.readAllLines(output);
-        assertEquals(4, lines.size());
+        assertEquals(4, lines.size(), "csv lines count");
         Files.deleteIfExists(output);
     }
 
