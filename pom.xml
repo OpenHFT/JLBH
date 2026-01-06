@@ -11,7 +11,7 @@
     <parent>
         <groupId>net.openhft</groupId>
         <artifactId>java-parent-pom</artifactId>
-        <version>1.27ea2-SNAPSHOT</version>
+        <version>2026.0-SNAPSHOT</version>
         <relativePath />
     </parent>
 
@@ -21,7 +21,7 @@
     </properties>
 
     <artifactId>jlbh</artifactId>
-    <version>1.27ea2-SNAPSHOT</version>
+    <version>2026.0-SNAPSHOT</version>
     <name>OpenHFT/JLBH</name>
     <description>Java Latency Benchmark Harness</description>
     <packaging>jar</packaging>
@@ -31,14 +31,14 @@
             <dependency>
                 <groupId>net.openhft</groupId>
                 <artifactId>third-party-bom</artifactId>
-                <version>3.27ea7</version>
+                <version>2026.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>net.openhft</groupId>
                 <artifactId>chronicle-bom</artifactId>
-                <version>2.27ea-SNAPSHOT</version>
+                <version>2026.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
