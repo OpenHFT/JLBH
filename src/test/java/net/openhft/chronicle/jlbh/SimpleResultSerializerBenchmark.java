@@ -29,7 +29,7 @@ public class SimpleResultSerializerBenchmark implements JLBHTask {
                 System.out.println("Done.");
 
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Failed to write result CSV during benchmark output", e);
             }
         }).start();
     }

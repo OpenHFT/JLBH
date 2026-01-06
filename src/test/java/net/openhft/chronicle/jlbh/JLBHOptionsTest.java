@@ -7,17 +7,16 @@ import net.openhft.affinity.AffinityLock;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHOptionsTest {
+class JLBHOptionsTest {
 
     @Test
     @DisplayName("Applies configuration options to internal fields")
-    public void shouldApplyAllConfigurationOptions() throws Exception {
+    void shouldApplyAllConfigurationOptions() throws Exception {
         JLBHOptions options = new JLBHOptions();
         LatencyDistributor distributor = averageLatencyNS -> averageLatencyNS * 2;
         Supplier<AffinityLock> customSupplier = () -> null;
@@ -40,35 +39,35 @@ public class JLBHOptionsTest {
                 .acquireLock(customSupplier)
                 .timeout(9876L);
 
-        assertEquals(84, getField(options, "throughput", Integer.class).intValue(),
+        assertEquals(84, options.getThroughput(),
                 "throughput should match the last configured value");
-        assertEquals(TimeUnit.MILLISECONDS, getField(options, "throughputTimeUnit", TimeUnit.class),
+        assertEquals(TimeUnit.MILLISECONDS, options.getThroughputTimeUnit(),
                 "throughput time unit should be MILLISECONDS");
-        assertSame(distributor, getField(options, "latencyDistributor", LatencyDistributor.class),
+        assertSame(distributor, options.getLatencyDistributor(),
                 "latency distributor should be the configured instance");
-        assertFalse(getField(options, "accountForCoordinatedOmission", Boolean.class),
-                "accountForCoordinatedOmission should be false");
-        assertEquals(12, getField(options, "recordJitterGreaterThanNs", Integer.class).intValue(),
+        assertFalse(options.isAccountForCoordinatedOmission(),
+                "coordinated omission flag should remain disabled after configuration");
+        assertEquals(12, options.getRecordJitterGreaterThanNs(),
                 "recordJitterGreaterThanNs should be 12");
-        assertFalse(getField(options, "recordOSJitter", Boolean.class),
-                "recordOSJitter should be false");
-        assertEquals(123, getField(options, "warmUpIterations", Integer.class).intValue(),
+        assertFalse(options.isRecordOSJitter(),
+                "OS jitter flag should remain disabled after configuration");
+        assertEquals(123, options.getWarmUpIterations(),
                 "warmUpIterations should be 123");
-        assertEquals(5, getField(options, "runs", Integer.class).intValue(),
+        assertEquals(5, options.getRuns(),
                 "runs should be 5");
-        assertEquals(1_000_000L, getField(options, "iterations", Long.class).longValue(),
+        assertEquals(1_000_000L, options.getIterations(),
                 "iterations should be 1,000,000");
-        assertSame(task, getField(options, "jlbhTask", JLBHTask.class),
+        assertSame(task, options.getJLBHTask(),
                 "jlbhTask should reference the configured task");
-        assertEquals(77, getField(options, "pauseAfterWarmupMS", Integer.class).intValue(),
+        assertEquals(77, options.getPauseAfterWarmupMS(),
                 "pauseAfterWarmupMS should be 77");
-        assertEquals(JLBHOptions.SkipFirstRun.SKIP, getField(options, "skipFirstRun", JLBHOptions.SkipFirstRun.class),
+        assertEquals(JLBHOptions.SkipFirstRun.SKIP, options.getSkipFirstRun(),
                 "skipFirstRun should be SKIP when set to true");
-        assertTrue(getField(options, "jitterAffinity", Boolean.class),
-                "jitterAffinity should be true");
-        assertSame(customSupplier, getField(options, "acquireLock", Supplier.class),
+        assertTrue(options.isJitterAffinity(),
+                "jitter affinity flag should be enabled after configuration");
+        assertSame(customSupplier, options.getAcquireLock(),
                 "acquireLock should reference the custom supplier");
-        assertEquals(9876L, getField(options, "timeout", Long.class).longValue(),
+        assertEquals(9876L, options.getTimeout(),
                 "timeout should be 9876");
 
         String printable = options.toString();
@@ -81,17 +80,11 @@ public class JLBHOptionsTest {
     }
 
     @Test
-    @DisplayName("Respects skipFirstRun(false) setting")
-    public void shouldRespectSkipFirstRunFalse() throws Exception {
+    @DisplayName("Uses NO_SKIP when skipFirstRun is configured as false")
+    void shouldRespectSkipFirstRunFalse() throws Exception {
         JLBHOptions options = new JLBHOptions().skipFirstRun(false);
-        assertEquals(JLBHOptions.SkipFirstRun.NO_SKIP, getField(options, "skipFirstRun", JLBHOptions.SkipFirstRun.class),
+        assertEquals(JLBHOptions.SkipFirstRun.NO_SKIP, options.getSkipFirstRun(),
                 "skipFirstRun should be NO_SKIP when configured as false");
-    }
-
-    private static <T> T getField(JLBHOptions options, String name, Class<T> type) throws Exception {
-        Field field = JLBHOptions.class.getDeclaredField(name);
-        field.setAccessible(true);
-        return type.cast(field.get(options));
     }
 
     private static final class NoOpTask implements JLBHTask {

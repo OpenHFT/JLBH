@@ -4,6 +4,7 @@
 package net.openhft.chronicle.jlbh.util;
 
 import net.openhft.chronicle.jlbh.JLBHResult;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,7 +17,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHResultSerializerTest {
+class JLBHResultSerializerTest {
 
     @TempDir
     Path tmp;
@@ -28,7 +29,8 @@ public class JLBHResultSerializerTest {
     private static final Duration WORST = Duration.ofNanos(600);
 
     @Test
-    public void shouldWriteSelectedProbesWithoutOsJitter() throws IOException {
+    @DisplayName("writes selected probes without OS jitter column")
+    void shouldWriteSelectedProbesWithoutOsJitter() throws IOException {
         FakeRunResult endToEnd = new FakeRunResult(P50, P90, P99, P999, null, WORST);
         FakeRunResult probe = new FakeRunResult(P50.multipliedBy(2), P90, P99, P999, null, WORST);
         FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("TheProbe", probe), Optional.empty());
@@ -37,14 +39,18 @@ public class JLBHResultSerializerTest {
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Collections.singletonList("TheProbe"), false);
 
         List<String> lines = Files.readAllLines(out);
-        assertEquals(3, lines.size(), "csv lines count");
-        assertEquals(",50th p-le,90th p-le,99th p-le,999th p-le,9999th p-le,Worst,", lines.get(0), "csv header");
-        assertEquals("endToEnd,100,200,300,400,,600,", lines.get(1), "endToEnd row");
-        assertEquals("TheProbe,200,200,300,400,,600,", lines.get(2), "TheProbe row");
+        assertEquals(3, lines.size(), "subset CSV should contain header and two rows");
+        assertEquals(",50th p-le,90th p-le,99th p-le,999th p-le,9999th p-le,Worst,", lines.get(0),
+                "subset CSV header should include percentile columns");
+        assertEquals("endToEnd,100,200,300,400,,600,", lines.get(1),
+                "subset CSV endToEnd row should match expected values");
+        assertEquals("TheProbe,200,200,300,400,,600,", lines.get(2),
+                "subset CSV TheProbe row should match expected values");
     }
 
     @Test
-    public void shouldIncludeOsJitterAndAdditionalProbes() throws IOException {
+    @DisplayName("writes OS jitter and additional probes to CSV")
+    void shouldIncludeOsJitterAndAdditionalProbes() throws IOException {
         FakeRunResult endToEnd = new FakeRunResult(P50, P90, P99, P999, Duration.ofNanos(500), WORST);
         FakeRunResult probe = new FakeRunResult(P50, P90.multipliedBy(2), P99, P999, Duration.ofNanos(700), WORST);
         FakeRunResult osJitter = new FakeRunResult(Duration.ofNanos(10), Duration.ofNanos(20), Duration.ofNanos(30),
@@ -56,23 +62,27 @@ public class JLBHResultSerializerTest {
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Arrays.asList("Custom", "Missing"), true);
 
         List<String> lines = Files.readAllLines(out);
-        assertEquals(4, lines.size(), "csv lines count");
-        assertEquals("endToEnd,100,200,300,400,500,600,", lines.get(1), "endToEnd row");
-        assertEquals("Custom,100,400,300,400,700,600,", lines.get(2), "Custom row");
-        assertEquals("OSJitter,10,20,30,40,50,60,", lines.get(3), "OSJitter row");
+        assertEquals(4, lines.size(), "full CSV should contain header and three rows");
+        assertEquals("endToEnd,100,200,300,400,500,600,", lines.get(1),
+                "full CSV endToEnd row should match expected values");
+        assertEquals("Custom,100,400,300,400,700,600,", lines.get(2),
+                "full CSV custom probe row should match expected values");
+        assertEquals("OSJitter,10,20,30,40,50,60,", lines.get(3),
+                "full CSV OS jitter row should match expected values");
     }
 
     @Test
-    public void shouldDefaultToResultCsvInWorkingDirectory() throws IOException {
+    @DisplayName("writes result CSV to the working directory by default")
+    void shouldDefaultToResultCsvInWorkingDirectory() throws IOException {
         FakeRunResult runResult = new FakeRunResult(P50, P90, P99, P999, Duration.ofNanos(500), WORST);
         FakeResult result = new FakeResult(runResult, Collections.singletonMap("Probe", runResult), Optional.of(runResult));
 
         Path output = Paths.get(JLBHResultSerializer.RESULT_CSV);
         Files.deleteIfExists(output);
         JLBHResultSerializer.runResultToCSV(result);
-        assertTrue(Files.exists(output), "default output file should exist");
+        assertTrue(Files.exists(output), "default result CSV file should be created in the working directory");
         List<String> lines = Files.readAllLines(output);
-        assertEquals(4, lines.size(), "csv lines count");
+        assertEquals(4, lines.size(), "default CSV should contain header and three rows");
         Files.deleteIfExists(output);
     }
 

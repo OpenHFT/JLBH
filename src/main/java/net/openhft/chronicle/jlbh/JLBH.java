@@ -179,6 +179,16 @@ public class JLBH implements NanoSampler {
         return additionalPercentileRuns;
     }
 
+    // Visible for tests to validate constructor-derived values.
+    long getLength() {
+        return length;
+    }
+
+    // Visible for tests to validate constructor-derived values.
+    long getMod() {
+        return mod;
+    }
+
     /**
      * Request the currently executing benchmark to stop.
      * <p>
@@ -589,7 +599,7 @@ public class JLBH implements NanoSampler {
      * @param pr   formatted percentile label (e.g. {@code "99.9:"})
      * @param runs number of run value placeholders to append
      */
-    // Visible for tests via reflection to verify percentile summary patterns.
+    // Visible for tests to verify percentile summary patterns.
     void addPrToPrint(@NotNull StringBuilder sb, String pr, int runs) {
         sb.append(pr);
         for (int i = 0; i < runs; i++) {
@@ -598,7 +608,7 @@ public class JLBH implements NanoSampler {
         sb.append("%12.2f").append("%n");
     }
 
-    private String generateRunSummaryHeader(int runs) {
+    String generateRunSummaryHeader(int runs) {
         StringBuilder sb = new StringBuilder(32 + runs * 12);
         sb.append("Percentile");
         for (int i = 1; i < runs + 1; i++) {
@@ -609,7 +619,7 @@ public class JLBH implements NanoSampler {
         return sb.toString();
     }
 
-    private String timeUnitToString(@NotNull TimeUnit timeUnit) {
+    String timeUnitToString(@NotNull TimeUnit timeUnit) {
         switch (timeUnit) {
             case NANOSECONDS:
                 return "ns";

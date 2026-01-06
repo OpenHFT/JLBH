@@ -14,14 +14,14 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PercentileSummaryTest {
+class PercentileSummaryTest {
 
     private static final double DELTA = 0.00001;
     private static final double[] PERCENTILES = {0.5, 0.9, 0.97, 0.99, 0.997, 0.999, 0.9997, 0.9999, 1.0};
 
     @Test
     @DisplayName("Missing percentile slots return POSITIVE_INFINITY")
-    public void testThatMissingPercentilesAreOmitted() {
+    void testThatMissingPercentilesAreOmitted() {
         final PercentileSummary percentileSummary = new PercentileSummary(false, constantSummaries(), defaultPercentiles());
         percentileSummary.printSummary();
 
@@ -46,7 +46,7 @@ public class PercentileSummaryTest {
 
     @Test
     @DisplayName("Worst percentile uses final bucket value")
-    public void testThatWorstIsRenderedCorrectly() {
+    void testThatWorstIsRenderedCorrectly() {
         List<double[]> percentileSummaries = new ArrayList<>();
         for (int i = 2; i < 10; i++) {
             double[] summary = new double[i];
@@ -78,7 +78,7 @@ public class PercentileSummaryTest {
 
     @Test
     @DisplayName("Variance calculation reflects min and max values")
-    public void testThatVarianceIsCalculatedCorrectly() {
+    void testThatVarianceIsCalculatedCorrectly() {
         final PercentileSummary percentileSummary = new PercentileSummary(false, constantSummaries(), defaultPercentiles());
         percentileSummary.printSummary();
 
@@ -96,7 +96,7 @@ public class PercentileSummaryTest {
 
     @Test
     @DisplayName("Variance calculation skips first run when configured")
-    public void testVarianceSkipFirst() {
+    void testVarianceSkipFirst() {
         final PercentileSummary percentileSummary = new PercentileSummary(true, constantSummaries(), defaultPercentiles());
         percentileSummary.printSummary();
 
@@ -110,7 +110,7 @@ public class PercentileSummaryTest {
 
     @Test
     @DisplayName("Row callback receives expected percentiles and values")
-    public void testForEachRow() {
+    void testForEachRow() {
         List<double[]> percentileSummaries = new ArrayList<>();
         double[] percentiles = {0.5, 0.9, 0.97, 1.0};
         for (int i = 2; i < percentiles.length; i++) {

@@ -241,6 +241,68 @@ public class JLBHOptions {
         return this;
     }
 
+    // package local getters added for tests
+    int getThroughput() {
+        return throughput;
+    }
+
+    TimeUnit getThroughputTimeUnit() {
+        return throughputTimeUnit;
+    }
+
+    LatencyDistributor getLatencyDistributor() {
+        return latencyDistributor;
+    }
+
+    boolean isAccountForCoordinatedOmission() {
+        return accountForCoordinatedOmission;
+    }
+
+    int getRecordJitterGreaterThanNs() {
+        return recordJitterGreaterThanNs;
+    }
+
+    boolean isRecordOSJitter() {
+        return recordOSJitter;
+    }
+
+    int getWarmUpIterations() {
+        return warmUpIterations;
+    }
+
+    int getRuns() {
+        return runs;
+    }
+
+    long getIterations() {
+        return iterations;
+    }
+
+    JLBHTask getJLBHTask() {
+        return jlbhTask;
+    }
+
+    int getPauseAfterWarmupMS() {
+        return pauseAfterWarmupMS;
+    }
+
+    @NotNull
+    SkipFirstRun getSkipFirstRun() {
+        return skipFirstRun;
+    }
+
+    boolean isJitterAffinity() {
+        return jitterAffinity;
+    }
+
+    Supplier<AffinityLock> getAcquireLock() {
+        return acquireLock;
+    }
+
+    long getTimeout() {
+        return timeout;
+    }
+
     @Override
     public String toString() {
         return "JLBHOptions{" + "runs=" + runs +

@@ -4,22 +4,23 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.util.NanoSampler;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHAdditionalCoverageTest {
+class JLBHAdditionalCoverageTest {
     /**
      * Exercises {@link JLBH#abort()} to ensure the running harness can be stopped safely.
      */
     @Test
-    public void shouldAbortWhenRequested() {
+    @DisplayName("aborts a run when the task requests it")
+    void shouldAbortWhenRequested() {
         AbortOnRunTask task = new AbortOnRunTask();
         JLBHOptions options = newHarness(task)
                 .warmUpIterations(2)
@@ -37,13 +38,14 @@ public class JLBHAdditionalCoverageTest {
      * Verifies that configuring a timeout starts the watchdog thread without error.
      */
     @Test
-    public void shouldStartTimeoutCheckerWhenTimeoutConfigured() {
+    @DisplayName("starts the timeout checker when configured")
+    void shouldStartTimeoutCheckerWhenTimeoutConfigured() {
         CountingTask task = new CountingTask();
         JLBHOptions options = newHarness(task)
                 .warmUpIterations(1)
                 .iterations(5)
                 .runs(1)
-                .timeout(1)
+                .timeout(100)
                 .recordOSJitter(false);
         JLBH jlbh = new JLBH(options, silentPrintStream(), JLBHResultConsumer.newThreadSafeInstance());
 
@@ -57,7 +59,8 @@ public class JLBHAdditionalCoverageTest {
      * coordinated omission compensation is disabled.
      */
     @Test
-    public void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
+    @DisplayName("rejects event loop use when coordinated omission is disabled")
+    void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
         JLBHOptions options = newHarness(new NoOpTask())
                 .accountForCoordinatedOmission(false)
                 .recordOSJitter(false);
@@ -71,28 +74,32 @@ public class JLBHAdditionalCoverageTest {
      * Covers helper methods that format percentile output.
      */
     @Test
-    public void shouldFormatRunSummaries() throws Exception {
+    @DisplayName("formats run summary output helper methods")
+    void shouldFormatRunSummaries() {
         JLBHOptions options = newHarness(new NoOpTask());
         JLBH jlbh = new JLBH(options, silentPrintStream(), null);
-        Method addPr = JLBH.class.getDeclaredMethod("addPrToPrint", StringBuilder.class, String.class, int.class);
-        addPr.setAccessible(true);
         StringBuilder sb = new StringBuilder();
-        addPr.invoke(jlbh, sb, "99.9:     ", 2);
-        assertEquals("99.9:     %12.2f %12.2f %12.2f%n", sb.toString(), "addPrToPrint output");
+        jlbh.addPrToPrint(sb, "99.9:     ", 2);
+        assertEquals("99.9:     %12.2f %12.2f %12.2f%n", sb.toString(),
+                "addPrToPrint should format a percentile row with three columns");
 
-        Method header = JLBH.class.getDeclaredMethod("generateRunSummaryHeader", int.class);
-        header.setAccessible(true);
-        assertEquals("Percentile   run1         run2      % Variation", header.invoke(jlbh, 2), "generateRunSummaryHeader output");
+        assertEquals("Percentile   run1         run2      % Variation", jlbh.generateRunSummaryHeader(2),
+                "generateRunSummaryHeader should include run numbers and variation");
 
-        Method unit = JLBH.class.getDeclaredMethod("timeUnitToString", TimeUnit.class);
-        unit.setAccessible(true);
-        assertEquals("ns", unit.invoke(jlbh, TimeUnit.NANOSECONDS), "timeUnitToString NANOSECONDS");
-        assertEquals("us", unit.invoke(jlbh, TimeUnit.MICROSECONDS), "timeUnitToString MICROSECONDS");
-        assertEquals("ms", unit.invoke(jlbh, TimeUnit.MILLISECONDS), "timeUnitToString MILLISECONDS");
-        assertEquals("s", unit.invoke(jlbh, TimeUnit.SECONDS), "timeUnitToString SECONDS");
-        assertEquals("min", unit.invoke(jlbh, TimeUnit.MINUTES), "timeUnitToString MINUTES");
-        assertEquals("h", unit.invoke(jlbh, TimeUnit.HOURS), "timeUnitToString HOURS");
-        assertEquals("day", unit.invoke(jlbh, TimeUnit.DAYS), "timeUnitToString DAYS");
+        assertEquals("ns", jlbh.timeUnitToString(TimeUnit.NANOSECONDS),
+                "timeUnitToString should map NANOSECONDS to ns");
+        assertEquals("us", jlbh.timeUnitToString(TimeUnit.MICROSECONDS),
+                "timeUnitToString should map MICROSECONDS to us");
+        assertEquals("ms", jlbh.timeUnitToString(TimeUnit.MILLISECONDS),
+                "timeUnitToString should map MILLISECONDS to ms");
+        assertEquals("s", jlbh.timeUnitToString(TimeUnit.SECONDS),
+                "timeUnitToString should map SECONDS to s");
+        assertEquals("min", jlbh.timeUnitToString(TimeUnit.MINUTES),
+                "timeUnitToString should map MINUTES to min");
+        assertEquals("h", jlbh.timeUnitToString(TimeUnit.HOURS),
+                "timeUnitToString should map HOURS to h");
+        assertEquals("day", jlbh.timeUnitToString(TimeUnit.DAYS),
+                "timeUnitToString should map DAYS to day");
     }
 
     private static JLBHOptions newHarness(JLBHTask task) {

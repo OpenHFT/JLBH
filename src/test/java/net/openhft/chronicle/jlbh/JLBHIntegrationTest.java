@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public class JLBHIntegrationTest {
+class JLBHIntegrationTest {
 
     private PrintStream originalSystemOut;
     private PrintStream originalSystemErr;
@@ -25,7 +25,7 @@ public class JLBHIntegrationTest {
     private ByteArrayOutputStream errContent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         rememberOriginalStdErrOut();
         assumeTrue(!OS.isMacOSX(), "not supported on macOS");
         outContent = new ByteArrayOutputStream();
@@ -33,13 +33,13 @@ public class JLBHIntegrationTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         resetSystemOut();
     }
 
     @Test
     @DisplayName("Measures latency output and matches deterministic fixture")
-    public void shouldMeasureLatency() {
+    void shouldMeasureLatency() {
         // given
         redirectSystemOut();
         final JLBH jlbh = new JLBH(options());

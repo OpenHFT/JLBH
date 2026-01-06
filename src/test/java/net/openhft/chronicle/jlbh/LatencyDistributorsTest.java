@@ -3,16 +3,18 @@
  */
 package net.openhft.chronicle.jlbh;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class LatencyDistributorsTest {
+class LatencyDistributorsTest {
 
     @ParameterizedTest(name = "{0}")
     @EnumSource(LatencyDistributors.class)
-    public void averageOk(LatencyDistributors ld) {
+    @DisplayName("keeps mean latency within tolerance for each distributor")
+    void averageOk(LatencyDistributors ld) {
         long base = 10_000; // e.g. 100_000/s
         long sum = 0;
         final int count = 100_000;

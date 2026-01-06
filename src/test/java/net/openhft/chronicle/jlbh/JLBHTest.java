@@ -9,6 +9,7 @@ import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.threads.MediumEventLoop;
 import net.openhft.chronicle.threads.Pauser;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -23,7 +24,7 @@ import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHTest {
+class JLBHTest {
     private static EventLoop createEventLoop(boolean runFromEventLoop) {
         if (!runFromEventLoop) {
             return null;
@@ -42,9 +43,10 @@ public class JLBHTest {
         }
     }
 
-    @ParameterizedTest(name = "event loop {0}")
+    @ParameterizedTest(name = "writes results to provided output stream (event loop: {0})")
     @ValueSource(booleans = {false, true})
-    public void shouldWriteResultToTheOutputProvided(boolean runFromEventLoop) {
+    @DisplayName("writes benchmark results to the provided output stream")
+    void shouldWriteResultToTheOutputProvided(boolean runFromEventLoop) {
         EventLoop eventLoop = createEventLoop(runFromEventLoop);
         try {
 
@@ -54,7 +56,7 @@ public class JLBHTest {
             try {
                 ps = new PrintStream(outputStream, true, "UTF-8");
             } catch (java.io.UnsupportedEncodingException e) {
-                throw new AssertionError("UTF-8 not supported", e);
+                throw new AssertionError("UTF-8 not supported for result output stream", e);
             }
             final JLBH jlbh = new JLBH(options(), ps, resultConsumer());
 
@@ -66,11 +68,14 @@ public class JLBHTest {
             try {
                 result = outputStream.toString("UTF-8").replace("\r", "");
             } catch (java.io.UnsupportedEncodingException e) {
-                throw new AssertionError("UTF-8 not supported", e);
+                throw new AssertionError("UTF-8 not supported when decoding result output", e);
             }
-            assertTrue(result.contains("OS Jitter"), "output should include OS jitter section");
-            assertTrue(result.contains("Warm up complete (500 iterations took "), "output should include warmup summary");
-            assertTrue(result.contains("Run time: "), "output should include run time");
+            assertTrue(result.contains("OS Jitter"),
+                    "Output should include OS Jitter section; result was: " + result);
+            assertTrue(result.contains("Warm up complete (500 iterations took "),
+                    "Output should include warm up summary 'Warm up complete (500 iterations took '; result was: " + result);
+            assertTrue(result.contains("Run time: "),
+                    "Output should include run time label 'Run time: '; result was: " + result);
 
             final String predictableTaskExpectedResult = predictableTaskExpectedResult();
             System.out.println("predictableTaskExpectedResult = " + predictableTaskExpectedResult);
@@ -96,13 +101,14 @@ public class JLBHTest {
         }
     }
 
-    @ParameterizedTest(name = "event loop {0}")
+    @ParameterizedTest(name = "captures deterministic result data (event loop: {0})")
     @ValueSource(booleans = {false, true})
     /*
      * To understand the data, please go to JLBHDeterministicFixtures
      * and JLBHDeterministicFixtures::expectedOutput in particular
      */
-    public void shouldProvideResultData(boolean runFromEventLoop) {
+    @DisplayName("exposes deterministic result data for each probe run")
+    void shouldProvideResultData(boolean runFromEventLoop) {
         EventLoop eventLoop = createEventLoop(runFromEventLoop);
         try {
 
@@ -115,17 +121,25 @@ public class JLBHTest {
 
             // then
             final JLBHResult.RunResult lastRunSummary = resultConsumer.get().endToEnd().summaryOfLastRun();
-            assertEquals(6_106L, lastRunSummary.get50thPercentile().toNanos(), 20, "end-to-end: 50th percentile");
-            assertEquals(9_708L, lastRunSummary.get90thPercentile().toNanos(), 20, "end-to-end: 90th percentile");
-            assertEquals(10_516L, lastRunSummary.get99thPercentile().toNanos(), 20, "end-to-end: 99th percentile");
-            assertEquals(10_604L, lastRunSummary.getWorst().toNanos(), 20, "end-to-end: worst");
-            assertEquals(lastRunSummary.get50thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_50TH), "percentiles map: 50th");
-            assertEquals(lastRunSummary.get90thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_90TH), "percentiles map: 90th");
-            assertEquals(lastRunSummary.get99thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_99TH), "percentiles map: 99th");
+            assertEquals(6_106L, lastRunSummary.get50thPercentile().toNanos(), 20,
+                    "end-to-end 50th percentile should match expected value");
+            assertEquals(9_708L, lastRunSummary.get90thPercentile().toNanos(), 20,
+                    "end-to-end 90th percentile should match expected value");
+            assertEquals(10_516L, lastRunSummary.get99thPercentile().toNanos(), 20,
+                    "end-to-end 99th percentile should match expected value");
+            assertEquals(10_604L, lastRunSummary.getWorst().toNanos(), 20,
+                    "end-to-end worst percentile should match expected value");
+            assertEquals(lastRunSummary.get50thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_50TH),
+                    "percentiles map should return 50th percentile value");
+            assertEquals(lastRunSummary.get90thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_90TH),
+                    "percentiles map should return 90th percentile value");
+            assertEquals(lastRunSummary.get99thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_99TH),
+                    "percentiles map should return 99th percentile value");
             assertEquals(lastRunSummary.get999thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_99_9TH), "percentiles map: 99.9th");
             assertEquals(lastRunSummary.get9999thPercentile(), lastRunSummary.percentiles().get(PERCENTILE_99_99TH), "percentiles map: 99.99th");
             assertNull(lastRunSummary.percentiles().get(PERCENTILE_99_999TH), "percentiles map should not contain 99.999th");
-            assertEquals(lastRunSummary.getWorst(), lastRunSummary.percentiles().get(WORST), "percentiles map: worst");
+            assertEquals(lastRunSummary.getWorst(), lastRunSummary.percentiles().get(WORST),
+                    "percentiles map should return worst percentile value");
 
             final List<JLBHResult.RunResult> summaryOfEachRun = resultConsumer.get().endToEnd().eachRunSummary();
             assertEquals(3, summaryOfEachRun.size(), "end-to-end run summaries count");
@@ -133,22 +147,30 @@ public class JLBHTest {
             assertNotEquals(lastRunSummary, summaryOfEachRun.get(1), "run1 summary should differ from last run");
             assertEquals(lastRunSummary, summaryOfEachRun.get(2), "run2 summary should match last run");
 
-            assertTrue(resultConsumer.get().probe("A").isPresent(), "probe A should be present");
-            assertTrue(resultConsumer.get().probe("B").isPresent(), "probe B should be present");
-            assertFalse(resultConsumer.get().probe("C").isPresent(), "probe C should not be present");
+            assertTrue(resultConsumer.get().probe("A").isPresent(),
+                    "probe A entry should exist in the result summary");
+            assertTrue(resultConsumer.get().probe("B").isPresent(),
+                    "probe B entry should exist in the result summary");
+            assertFalse(resultConsumer.get().probe("C").isPresent(),
+                    "probe C entry should be absent from the result summary");
 
             final JLBHResult.RunResult probeALastRunSummary = resultConsumer.get().probe("A").get().summaryOfLastRun();
-            assertEquals(5_106L, probeALastRunSummary.get50thPercentile().toNanos(), 20, "probe A: 50th percentile");
-            assertEquals(8_708L, probeALastRunSummary.get90thPercentile().toNanos(), 30, "probe A: 90th percentile");
-            assertEquals(9_516L, probeALastRunSummary.get99thPercentile().toNanos(), 30, "probe A: 99th percentile");
-            assertEquals(9_604L, probeALastRunSummary.getWorst().toNanos(), 30, "probe A: worst");
+            assertEquals(5_106L, probeALastRunSummary.get50thPercentile().toNanos(), 20,
+                    "probe A 50th percentile should match expected value");
+            assertEquals(8_708L, probeALastRunSummary.get90thPercentile().toNanos(), 30,
+                    "probe A 90th percentile should match expected value");
+            assertEquals(9_516L, probeALastRunSummary.get99thPercentile().toNanos(), 30,
+                    "probe A 99th percentile should match expected value");
+            assertEquals(9_604L, probeALastRunSummary.getWorst().toNanos(), 30,
+                    "probe A worst percentile should match expected value");
             assertEquals(probeALastRunSummary.get50thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_50TH), "probe A percentiles map: 50th");
             assertEquals(probeALastRunSummary.get90thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_90TH), "probe A percentiles map: 90th");
             assertEquals(probeALastRunSummary.get99thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_99TH), "probe A percentiles map: 99th");
             assertEquals(probeALastRunSummary.get999thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_99_9TH), "probe A percentiles map: 99.9th");
             assertEquals(probeALastRunSummary.get9999thPercentile(), probeALastRunSummary.percentiles().get(PERCENTILE_99_99TH), "probe A percentiles map: 99.99th");
             assertNull(probeALastRunSummary.percentiles().get(PERCENTILE_99_999TH), "probe A percentiles map should not contain 99.999th");
-            assertEquals(probeALastRunSummary.getWorst(), probeALastRunSummary.percentiles().get(WORST), "probe A percentiles map: worst");
+            assertEquals(probeALastRunSummary.getWorst(), probeALastRunSummary.percentiles().get(WORST),
+                    "probe A percentiles map should return worst percentile value");
 
             final List<JLBHResult.RunResult> summaryOfProbeAEachRun = resultConsumer.get().probe("A").get().eachRunSummary();
             assertEquals(3, summaryOfProbeAEachRun.size(), "probe A run summaries count");
@@ -160,9 +182,10 @@ public class JLBHTest {
         }
     }
 
-    @ParameterizedTest(name = "event loop {0}")
+    @ParameterizedTest(name = "handles probes with different shapes (event loop: {0})")
     @ValueSource(booleans = {false, true})
-    public void shouldProvideResultDataEvenIfProbesDoNotProvideSameShapedData(boolean runFromEventLoop) {
+    @DisplayName("handles probes that emit different shaped data")
+    void shouldProvideResultDataEvenIfProbesDoNotProvideSameShapedData(boolean runFromEventLoop) {
         EventLoop eventLoop = createEventLoop(runFromEventLoop);
         try {
 
@@ -185,9 +208,10 @@ public class JLBHTest {
         }
     }
 
-    @ParameterizedTest(name = "event loop {0}")
+    @ParameterizedTest(name = "emits TeamCity statistics for last run (event loop: {0})")
     @ValueSource(booleans = {false, true})
-    public void teamCityHelper(boolean runFromEventLoop) {
+    @DisplayName("emits TeamCity statistics for the last run")
+    void teamCityHelper(boolean runFromEventLoop) {
         EventLoop eventLoop = createEventLoop(runFromEventLoop);
         try {
 
@@ -206,14 +230,14 @@ public class JLBHTest {
                     TeamCityHelper.teamCityStatsLastRun("prefix", jlbh, jlbhOptions.iterations, printStream);
                 }
             } catch (java.io.UnsupportedEncodingException e) {
-                throw new AssertionError("UTF-8 not supported", e);
+                throw new AssertionError("UTF-8 not supported for TeamCity output stream", e);
             }
             String extra = Jvm.isAzulZing() ? ".zing" : Jvm.isJava15Plus() ? ".java17" : "";
             String stats;
             try {
                 stats = baos.toString("UTF-8");
             } catch (java.io.UnsupportedEncodingException e) {
-                throw new AssertionError("UTF-8 not supported", e);
+                throw new AssertionError("UTF-8 not supported when decoding TeamCity output", e);
             }
             assertEquals("##teamcity[buildStatisticValue key='prefix.end-to-end.0.5" + extra + "' value='8.072']\n" +
                             "##teamcity[buildStatisticValue key='prefix.end-to-end.0.9" + extra + "' value='11.664']\n" +
@@ -230,15 +254,16 @@ public class JLBHTest {
                             "##teamcity[buildStatisticValue key='prefix.B.0.99" + extra + "' value='0.100125']\n" +
                             "##teamcity[buildStatisticValue key='prefix.B.1.0" + extra + "' value='0.100125']\n",
                     stats.replace("\r", ""),
-                    "TeamCity statistics output");
+                    "TeamCity statistics output should match expected snapshot");
         } finally {
             Closeable.closeQuietly(eventLoop);
         }
     }
 
-    @ParameterizedTest(name = "event loop {0}")
+    @ParameterizedTest(name = "includes summary tables in output (event loop: {0})")
     @ValueSource(booleans = {false, true})
-    public void histogramSummariesAreCorrect(boolean runFromEventLoop) {
+    @DisplayName("prints histogram summaries for probe output tables")
+    void histogramSummariesAreCorrect(boolean runFromEventLoop) {
         EventLoop eventLoop = createEventLoop(runFromEventLoop);
         try {
             final JLBHResultConsumer resultConsumer = resultConsumer();
@@ -248,7 +273,7 @@ public class JLBHTest {
             try {
                 printStream = new PrintStream(baos, true, "UTF-8");
             } catch (java.io.UnsupportedEncodingException e) {
-                throw new AssertionError("UTF-8 not supported", e);
+                throw new AssertionError("UTF-8 not supported for histogram output stream", e);
             }
             final JLBH jlbh = new JLBH(jlbhOptions, printStream, resultConsumer);
 
@@ -260,7 +285,7 @@ public class JLBHTest {
             try {
                 summary = baos.toString("UTF-8");
             } catch (java.io.UnsupportedEncodingException e) {
-                throw new AssertionError("UTF-8 not supported", e);
+                throw new AssertionError("UTF-8 not supported when decoding histogram summary", e);
             }
             assertTrue(summary.replace("\r", "").contains(
                             "-------------------------------- SUMMARY (B) us ----------------------------------------------------\n" +
@@ -275,9 +300,10 @@ public class JLBHTest {
         }
     }
 
-    @ParameterizedTest(name = "event loop {0}")
+    @ParameterizedTest(name = "calls all task lifecycle hooks (event loop: {0})")
     @ValueSource(booleans = {false, true})
-    public void shouldCallAllLifecycleMethods(boolean runFromEventLoop) {
+    @DisplayName("invokes task lifecycle hooks during warmup and runs")
+    void shouldCallAllLifecycleMethods(boolean runFromEventLoop) {
         EventLoop eventLoop = createEventLoop(runFromEventLoop);
         try {
 
@@ -342,13 +368,16 @@ public class JLBHTest {
             assertEquals(1, initCount.get(), "init should be called once");
             assertEquals(warmUpIterations + (runs * iterations), runCount.get(), "run should include warmup and measured runs");
             assertEquals(1, warmedUpCount.get(), "warmedUp should be called once");
-            assertEquals(warmUpIterations, warmedUpIterations.get(), "warmedUp iteration count");
-            assertEquals(runs, runCompleteCount.get(), "runComplete count");
+            assertEquals(warmUpIterations, warmedUpIterations.get(),
+                    "warmedUp should capture the warm up iteration count");
+            assertEquals(runs, runCompleteCount.get(),
+                    "runComplete should be invoked once per run");
             assertEquals(Arrays.asList(warmUpIterations + iterations, warmUpIterations + 2 * iterations),
                     runCompleteIterations,
-                    "runComplete iteration checkpoints");
+                    "runComplete should record iteration checkpoints per run");
             assertEquals(1, completeCount.get(), "complete should be called once");
-            assertEquals(warmUpIterations + (runs * iterations), completeIterations.get(), "complete iteration count");
+            assertEquals(warmUpIterations + (runs * iterations), completeIterations.get(),
+                    "complete should capture the final iteration count");
         } finally {
             Closeable.closeQuietly(eventLoop);
         }
@@ -364,7 +393,7 @@ public class JLBHTest {
         try {
             return new PrintStream(new ByteArrayOutputStream(), true, "UTF-8");
         } catch (java.io.UnsupportedEncodingException e) {
-            throw new AssertionError("UTF-8 not supported", e);
+            throw new AssertionError("UTF-8 not supported for silent test stream", e);
         }
     }
 }
