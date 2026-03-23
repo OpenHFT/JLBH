@@ -4,13 +4,13 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.affinity.AffinityLock;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JLBHOptionsTest {
 

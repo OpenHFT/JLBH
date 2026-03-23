@@ -4,10 +4,9 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.OS;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -15,7 +14,8 @@ import java.io.PrintStream;
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 public class JLBHIntegrationTest {
 
@@ -24,15 +24,15 @@ public class JLBHIntegrationTest {
     private ByteArrayOutputStream outContent;
     private ByteArrayOutputStream errContent;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         rememberOriginalStdErrOut();
-        Assume.assumeTrue(!OS.isMacOSX());
+        assumeTrue(!OS.isMacOSX());
         outContent = new ByteArrayOutputStream();
         errContent = new ByteArrayOutputStream();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         resetSystemOut();
     }

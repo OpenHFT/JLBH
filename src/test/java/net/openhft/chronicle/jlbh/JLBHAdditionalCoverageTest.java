@@ -4,7 +4,6 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.util.NanoSampler;
-import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -12,7 +11,9 @@ import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 public class JLBHAdditionalCoverageTest {
     /**
@@ -29,8 +30,8 @@ public class JLBHAdditionalCoverageTest {
 
         jlbh.start();
 
-        assertTrue("abort was not triggered", task.abortCount() > 0);
-        assertTrue("task should finish quickly after abort", task.totalRuns() < 5 * 20);
+        assertTrue(task.abortCount() > 0, "abort was not triggered");
+        assertTrue(task.totalRuns() < 5 * 20, "task should finish quickly after abort");
     }
 
     /**
@@ -49,20 +50,22 @@ public class JLBHAdditionalCoverageTest {
 
         jlbh.start();
 
-        assertTrue("samples should have been recorded", task.totalRuns() >= 1);
+        assertTrue(task.totalRuns() >= 1, "samples should have been recorded");
     }
 
     /**
      * Ensures {@link JLBH#eventLoopHandler(net.openhft.chronicle.core.threads.EventLoop)} rejects use when
      * coordinated omission compensation is disabled.
      */
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
-        JLBHOptions options = newHarness(new NoOpTask())
-                .accountForCoordinatedOmission(false)
-                .recordOSJitter(false);
-        JLBH jlbh = new JLBH(options, silentPrintStream(), null);
-        jlbh.eventLoopHandler(null);
+        assertThrows(UnsupportedOperationException.class, () -> {
+            JLBHOptions options = newHarness(new NoOpTask())
+                    .accountForCoordinatedOmission(false)
+                    .recordOSJitter(false);
+            JLBH jlbh = new JLBH(options, silentPrintStream(), null);
+            jlbh.eventLoopHandler(null);
+        });
     }
 
     /**
