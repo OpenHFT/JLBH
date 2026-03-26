@@ -15,12 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-public class JLBHAdditionalCoverageTest {
+class JLBHAdditionalCoverageTest {
     /**
      * Exercises {@link JLBH#abort()} to ensure the running harness can be stopped safely.
      */
     @Test
-    public void shouldAbortWhenRequested() {
+    void shouldAbortWhenRequested() {
         AbortOnRunTask task = new AbortOnRunTask();
         JLBHOptions options = newHarness(task)
                 .warmUpIterations(2)
@@ -38,7 +38,7 @@ public class JLBHAdditionalCoverageTest {
      * Verifies that configuring a timeout starts the watchdog thread without error.
      */
     @Test
-    public void shouldStartTimeoutCheckerWhenTimeoutConfigured() {
+    void shouldStartTimeoutCheckerWhenTimeoutConfigured() {
         CountingTask task = new CountingTask();
         JLBHOptions options = newHarness(task)
                 .warmUpIterations(1)
@@ -58,7 +58,7 @@ public class JLBHAdditionalCoverageTest {
      * coordinated omission compensation is disabled.
      */
     @Test
-    public void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
+    void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
         assertThrows(UnsupportedOperationException.class, () -> {
             JLBHOptions options = newHarness(new NoOpTask())
                     .accountForCoordinatedOmission(false)
@@ -72,7 +72,7 @@ public class JLBHAdditionalCoverageTest {
      * Covers helper methods that format percentile output.
      */
     @Test
-    public void shouldFormatRunSummaries() throws Exception {
+    void shouldFormatRunSummaries() throws Exception {
         JLBHOptions options = newHarness(new NoOpTask());
         JLBH jlbh = new JLBH(options, silentPrintStream(), null);
         Method addPr = JLBH.class.getDeclaredMethod("addPrToPrint", StringBuilder.class, String.class, int.class);

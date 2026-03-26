@@ -28,7 +28,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHTest {
+class JLBHTest {
     private EventLoop eventLoop;
 
     public static Collection<Object[]> data() {
@@ -43,7 +43,7 @@ public class JLBHTest {
     }
 
     @AfterEach
-    public void after() {
+    void after() {
         Closeable.closeQuietly(eventLoop);
         eventLoop = null;
     }
@@ -59,7 +59,7 @@ public class JLBHTest {
 
     @ParameterizedTest(name = "event loop {0}")
     @MethodSource("data")
-    public void shouldWriteResultToTheOutputProvided(boolean runFromEventLoop) {
+    void shouldWriteResultToTheOutputProvided(boolean runFromEventLoop) {
         setUp(runFromEventLoop);
 
         // given
@@ -82,11 +82,11 @@ public class JLBHTest {
 
     @ParameterizedTest(name = "event loop {0}")
     @MethodSource("data")
-    /*
-     * To understand the data, please go to JLBHDeterministicFixtures
-     * and JLBHDeterministicFixtures::expectedOutput in particular
-     */
-    public void shouldProvideResultData(boolean runFromEventLoop) {
+        /*
+         * To understand the data, please go to JLBHDeterministicFixtures
+         * and JLBHDeterministicFixtures::expectedOutput in particular
+         */
+    void shouldProvideResultData(boolean runFromEventLoop) {
         setUp(runFromEventLoop);
 
         // given
@@ -143,7 +143,7 @@ public class JLBHTest {
 
     @ParameterizedTest(name = "event loop {0}")
     @MethodSource("data")
-    public void shouldProvideResultDataEvenIfProbesDoNotProvideSameShapedData(boolean runFromEventLoop) {
+    void shouldProvideResultDataEvenIfProbesDoNotProvideSameShapedData(boolean runFromEventLoop) {
         setUp(runFromEventLoop);
 
         // given
@@ -164,7 +164,7 @@ public class JLBHTest {
 
     @ParameterizedTest(name = "event loop {0}")
     @MethodSource("data")
-    public void teamCityHelper(boolean runFromEventLoop) {
+    void teamCityHelper(boolean runFromEventLoop) {
         setUp(runFromEventLoop);
 
         // given
@@ -199,7 +199,7 @@ public class JLBHTest {
 
     @ParameterizedTest(name = "event loop {0}")
     @MethodSource("data")
-    public void histogramSummariesAreCorrect(boolean runFromEventLoop) {
+    void histogramSummariesAreCorrect(boolean runFromEventLoop) {
         setUp(runFromEventLoop);
 
         final JLBHResultConsumer resultConsumer = resultConsumer();
@@ -214,16 +214,16 @@ public class JLBHTest {
         System.out.println(baos);
         assertTrue(baos.toString().replace("\r", "").contains(
                 "-------------------------------- SUMMARY (B) us ----------------------------------------------------\n" +
-                "Percentile   run1         run2         run3      % Variation\n" +
-                "50.0:            0.10         0.10         0.10         0.00\n" +
-                "90.0:            0.10         0.10         0.10         0.00\n" +
-                "99.0:            0.10         0.10         0.10         0.00\n" +
-                "worst:           0.10         0.10         0.10         0.00"));
+                        "Percentile   run1         run2         run3      % Variation\n" +
+                        "50.0:            0.10         0.10         0.10         0.00\n" +
+                        "90.0:            0.10         0.10         0.10         0.00\n" +
+                        "99.0:            0.10         0.10         0.10         0.00\n" +
+                        "worst:           0.10         0.10         0.10         0.00"));
     }
 
     @ParameterizedTest(name = "event loop {0}")
     @MethodSource("data")
-    public void shouldCallAllLifecycleMethods(boolean runFromEventLoop) {
+    void shouldCallAllLifecycleMethods(boolean runFromEventLoop) {
         setUp(runFromEventLoop);
 
         AtomicInteger initCount = new AtomicInteger(0);

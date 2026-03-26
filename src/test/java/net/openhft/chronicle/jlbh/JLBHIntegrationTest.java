@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
-public class JLBHIntegrationTest {
+class JLBHIntegrationTest {
 
     private PrintStream originalSystemOut;
     private PrintStream originalSystemErr;
@@ -25,7 +25,7 @@ public class JLBHIntegrationTest {
     private ByteArrayOutputStream errContent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         rememberOriginalStdErrOut();
         assumeTrue(!OS.isMacOSX());
         outContent = new ByteArrayOutputStream();
@@ -33,12 +33,12 @@ public class JLBHIntegrationTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         resetSystemOut();
     }
 
     @Test
-    public void shouldMeasureLatency() {
+    void shouldMeasureLatency() {
         // given
         redirectSystemOut();
         final JLBH jlbh = new JLBH(options());

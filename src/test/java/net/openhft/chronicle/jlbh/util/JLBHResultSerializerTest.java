@@ -17,7 +17,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHResultSerializerTest {
+class JLBHResultSerializerTest {
 
     @TempDir
     File tmp;
@@ -29,7 +29,7 @@ public class JLBHResultSerializerTest {
     private static final Duration WORST = Duration.ofNanos(600);
 
     @Test
-    public void shouldWriteSelectedProbesWithoutOsJitter() throws IOException {
+    void shouldWriteSelectedProbesWithoutOsJitter() throws IOException {
         FakeRunResult endToEnd = new FakeRunResult(P50, P90, P99, P999, null, WORST);
         FakeRunResult probe = new FakeRunResult(P50.multipliedBy(2), P90, P99, P999, null, WORST);
         FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("TheProbe", probe), Optional.empty());
@@ -47,7 +47,7 @@ public class JLBHResultSerializerTest {
     }
 
     @Test
-    public void shouldIncludeOsJitterAndAdditionalProbes() throws IOException {
+    void shouldIncludeOsJitterAndAdditionalProbes() throws IOException {
         FakeRunResult endToEnd = new FakeRunResult(P50, P90, P99, P999, Duration.ofNanos(500), WORST);
         FakeRunResult probe = new FakeRunResult(P50, P90.multipliedBy(2), P99, P999, Duration.ofNanos(700), WORST);
         FakeRunResult osJitter = new FakeRunResult(Duration.ofNanos(10), Duration.ofNanos(20), Duration.ofNanos(30),
@@ -68,7 +68,7 @@ public class JLBHResultSerializerTest {
     }
 
     @Test
-    public void shouldDefaultToResultCsvInWorkingDirectory() throws IOException {
+    void shouldDefaultToResultCsvInWorkingDirectory() throws IOException {
         FakeRunResult runResult = new FakeRunResult(P50, P90, P99, P999, Duration.ofNanos(500), WORST);
         FakeResult result = new FakeResult(runResult, Collections.singletonMap("Probe", runResult), Optional.of(runResult));
 

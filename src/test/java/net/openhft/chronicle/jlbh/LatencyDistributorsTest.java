@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LatencyDistributorsTest {
+class LatencyDistributorsTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("data")
-    public void averageOk(LatencyDistributor ld) {
+    void averageOk(LatencyDistributor ld) {
         long base = 10_000; // e.g. 100_000/s
         long sum = 0;
         final int count = 100_000;
