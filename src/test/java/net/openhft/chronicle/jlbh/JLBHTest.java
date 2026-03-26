@@ -24,8 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JLBHTest {
@@ -71,9 +69,9 @@ class JLBHTest {
 
         // then
         String result = outputStream.toString().replace("\r", "");
-        assertThat(result, containsString("OS Jitter"));
-        assertThat(result, containsString("Warm up complete (500 iterations took "));
-        assertThat(result, containsString("Run time: "));
+        assertTrue(result.contains("OS Jitter"));
+        assertTrue(result.contains("Warm up complete (500 iterations took "));
+        assertTrue(result.contains("Run time: "));
 
         final String expected = withoutNonDeterministicFields(predictableTaskExpectedResult());
         final String actual = withoutNonDeterministicFields(result);
@@ -112,8 +110,8 @@ class JLBHTest {
 
         final List<JLBHResult.RunResult> summaryOfEachRun = resultConsumer.get().endToEnd().eachRunSummary();
         assertEquals(3, summaryOfEachRun.size());
-        assertThat(summaryOfEachRun.get(0), not(equalTo(lastRunSummary)));
-        assertThat(summaryOfEachRun.get(1), not(equalTo(lastRunSummary)));
+        assertNotEquals(lastRunSummary, summaryOfEachRun.get(0));
+        assertNotEquals(lastRunSummary, summaryOfEachRun.get(1));
         assertEquals(lastRunSummary, summaryOfEachRun.get(2));
 
         assertTrue(resultConsumer.get().probe("A").isPresent());
@@ -136,8 +134,8 @@ class JLBHTest {
 
         final List<JLBHResult.RunResult> summaryOfProbeAEachRun = resultConsumer.get().probe("A").get().eachRunSummary();
         assertEquals(3, summaryOfProbeAEachRun.size());
-        assertThat(summaryOfProbeAEachRun.get(0), not(equalTo(probeALastRunSummary)));
-        assertThat(summaryOfProbeAEachRun.get(1), not(equalTo(probeALastRunSummary)));
+        assertNotEquals(probeALastRunSummary, summaryOfProbeAEachRun.get(0));
+        assertNotEquals(probeALastRunSummary, summaryOfProbeAEachRun.get(1));
         assertEquals(probeALastRunSummary, summaryOfProbeAEachRun.get(2));
     }
 

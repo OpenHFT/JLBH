@@ -12,8 +12,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
@@ -49,9 +47,9 @@ class JLBHIntegrationTest {
         // then
         String stdOut = outContent.toString();
         resetSystemOut();
-        assertThat(stdOut, containsString("OS Jitter"));
-        assertThat(stdOut, containsString("Warm up complete (500 iterations took "));
-        assertThat(stdOut, containsString("Run time: "));
+        assertTrue(stdOut.contains("OS Jitter"));
+        assertTrue(stdOut.contains("Warm up complete (500 iterations took "));
+        assertTrue(stdOut.contains("Run time: "));
         String actual = withoutNonDeterministicFields(stdOut);
         String expected = withoutNonDeterministicFields(predictableTaskExpectedResult());
 
