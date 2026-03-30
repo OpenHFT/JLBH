@@ -59,13 +59,12 @@ class JLBHAdditionalCoverageTest {
      */
     @Test
     void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            JLBHOptions options = newHarness(new NoOpTask())
-                    .accountForCoordinatedOmission(false)
-                    .recordOSJitter(false);
-            JLBH jlbh = new JLBH(options, silentPrintStream(), null);
-            jlbh.eventLoopHandler(null);
-        });
+        JLBHOptions options = newHarness(new NoOpTask())
+                .accountForCoordinatedOmission(false)
+                .recordOSJitter(false);
+        JLBH jlbh = new JLBH(options, silentPrintStream(), null);
+
+        assertThrows(UnsupportedOperationException.class, () -> jlbh.eventLoopHandler(null));
     }
 
     /**
