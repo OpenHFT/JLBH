@@ -6,7 +6,7 @@ Chronicle Software
 
 == 1. Introduction
 
-Chronicle JLBH (Java Latency Benchmark Harness) is a library designed for measuring and analyzing the latency of Java applications "in context," particularly under specific throughput conditions and accounting for coordinated omission.
+Chronicle JLBH (Java Latency Benchmark Harness) is a library designed for measuring and analysing the latency of Java applications "in context," particularly under specific throughput conditions and accounting for coordinated omission.
 This document outlines its high-level architecture, major components, and key operational flows.
 
 == 2. Major Components
@@ -95,7 +95,7 @@ Each probe is backed by its own `Histogram`.
 
 * **Warm-up Phase**:
 ** The `JLBHTask.run(System.nanoTime())` method is invoked `warmUpIterations` times.
-*** The primary purpose is to allow the JVM's JIT compiler to optimize the code and for the system to reach a steady operational state.
+*** The primary purpose is to allow the JVM's JIT compiler to optimise the code and for the system to reach a steady operational state.
 *** Latency samples collected during this phase are typically added to histograms but are reset and discarded before measurement runs begin.
 ** After warm-up iterations, `JLBHTask.warmedUp()` is called.
 ** All probe histograms (end-to-end, custom, OS jitter) are reset.
@@ -167,7 +167,7 @@ JLBH pays careful attention to how latency data is recorded, structured, and rep
 
 * **Latency Recording**:
 ** All latency durations are measured and recorded in nanoseconds.
-** `System.nanoTime()` is the fundamental source for time measurements, chosen for its high resolution and (on most systems) monotonic behavior.
+** `System.nanoTime()` is the fundamental source for time measurements, chosen for its high resolution and (on most systems) monotonic behaviour.
 ** For each active probe (end-to-end, user-defined additional probes, OS jitter), a `net.openhft.chronicle.core.util.Histogram` instance is maintained.
 *** These histograms are configured by `JLBH.createHistogram()` for high precision (typically 8 significant figures of value) and a wide dynamic range (typically 35 bits, covering from nanoseconds to many seconds).
 

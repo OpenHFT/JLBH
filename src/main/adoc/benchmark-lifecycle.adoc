@@ -30,7 +30,7 @@ This initial phase prepares the benchmark environment:
 Before any measurements are formally recorded, the harness executes a warm-up phase:
 
 * **Warmup Iterations**: The `JLBHTask.run(long startTimeNs)` method is called `warmUpIterations` times (as specified in `JLBHOptions`). The `startTimeNs` passed is typically just `System.nanoTime()` for this phase.
-** The primary goal is to allow the Java Virtual Machine (JVM) to perform Just-In-Time (JIT) compilation and optimize the benchmarked code paths.
+** The primary goal is to allow the Java Virtual Machine (JVM) to perform Just-In-Time (JIT) compilation and optimise the benchmarked code paths.
 ** It also helps in bringing caches to a "warm" state and letting the system reach a more stable performance profile.
 * **Sample Discarding**: Latency samples generated during the warmup phase are usually recorded into the histograms but are *not* part of the final reported results. The histograms are reset after this phase.
 * **Task Notification**: After all warmup iterations are complete, the `JLBHTask.warmedUp()` method is called.

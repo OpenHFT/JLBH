@@ -540,7 +540,7 @@ Use `recordOSJitter(false)` only when you want to suppress this monitoring.
 * If this measured gap exceeds `recordJitterGreaterThanNs`, it's considered an OS-induced pause/jitter event and is recorded in a special "OS Jitter" probe.
 * The JLBH output (both console and `JLBHResult`) will include a section for the "OS Jitter" probe, showing its own percentile distribution.
 * These jitter values represent pauses that are *not* caused by your application code but by the operating system or other processes interfering with the JLBH process's execution.
-* High OS jitter values (e.g., milliseconds) can explain unexpected latency spikes in your main application probes, even if your application code itself is highly optimized.
+* High OS jitter values (e.g., milliseconds) can explain unexpected latency spikes in your main application probes, even if your application code itself is highly optimised.
 
 *Key Considerations*:
 

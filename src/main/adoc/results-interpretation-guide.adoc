@@ -43,7 +43,7 @@ JLBH uses histograms to capture the full distribution of measured latencies, rat
 ** Averages can be heavily skewed by a small number of very low or very high latencies, masking the true experience of most requests.
 ** Tail latencies (e.g., p99 and above) often drive user-perceived performance and system stability. A system with a good average latency but terrible tail latency can still feel unresponsive or unreliable.
 * **Units**: Latency values in JLBH output are typically shown in microseconds (`us`) or sometimes nanoseconds (`ns`) if the values are very small. Pay attention to the units indicated in the table headers.
-* **Custom Probes**: If you've added custom probes (e.g., `jlbh.addProbe("MyStage")`), each will have its own percentile table in the output. Analyzing these helps pinpoint which stage of an operation contributes most to the overall end-to-end latency.
+* **Custom Probes**: If you've added custom probes (e.g., `jlbh.addProbe("MyStage")`), each will have its own percentile table in the output. Analysing these helps pinpoint which stage of an operation contributes most to the overall end-to-end latency.
 
 == 3. Co-ordinated Omission (CO)
 
@@ -78,7 +78,7 @@ JLBH can optionally measure Operating System (OS) jitter, which refers to delays
 ** If your application shows high tail latencies, and the OS Jitter probe also shows high values around the same magnitude, it's a strong indicator that external factors are at play.
 * **Actions for High Jitter**:
 ** Ensure the benchmark is running on a quiet machine with minimal other load.
-** Utilize CPU isolation / shielding for benchmark threads and the OS jitter thread (see `JLBHOptions.acquireLock` and `jitterAffinity`).
+** Utilise CPU isolation / shielding for benchmark threads and the OS jitter thread (see `JLBHOptions.acquireLock` and `jitterAffinity`).
 ** Investigate system settings (e.g., power saving modes, transparent huge pages, kernel scheduler options, interrupt coalescing).
 
 == 5. Analysing Run-to-Run Variation
@@ -90,19 +90,19 @@ Latency measurements can vary between successive runs of the same benchmark on t
 * **Interpreting Variation**:
 ** *Low Variation (e.g., < 5-10%)*: Suggests a stable benchmarking environment and that your application's performance is repeatable under the test conditions. This increases confidence in the results.
 ** *High Variation*: Indicates instability. Possible causes include:
-*** **Insufficient Warm-up**: The JVM might still be optimizing code differently across runs. Try increasing `warmUpIterations`.
+*** **Insufficient Warm-up**: The JVM might still be optimising code differently across runs. Try increasing `warmUpIterations`.
 *** **Garbage Collection (GC) Pauses**: Infrequent but long GC pauses can hit some runs but not others, drastically affecting tail percentiles. Monitor GC activity.
 *** **External System Noise**: Other processes on the machine, network fluctuations (if applicable), or even hardware power management.
-*** **Adaptive JVM Behavior**: Some JVM optimizations are adaptive and can change behavior between runs if conditions shift slightly.
+*** **Adaptive JVM Behaviour**: Some JVM optimisations are adaptive and can change behaviour between runs if conditions shift slightly.
 *** **Benchmarked Code Instability**: The code itself might have inherent variability or be interacting with unstable external resources.
-* **Goal**: Aim for reasonably tight spreads to ensure your conclusions are based on consistent behavior. Focus on understanding systematic performance rather than chasing the single "best" score from one run. Longer runs (`iterations`) can also help smooth out some variations and capture rarer events more consistently.
+* **Goal**: Aim for reasonably tight spreads to ensure your conclusions are based on consistent behaviour. Focus on understanding systematic performance rather than chasing the single "best" score from one run. Longer runs (`iterations`) can also help smooth out some variations and capture rarer events more consistently.
 
 == 6. The Throughput vs. Latency Relationship
 
 A fundamental aspect of performance is the trade-off between throughput (how much work is done per unit of time) and latency (how long each piece of work takes).
 
 * **JLBH's Role**: JLBH allows you to set a target `throughput` via `JLBHOptions`. This controls the rate at which `JLBHTask.run()` is invoked.
-* **Typical Behavior**:
+* **Typical Behaviour**:
 ** At low throughputs, a system can often maintain low latency.
 ** As throughput increases, contention for resources (CPU, memory, network, locks) typically rises.
 ** Beyond a certain point, latency will start to increase, often non-linearly. Queues may build up, and the system struggles to keep pace.
@@ -116,7 +116,7 @@ A fundamental aspect of performance is the trade-off between throughput (how muc
 Avoiding these common mistakes can help ensure your benchmark results are meaningful and your conclusions are sound:
 
 * **Insufficient Warm-up**:
-** *Issue*: The JVM performs JIT compilation, class loading, and cache warming during initial execution. Short or inadequate warm-up can mean you're measuring pre-optimized code or including one-off startup costs.
+** *Issue*: The JVM performs JIT compilation, class loading, and cache warming during initial execution. Short or inadequate warm-up can mean you're measuring pre-optimised code or including one-off startup costs.
 ** *Solution*: Ensure `warmUpIterations` is sufficient. A common rule of thumb is at least the JVM's compilation threshold (e.g., `Jvm.compileThreshold()` in Chronicle Core, typically 10,000-15,000 iterations) plus some buffer for application-specific warm-up. Monitor if results stabilize after a certain number of runs.
 * **Ignoring Co-ordinated Omission Setting**:
 ** *Issue*: Comparing results where one run had CO compensation enabled and another didn't will lead to incorrect conclusions about performance changes.
@@ -129,10 +129,10 @@ Avoiding these common mistakes can help ensure your benchmark results are meanin
 ** *Solution*: Test a range of throughputs relevant to your expected operational load and capacity limits.
 * **Focusing Only on Averages**:
 ** *Issue*: Averages hide outliers and don't reflect the experience of users hitting tail latencies.
-** *Solution*: Prioritize percentile analysis (p50, p90, p99, p99.9, worst) as JLBH encourages.
+** *Solution*: Prioritise percentile analysis (p50, p90, p99, p99.9, worst) as JLBH encourages.
 * **Ignoring Custom Probe Data**:
 ** *Issue*: If you've set up custom probes for different stages of an operation but only look at the end-to-end numbers, you miss valuable insights into internal bottlenecks.
-** *Solution*: Analyze the percentile data for each custom probe. Compare their contributions to the overall latency.
+** *Solution*: Analyse the percentile data for each custom probe. Compare their contributions to the overall latency.
 * **Environmental Inconsistency**:
 ** *Issue*: Running benchmarks on different hardware, with varying background OS/application load, different JVM versions, or different system configurations will yield different results.
 ** *Solution*: For comparative analysis, always use a consistent, controlled, and quiet environment. Document the environment meticulously.
@@ -141,7 +141,7 @@ Avoiding these common mistakes can help ensure your benchmark results are meanin
 ** *Solution*: Use `JLBHOptions.acquireLock(Affinity::acquireLock)` (from OpenHFT Affinity library) to attempt to pin the main benchmark thread to an isolated core. Similarly for `jitterAffinity` if using the OS Jitter probe. Ensure these cores are genuinely isolated.
 * **Not Enough Iterations/Run Duration**:
 ** *Issue*: Very short runs (low `iterations`) may not be statistically significant or may fail to capture infrequent, high-latency events like GC pauses or network timeouts.
-** *Solution*: Run enough iterations to achieve statistical stability and to give rare events a chance to occur if they are part of the system's behavior under load. This often means runs lasting at least several seconds, or even minutes for deep stability tests.
+** *Solution*: Run enough iterations to achieve statistical stability and to give rare events a chance to occur if they are part of the system's behaviour under load. This often means runs lasting at least several seconds, or even minutes for deep stability tests.
 
 == 8. Deriving Actionable Insights
 
@@ -150,7 +150,7 @@ The ultimate goal of benchmarking is to gain insights that can lead to improveme
 * **Identify Bottlenecks**:
 ** High end-to-end latency? Use custom probes to break down the operation and see which stage is the culprit.
 ** High p99 or p99.9 values? This often points to issues like GC, network spikes, lock contention, or OS jitter. Correlate with OS Jitter probe and GC logs.
-* **Validate Optimizations**: Run benchmarks before and after a code change to quantify its impact on latency across different percentiles and throughputs.
+* **Validate Optimisations**: Run benchmarks before and after a code change to quantify its impact on latency across different percentiles and throughputs.
 * **Capacity Planning**: Determine the throughput your system can handle while meeting latency SLOs.
 * **Regression Testing**: Integrate JLBH benchmarks into your CI/CD pipeline to catch performance regressions automatically.
 * **Understand Trade-offs**: Use JLBH to explore the impact of different configurations, algorithms, or architectural choices on the latency profile.
