@@ -13,7 +13,7 @@ public interface JLBHTask {
      *
      * @param jlbh A reference to the JLBH which is needed so that {@code jlbh.sample()}
      *             can be invoked when the benchmark is complete. It can also be used to
-     *             create more probes into the benchamrk.
+     *             create more probes into the benchmark.
      */
     void init(JLBH jlbh);
 
