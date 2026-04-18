@@ -144,7 +144,7 @@ Post-run, results can be persisted for offline analysis (`result.csv` by default
 * Immutable result objects ensure thread-safe publication to external consumers.
 
 === 5.3 NF-UX-001 Usability
-* Fluent builder API; sensible defaults provide a runnable benchmark in ≤10 LOC.
+* Fluent builder API; sensible defaults provide a runnable benchmark in <=10 LOC.
 * ASCII table outputs are human-readable and CI-friendly.
 
 === 5.4 NF-O-001 Portability

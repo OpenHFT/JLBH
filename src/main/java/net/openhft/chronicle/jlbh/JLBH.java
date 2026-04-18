@@ -795,12 +795,12 @@ public class JLBH implements NanoSampler {
          * scheduling iterations and waiting for a run to finish.
          * </p>
          * <ul>
-         *     <li><b>Scheduling iterations</b> – when not waiting for a run to
+         *     <li><b>Scheduling iterations</b> - when not waiting for a run to
          *     finish the handler invokes the {@link JLBHTask} at
          *     {@code nextInvokeTime}. After each invocation counters are
          *     updated and once all iterations have been scheduled the handler
          *     switches to the waiting state.</li>
-         *     <li><b>Waiting for completion</b> – when all iterations of the
+         *     <li><b>Waiting for completion</b> - when all iterations of the
          *     current run are scheduled the handler waits until the end to end
          *     histogram contains {@code jlbhOptions.iterations} samples. The
          *     run is then finalised and either the next run is started or, if
