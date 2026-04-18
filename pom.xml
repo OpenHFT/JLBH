@@ -16,6 +16,7 @@
     </parent>
 
     <properties>
+        <license.year>2013-2026</license.year>
         <jacoco.line.coverage>0.883</jacoco.line.coverage>
         <jacoco.branch.coverage>0.786</jacoco.branch.coverage>
     </properties>
