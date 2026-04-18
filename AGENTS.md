@@ -91,7 +91,7 @@ When using AI agents to assist with development, please adhere to the following 
 
 ## Company-Wide Tagging
 
-This section records **company-wide** decisions that apply to *all* Chronicle projects. All identifiers use the <Scope>-<Tag>-xxx prefix. The `xxx` are unique across in the same Scope even if the tags are different. Component-specific decisions live in their xxx-decision-log.adoc files.
+This section records **company-wide** decisions that apply to *all* Chronicle projects. All identifiers use the <Scope>-<Tag>-xxx prefix. The `xxx` are unique within the same Scope even if the tags are different. Component-specific decisions live in their xxx-decision-log.adoc files.
 
 ### Tag Taxonomy (Nine-Box Framework)
 
