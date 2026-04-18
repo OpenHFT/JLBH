@@ -34,7 +34,7 @@ The harness targets _low-latency_ Java applications (trading systems, micro-serv
 
 * Upstream repository: https://github.com/OpenHFT/JLBH[GitHub - OpenHFT/JLBH]
 * API reference: https://javadoc.io/doc/net.openhft/chronicle-core/latest/net/openhft/chronicle/core/jlbh/JLBH.html[Javadoc]
-* Tutorial series: http://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html[RationalJava blog series]
+* Tutorial series: https://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html[RationalJava blog series]
 * Discussion of _co-ordinated omission_: https://groups.google.com/g/mechanical-sympathy/c/icNZJejUHfE[m.s. thread]
 * Chronicle blog post on JLBH in event loops: https://vanilla-java.github.io/2016/04/02/Microservices-in-the-Chronicle-World-Part-5.html[Vanilla-Java article]
 
@@ -193,6 +193,6 @@ public class NothingBenchmark implements JLBHTask {
 
 * JLBH originated within the Chronicle Software open-source stack and is actively maintained. See https://github.com/OpenHFT/JLBH.
 * The API reference highlights the focus on _co-ordinated omission_ and event-loop support. See https://www.javadoc.io/doc/net.openhft/chronicle-core/latest/net/openhft/chronicle/jlbh/JLBH.html.
-* A multi-part blog series gives practical guidance on designing realistic latency tests. See http://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html.
+* A multi-part blog series gives practical guidance on designing realistic latency tests. See https://www.rationaljava.com/2016/04/a-series-of-posts-on-jlbh-java-latency.html.
 * Vanilla-Java's micro-services article demonstrates embedding JLBH in an event-driven architecture. See https://vanilla-java.github.io/2016/04/02/Microservices-in-the-Chronicle-World-Part-5.html.
 * Original discussion of co-ordinated omission by Gil Tene motivates JLBH's default settings. See https://groups.google.com/g/mechanical-sympathy/c/icNZJejUHfE.
