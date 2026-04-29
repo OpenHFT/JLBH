@@ -4,18 +4,18 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.affinity.AffinityLock;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHOptionsTest {
+class JLBHOptionsTest {
 
     @Test
-    public void shouldApplyAllConfigurationOptions() throws Exception {
+    void shouldApplyAllConfigurationOptions() throws Exception {
         JLBHOptions options = new JLBHOptions();
         LatencyDistributor distributor = averageLatencyNS -> averageLatencyNS * 2;
         Supplier<AffinityLock> customSupplier = () -> null;
@@ -61,7 +61,7 @@ public class JLBHOptionsTest {
     }
 
     @Test
-    public void shouldRespectSkipFirstRunFalse() throws Exception {
+    void shouldRespectSkipFirstRunFalse() throws Exception {
         JLBHOptions options = new JLBHOptions().skipFirstRun(false);
         assertEquals(JLBHOptions.SKIP_FIRST_RUN.NO_SKIP, getField(options, "skipFirstRun", JLBHOptions.SKIP_FIRST_RUN.class));
     }

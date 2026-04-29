@@ -4,41 +4,39 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.OS;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
-public class JLBHIntegrationTest {
+class JLBHIntegrationTest {
 
     private PrintStream originalSystemOut;
     private PrintStream originalSystemErr;
     private ByteArrayOutputStream outContent;
     private ByteArrayOutputStream errContent;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         rememberOriginalStdErrOut();
-        Assume.assumeTrue(!OS.isMacOSX());
+        assumeTrue(!OS.isMacOSX());
         outContent = new ByteArrayOutputStream();
         errContent = new ByteArrayOutputStream();
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         resetSystemOut();
     }
 
     @Test
-    public void shouldMeasureLatency() {
+    void shouldMeasureLatency() {
         // given
         redirectSystemOut();
         final JLBH jlbh = new JLBH(options());
@@ -49,9 +47,9 @@ public class JLBHIntegrationTest {
         // then
         String stdOut = outContent.toString();
         resetSystemOut();
-        assertThat(stdOut, containsString("OS Jitter"));
-        assertThat(stdOut, containsString("Warm up complete (500 iterations took "));
-        assertThat(stdOut, containsString("Run time: "));
+        assertTrue(stdOut.contains("OS Jitter"));
+        assertTrue(stdOut.contains("Warm up complete (500 iterations took "));
+        assertTrue(stdOut.contains("Run time: "));
         String actual = withoutNonDeterministicFields(stdOut);
         String expected = withoutNonDeterministicFields(predictableTaskExpectedResult());
 

@@ -4,7 +4,6 @@
 package net.openhft.chronicle.jlbh;
 
 import net.openhft.chronicle.core.util.NanoSampler;
-import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -12,14 +11,16 @@ import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHAdditionalCoverageTest {
+import org.junit.jupiter.api.Test;
+
+class JLBHAdditionalCoverageTest {
     /**
      * Exercises {@link JLBH#abort()} to ensure the running harness can be stopped safely.
      */
     @Test
-    public void shouldAbortWhenRequested() {
+    void shouldAbortWhenRequested() {
         AbortOnRunTask task = new AbortOnRunTask();
         JLBHOptions options = newHarness(task)
                 .warmUpIterations(2)
@@ -29,15 +30,15 @@ public class JLBHAdditionalCoverageTest {
 
         jlbh.start();
 
-        assertTrue("abort was not triggered", task.abortCount() > 0);
-        assertTrue("task should finish quickly after abort", task.totalRuns() < 5 * 20);
+        assertTrue(task.abortCount() > 0, "abort was not triggered");
+        assertTrue(task.totalRuns() < 5 * 20, "task should finish quickly after abort");
     }
 
     /**
      * Verifies that configuring a timeout starts the watchdog thread without error.
      */
     @Test
-    public void shouldStartTimeoutCheckerWhenTimeoutConfigured() {
+    void shouldStartTimeoutCheckerWhenTimeoutConfigured() {
         CountingTask task = new CountingTask();
         JLBHOptions options = newHarness(task)
                 .warmUpIterations(1)
@@ -49,27 +50,28 @@ public class JLBHAdditionalCoverageTest {
 
         jlbh.start();
 
-        assertTrue("samples should have been recorded", task.totalRuns() >= 1);
+        assertTrue(task.totalRuns() >= 1, "samples should have been recorded");
     }
 
     /**
      * Ensures {@link JLBH#eventLoopHandler(net.openhft.chronicle.core.threads.EventLoop)} rejects use when
      * coordinated omission compensation is disabled.
      */
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
+    @Test
+    void shouldRejectEventLoopWhenCoordinatedOmissionDisabled() {
         JLBHOptions options = newHarness(new NoOpTask())
                 .accountForCoordinatedOmission(false)
                 .recordOSJitter(false);
         JLBH jlbh = new JLBH(options, silentPrintStream(), null);
-        jlbh.eventLoopHandler(null);
+
+        assertThrows(UnsupportedOperationException.class, () -> jlbh.eventLoopHandler(null));
     }
 
     /**
      * Covers helper methods that format percentile output.
      */
     @Test
-    public void shouldFormatRunSummaries() throws Exception {
+    void shouldFormatRunSummaries() throws Exception {
         JLBHOptions options = newHarness(new NoOpTask());
         JLBH jlbh = new JLBH(options, silentPrintStream(), null);
         Method addPr = JLBH.class.getDeclaredMethod("addPrToPrint", StringBuilder.class, String.class, int.class);

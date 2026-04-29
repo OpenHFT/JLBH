@@ -4,10 +4,10 @@
 package net.openhft.chronicle.jlbh.util;
 
 import net.openhft.chronicle.jlbh.JLBHResult;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,12 +15,12 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class JLBHResultSerializerTest {
+class JLBHResultSerializerTest {
 
-    @Rule
-    public final TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    File tmp;
 
     private static final Duration P50 = Duration.ofNanos(100);
     private static final Duration P90 = Duration.ofNanos(200);
@@ -29,12 +29,14 @@ public class JLBHResultSerializerTest {
     private static final Duration WORST = Duration.ofNanos(600);
 
     @Test
-    public void shouldWriteSelectedProbesWithoutOsJitter() throws IOException {
+    void shouldWriteSelectedProbesWithoutOsJitter() throws IOException {
         FakeRunResult endToEnd = new FakeRunResult(P50, P90, P99, P999, null, WORST);
         FakeRunResult probe = new FakeRunResult(P50.multipliedBy(2), P90, P99, P999, null, WORST);
         FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("TheProbe", probe), Optional.empty());
 
-        Path out = tmp.newFile("subset.csv").toPath();
+        File subsetFile = new File(tmp, "subset.csv");
+        subsetFile.createNewFile();
+        Path out = subsetFile.toPath();
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Collections.singletonList("TheProbe"), false);
 
         List<String> lines = Files.readAllLines(out);
@@ -45,7 +47,7 @@ public class JLBHResultSerializerTest {
     }
 
     @Test
-    public void shouldIncludeOsJitterAndAdditionalProbes() throws IOException {
+    void shouldIncludeOsJitterAndAdditionalProbes() throws IOException {
         FakeRunResult endToEnd = new FakeRunResult(P50, P90, P99, P999, Duration.ofNanos(500), WORST);
         FakeRunResult probe = new FakeRunResult(P50, P90.multipliedBy(2), P99, P999, Duration.ofNanos(700), WORST);
         FakeRunResult osJitter = new FakeRunResult(Duration.ofNanos(10), Duration.ofNanos(20), Duration.ofNanos(30),
@@ -53,7 +55,9 @@ public class JLBHResultSerializerTest {
 
         FakeResult result = new FakeResult(endToEnd, Collections.singletonMap("Custom", probe), Optional.of(osJitter));
 
-        Path out = tmp.newFile("full.csv").toPath();
+        File fullFile = new File(tmp, "full.csv");
+        fullFile.createNewFile();
+        Path out = fullFile.toPath();
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Arrays.asList("Custom", "Missing"), true);
 
         List<String> lines = Files.readAllLines(out);
@@ -64,7 +68,7 @@ public class JLBHResultSerializerTest {
     }
 
     @Test
-    public void shouldDefaultToResultCsvInWorkingDirectory() throws IOException {
+    void shouldDefaultToResultCsvInWorkingDirectory() throws IOException {
         FakeRunResult runResult = new FakeRunResult(P50, P90, P99, P999, Duration.ofNanos(500), WORST);
         FakeResult result = new FakeResult(runResult, Collections.singletonMap("Probe", runResult), Optional.of(runResult));
 

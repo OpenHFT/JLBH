@@ -9,10 +9,9 @@ import net.openhft.chronicle.core.threads.EventLoop;
 import net.openhft.chronicle.threads.MediumEventLoop;
 import net.openhft.chronicle.threads.Pauser;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -25,29 +24,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.openhft.chronicle.jlbh.JLBHDeterministicFixtures.*;
 import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(Parameterized.class)
-public class JLBHTest {
+class JLBHTest {
     private EventLoop eventLoop;
 
-    public JLBHTest(boolean runFromEventLoop) {
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{{false}, {true}});
+    }
+
+    private void setUp(boolean runFromEventLoop) {
         if (runFromEventLoop) {
             eventLoop = new MediumEventLoop(null, "el", Pauser.busy(), true, null);
             eventLoop.start();
         }
     }
 
-    @Parameterized.Parameters(name = "event loop {0}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{{false}, {true}});
-    }
-
-    @After
-    public void after() {
+    @AfterEach
+    void after() {
         Closeable.closeQuietly(eventLoop);
+        eventLoop = null;
     }
 
     private void start(JLBH jlbh) {
@@ -59,8 +55,10 @@ public class JLBHTest {
         }
     }
 
-    @Test
-    public void shouldWriteResultToTheOutputProvided() {
+    @ParameterizedTest(name = "event loop {0}")
+    @MethodSource("data")
+    void shouldWriteResultToTheOutputProvided(boolean runFromEventLoop) {
+        setUp(runFromEventLoop);
 
         // given
         final OutputStream outputStream = new ByteArrayOutputStream();
@@ -71,37 +69,23 @@ public class JLBHTest {
 
         // then
         String result = outputStream.toString().replace("\r", "");
-        assertThat(result, containsString("OS Jitter"));
-        assertThat(result, containsString("Warm up complete (500 iterations took "));
-        assertThat(result, containsString("Run time: "));
+        assertTrue(result.contains("OS Jitter"));
+        assertTrue(result.contains("Warm up complete (500 iterations took "));
+        assertTrue(result.contains("Run time: "));
 
-        final String predictableTaskExpectedResult = predictableTaskExpectedResult();
-        System.out.println("predictableTaskExpectedResult = " + predictableTaskExpectedResult);
-        final String expected = withoutNonDeterministicFields(predictableTaskExpectedResult);
-        System.out.println("expected = " + expected);
+        final String expected = withoutNonDeterministicFields(predictableTaskExpectedResult());
         final String actual = withoutNonDeterministicFields(result);
-        System.out.println("actual = " + actual);
-
-        if (!expected.equals(actual)) {
-            System.err.println("expected");
-            expected.chars().limit(10).boxed().forEach(System.err::println);
-            System.err.println("actual");
-            actual.chars().limit(10).boxed().forEach(System.err::println);
-        }
-
-        // Disable for the moment. Reintroduce this assertion once the source of flakyness on Java 11 is figured out
-        // assertEquals(expected, actual);
-        if (!expected.equals(actual)) {
-            System.err.println("ERROR! There is an error here which is disabled at the moment! expected is not equal to actual");
-        }
+        assertEquals(expected, actual);
     }
 
-    @Test
-    /*
-     * To understand the data, please go to JLBHDeterministicFixtures
-     * and JLBHDeterministicFixtures::expectedOutput in particular
-     */
-    public void shouldProvideResultData() {
+    @ParameterizedTest(name = "event loop {0}")
+    @MethodSource("data")
+        /*
+         * To understand the data, please go to JLBHDeterministicFixtures
+         * and JLBHDeterministicFixtures::expectedOutput in particular
+         */
+    void shouldProvideResultData(boolean runFromEventLoop) {
+        setUp(runFromEventLoop);
 
         // given
         final JLBHResultConsumer resultConsumer = resultConsumer();
@@ -126,8 +110,8 @@ public class JLBHTest {
 
         final List<JLBHResult.RunResult> summaryOfEachRun = resultConsumer.get().endToEnd().eachRunSummary();
         assertEquals(3, summaryOfEachRun.size());
-        assertThat(summaryOfEachRun.get(0), not(equalTo(lastRunSummary)));
-        assertThat(summaryOfEachRun.get(1), not(equalTo(lastRunSummary)));
+        assertNotEquals(lastRunSummary, summaryOfEachRun.get(0));
+        assertNotEquals(lastRunSummary, summaryOfEachRun.get(1));
         assertEquals(lastRunSummary, summaryOfEachRun.get(2));
 
         assertTrue(resultConsumer.get().probe("A").isPresent());
@@ -150,13 +134,15 @@ public class JLBHTest {
 
         final List<JLBHResult.RunResult> summaryOfProbeAEachRun = resultConsumer.get().probe("A").get().eachRunSummary();
         assertEquals(3, summaryOfProbeAEachRun.size());
-        assertThat(summaryOfProbeAEachRun.get(0), not(equalTo(probeALastRunSummary)));
-        assertThat(summaryOfProbeAEachRun.get(1), not(equalTo(probeALastRunSummary)));
+        assertNotEquals(probeALastRunSummary, summaryOfProbeAEachRun.get(0));
+        assertNotEquals(probeALastRunSummary, summaryOfProbeAEachRun.get(1));
         assertEquals(probeALastRunSummary, summaryOfProbeAEachRun.get(2));
     }
 
-    @Test
-    public void shouldProvideResultDataEvenIfProbesDoNotProvideSameShapedData() {
+    @ParameterizedTest(name = "event loop {0}")
+    @MethodSource("data")
+    void shouldProvideResultDataEvenIfProbesDoNotProvideSameShapedData(boolean runFromEventLoop) {
+        setUp(runFromEventLoop);
 
         // given
         final JLBHResultConsumer resultConsumer = resultConsumer();
@@ -174,8 +160,10 @@ public class JLBHTest {
         assertEquals(4, probeBLastRunSummary.percentiles().size());
     }
 
-    @Test
-    public void teamCityHelper() {
+    @ParameterizedTest(name = "event loop {0}")
+    @MethodSource("data")
+    void teamCityHelper(boolean runFromEventLoop) {
+        setUp(runFromEventLoop);
 
         // given
         final JLBHResultConsumer resultConsumer = resultConsumer();
@@ -207,8 +195,11 @@ public class JLBHTest {
                 "##teamcity[buildStatisticValue key='prefix.B.1.0" + extra + "' value='0.100125']\n", baos.toString().replace("\r", ""));
     }
 
-    @Test
-    public void histogramSummariesAreCorrect() {
+    @ParameterizedTest(name = "event loop {0}")
+    @MethodSource("data")
+    void histogramSummariesAreCorrect(boolean runFromEventLoop) {
+        setUp(runFromEventLoop);
+
         final JLBHResultConsumer resultConsumer = resultConsumer();
         JLBHOptions jlbhOptions = options().jlbhTask(new PredictableJLBHTaskDifferentShape()).iterations(ITERATIONS * 2);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -221,15 +212,17 @@ public class JLBHTest {
         System.out.println(baos);
         assertTrue(baos.toString().replace("\r", "").contains(
                 "-------------------------------- SUMMARY (B) us ----------------------------------------------------\n" +
-                "Percentile   run1         run2         run3      % Variation\n" +
-                "50.0:            0.10         0.10         0.10         0.00\n" +
-                "90.0:            0.10         0.10         0.10         0.00\n" +
-                "99.0:            0.10         0.10         0.10         0.00\n" +
-                "worst:           0.10         0.10         0.10         0.00"));
+                        "Percentile   run1         run2         run3      % Variation\n" +
+                        "50.0:            0.10         0.10         0.10         0.00\n" +
+                        "90.0:            0.10         0.10         0.10         0.00\n" +
+                        "99.0:            0.10         0.10         0.10         0.00\n" +
+                        "worst:           0.10         0.10         0.10         0.00"));
     }
 
-    @Test
-    public void shouldCallAllLifecycleMethods() {
+    @ParameterizedTest(name = "event loop {0}")
+    @MethodSource("data")
+    void shouldCallAllLifecycleMethods(boolean runFromEventLoop) {
+        setUp(runFromEventLoop);
 
         AtomicInteger initCount = new AtomicInteger(0);
         AtomicInteger runCount = new AtomicInteger(0);
