@@ -5,8 +5,8 @@ Chronicle Software
 :toclevels: 2
 :icons: font
 
-image:https://maven-badges.herokuapp.com/maven-central/net.openhft/jlbh/badge.svg[caption="",link=https://maven-badges.herokuapp.com/maven-central/net.openhft/jlbh]
-image:https://javadoc.io/badge2/net.openhft/JLBH/javadoc.svg[link="https://www.javadoc.io/doc/net.openhft/chronicle-wire/latest/index.html"]
+image:https://img.shields.io/maven-central/v/net.openhft/jlbh.svg[caption="",link=https://central.sonatype.com/artifact/net.openhft/jlbh]
+image:https://javadoc.io/badge2/net.openhft/jlbh/javadoc.svg[link="https://www.javadoc.io/doc/net.openhft/jlbh/latest/index.html"]
 //image:https://javadoc-badge.appspot.com/net.openhft/jlbh.svg?label=javadoc[JavaDoc, link=https://www.javadoc.io/doc/net.openhft/jlbh]
 image:https://img.shields.io/github/license/OpenHFT/JLBH[GitHub]
 image:https://img.shields.io/badge/release%20notes-subscribe-brightgreen[link="https://chronicle.software/release-notes/"]
