@@ -95,6 +95,8 @@ public class JLBH implements NanoSampler {
      * once {@link #start()} completes.
      *
      * @param jlbhOptions options controlling the benchmark execution
+     * @throws IllegalStateException if {@code jvm.resource.tracing} is empty or parses as
+     *                               {@code true}, or no benchmark task is configured
      */
     public JLBH(@NotNull JLBHOptions jlbhOptions) {
         this(jlbhOptions, System.out, null);
@@ -110,14 +112,16 @@ public class JLBH implements NanoSampler {
      * @param printStream    stream used for textual output, e.g. {@link System#out}
      * @param resultConsumer consumer that receives the {@link JLBHResult} once the benchmark has
      *                       finished; may be {@code null} if no programmatic result is required
+     * @throws IllegalStateException if {@code jvm.resource.tracing} is empty or parses as
+     *                               {@code true}, or no benchmark task is configured
      */
     public JLBH(@NotNull JLBHOptions jlbhOptions, @NotNull PrintStream printStream, Consumer<JLBHResult> resultConsumer) {
 
         final String resourceTracing = System.getProperty("jvm.resource.tracing");
 
         if (resourceTracing != null && (resourceTracing.isEmpty() || Boolean.parseBoolean(resourceTracing))) {
-            System.out.println("***** WARNING : JLBH can not be run if jvm.resource.tracing=" + resourceTracing + ", please remove all \"jvm.resource.tracing\" as this will corrupt your stats *****");
-            System.exit(-1);
+            throw new IllegalStateException("Cannot run JLBH with jvm.resource.tracing=" + resourceTracing
+                    + "; disable resource tracing to avoid distorting benchmark measurements");
         }
 
         this.jlbhOptions = jlbhOptions;

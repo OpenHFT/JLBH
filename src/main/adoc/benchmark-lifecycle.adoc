@@ -25,6 +25,12 @@ This initial phase prepares the benchmark environment:
 * **OS Jitter Monitoring**: Jitter tracking is enabled by default (`recordOSJitter` defaults to true); unless disabled via `recordOSJitter(false)`, the `OSJitterMonitor` background thread starts to measure operating system scheduling jitter independently.
 * **Affinity**: If an `acquireLock` supplier is configured in `JLBHOptions`, an attempt to acquire CPU affinity for the main benchmark thread might occur.
 
+[[resource-tracing]]
+The `JLBH` constructors check `jvm.resource.tracing` because intrusive resource tracing distorts benchmark measurements.
+Construction throws `IllegalStateException` when the property is empty or parses as `true` (case-insensitive).
+JLBH does not terminate the host JVM.
+Leave the property unset or set it to `false` when running a benchmark; other non-empty values follow `Boolean.parseBoolean` semantics.
+
 == 2. Warmup
 
 Before any measurements are formally recorded, the harness executes a warm-up phase:

@@ -8,8 +8,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -37,6 +39,10 @@ import java.util.Optional;
  * which will create a {@code result.csv} file in the working directory.  Other
  * overloads allow specifying the file name, the set of probes to export and
  * whether the OS jitter probe should be included.
+ * <p>
+ * Files use UTF-8, preserving Unicode probe names independently of the platform's
+ * default charset. Malformed Unicode and output failures are reported as
+ * {@link IOException}; output may be incomplete when an exception is thrown.
  */
 public class JLBHResultSerializer {
     public static final String THE_PROBE = "TheProbe";
@@ -98,7 +104,14 @@ public class JLBHResultSerializer {
      * @throws IOException if the file cannot be written
      */
     public static void runResultToCSV(JLBHResult jlbhResult, String fileName, Iterable<String> namesOfProbes, boolean includeOSJitter) throws IOException {
-        try (Writer pw = new BufferedWriter(new PrintWriter(Files.newOutputStream(Paths.get(fileName))))) {
+        writeResultsToCSV(jlbhResult, Files.newOutputStream(Paths.get(fileName)), namesOfProbes, includeOSJitter);
+    }
+
+    // Own both layers so the stream closes even when flushing the writer fails.
+    static void writeResultsToCSV(JLBHResult jlbhResult, OutputStream output,
+                                  Iterable<String> namesOfProbes, boolean includeOSJitter) throws IOException {
+        try (OutputStream stream = output;
+             Writer pw = new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8.newEncoder()))) {
             writeHeader(pw);
 
             JLBHResult.ProbeResult probeResult = jlbhResult.endToEnd();
@@ -106,21 +119,21 @@ public class JLBHResultSerializer {
 
             for (String probeName : namesOfProbes) {
                 Optional<JLBHResult.ProbeResult> optProbe = jlbhResult.probe(probeName);
-                optProbe.ifPresent(probe -> writeProbeResult(pw, probeName, probe));
+                if (optProbe.isPresent())
+                    writeProbeResult(pw, probeName, optProbe.get());
             }
-            if (!includeOSJitter) return;
-            Optional<JLBHResult.ProbeResult> osJitterResult = jlbhResult.osJitter();
-            osJitterResult.ifPresent(osJitterRes -> writeProbeResult(pw, OS_JITTER, osJitterRes));
+            if (includeOSJitter) {
+                Optional<JLBHResult.ProbeResult> osJitterResult = jlbhResult.osJitter();
+                if (osJitterResult.isPresent())
+                    writeProbeResult(pw, OS_JITTER, osJitterResult.get());
+            }
+            pw.flush();
         }
     }
 
-    private static void writeProbeResult(Writer pw, String probeName, JLBHResult.ProbeResult probeResult) {
-        try {
-            JLBHResult.@NotNull RunResult runResult = probeResult.summaryOfLastRun();
-            writeRow(probeName, pw, runResult);
-        } catch (IOException e) {
-            throw new RuntimeException("Error writing probe results: " + probeName, e);
-        }
+    private static void writeProbeResult(Writer pw, String probeName, JLBHResult.ProbeResult probeResult) throws IOException {
+        JLBHResult.@NotNull RunResult runResult = probeResult.summaryOfLastRun();
+        writeRow(probeName, pw, runResult);
     }
 
     private static void writeRow(String probeName, Writer pw, JLBHResult.RunResult runResult) throws IOException {
