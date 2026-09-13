@@ -6,15 +6,25 @@ package net.openhft.chronicle.jlbh.util;
 import net.openhft.chronicle.jlbh.JLBHResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Stream;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JLBHResultSerializerTest {
@@ -39,7 +49,7 @@ class JLBHResultSerializerTest {
         Path out = subsetFile.toPath();
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Collections.singletonList("TheProbe"), false);
 
-        List<String> lines = Files.readAllLines(out);
+        List<String> lines = Files.readAllLines(out, UTF_8);
         assertEquals(3, lines.size());
         assertEquals(",50th p-le,90th p-le,99th p-le,999th p-le,9999th p-le,Worst,", lines.get(0));
         assertEquals("endToEnd,100,200,300,400,,600,", lines.get(1));
@@ -60,7 +70,7 @@ class JLBHResultSerializerTest {
         Path out = fullFile.toPath();
         JLBHResultSerializer.runResultToCSV(result, out.toString(), Arrays.asList("Custom", "Missing"), true);
 
-        List<String> lines = Files.readAllLines(out);
+        List<String> lines = Files.readAllLines(out, UTF_8);
         assertEquals(4, lines.size());
         assertEquals("endToEnd,100,200,300,400,500,600,", lines.get(1));
         assertEquals("Custom,100,400,300,400,700,600,", lines.get(2));
@@ -76,9 +86,104 @@ class JLBHResultSerializerTest {
         Files.deleteIfExists(output);
         JLBHResultSerializer.runResultToCSV(result);
         assertTrue(Files.exists(output));
-        List<String> lines = Files.readAllLines(output);
+        List<String> lines = Files.readAllLines(output, UTF_8);
         assertEquals(4, lines.size());
         Files.deleteIfExists(output);
+    }
+
+    static Stream<Arguments> probeNames() {
+        return Stream.of(
+                Arguments.of("ASCII", "ASCII".getBytes(US_ASCII)),
+                Arguments.of("\u00e9", new byte[]{(byte) 0xc3, (byte) 0xa9}),
+                Arguments.of("\u20ac", new byte[]{(byte) 0xe2, (byte) 0x82, (byte) 0xac}),
+                Arguments.of("\ud83d\ude80", new byte[]{(byte) 0xf0, (byte) 0x9f, (byte) 0x9a, (byte) 0x80}));
+    }
+
+    @ParameterizedTest
+    @MethodSource("probeNames")
+    void shouldWriteExactUtf8BytesAndRoundTripProbeNames(String suffix, byte[] encodedSuffix) throws IOException {
+        String name = "probe-" + suffix;
+        FakeResult result = resultWithProbe(name);
+        Path output = tmp.toPath().resolve("unicode.csv");
+
+        JLBHResultSerializer.runResultToCSV(result, output.toString(), Collections.singletonList(name), false);
+
+        ByteArrayOutputStream expected = new ByteArrayOutputStream();
+        expected.write((",50th p-le,90th p-le,99th p-le,999th p-le,9999th p-le,Worst,\n"
+                + "endToEnd,100,200,300,400,,600,\nprobe-").getBytes(US_ASCII));
+        expected.write(encodedSuffix);
+        expected.write(",100,200,300,400,,600,\n".getBytes(US_ASCII));
+        assertArrayEquals(expected.toByteArray(), Files.readAllBytes(output));
+        assertEquals(name + ",100,200,300,400,,600,", Files.readAllLines(output, UTF_8).get(2));
+    }
+
+    @Test
+    void shouldRejectMalformedUnicodeRatherThanReplaceIt() {
+        String name = "probe-\ud800";
+        Path output = tmp.toPath().resolve("malformed.csv");
+
+        assertThrows(MalformedInputException.class, () -> JLBHResultSerializer.runResultToCSV(
+                resultWithProbe(name), output.toString(), Collections.singletonList(name), false));
+    }
+
+    @ParameterizedTest
+    @EnumSource(OutputFailure.class)
+    void shouldPropagateOutputFailuresAndCloseTheStream(OutputFailure failure) {
+        // A large name forces a write while a probe row is being emitted, before the final flush.
+        char[] characters = new char[32_768];
+        Arrays.fill(characters, 'p');
+        String name = new String(characters);
+        FailingOutputStream output = new FailingOutputStream(failure);
+
+        IOException error = assertThrows(IOException.class, () -> JLBHResultSerializer.writeResultsToCSV(
+                resultWithProbe(name), output, Collections.singletonList(name), false));
+
+        assertEquals("failure during " + failure, error.getMessage());
+        assertTrue(output.closed, "The destination must close even when writing or flushing fails");
+    }
+
+    private static FakeResult resultWithProbe(String name) {
+        FakeRunResult run = new FakeRunResult(P50, P90, P99, P999, null, WORST);
+        return new FakeResult(run, Collections.singletonMap(name, run), Optional.empty());
+    }
+
+    enum OutputFailure { WRITE, FLUSH, CLOSE }
+
+    private static final class FailingOutputStream extends OutputStream {
+        private final OutputFailure failure;
+        private boolean closed;
+
+        private FailingOutputStream(OutputFailure failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public void write(int value) throws IOException {
+            failOn(OutputFailure.WRITE);
+        }
+
+        @Override
+        public void write(byte[] bytes, int offset, int length) throws IOException {
+            failOn(OutputFailure.WRITE);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            failOn(OutputFailure.FLUSH);
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (!closed) {
+                closed = true;
+                failOn(OutputFailure.CLOSE);
+            }
+        }
+
+        private void failOn(OutputFailure operation) throws IOException {
+            if (operation == failure)
+                throw new IOException("failure during " + failure);
+        }
     }
 
     private static final class FakeResult implements JLBHResult {

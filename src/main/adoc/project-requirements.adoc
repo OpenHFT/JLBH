@@ -129,6 +129,9 @@ A background thread measures scheduling gaps exceeding a configured threshold (`
 
 === 4.5 FN-005 CSV Serialisation
 Post-run, results can be persisted for offline analysis (`result.csv` by default).
+CSV files use UTF-8, preserving valid Unicode probe names on every platform.
+Readers must select UTF-8 rather than relying on their default charset.
+Malformed Unicode and write, flush or close failures are reported as `IOException`; the file may be incomplete on failure.
 
 === 4.6 FN-006 Event Loop Integration
 `eventLoopHandler(EventLoop)` allows benchmarks to operate inside Chronicle threading framework, avoiding extra threads.
