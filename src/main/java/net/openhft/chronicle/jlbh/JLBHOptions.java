@@ -35,6 +35,8 @@ public class JLBHOptions {
     boolean jitterAffinity;
     Supplier<AffinityLock> acquireLock = Affinity::acquireLock;
     long timeout;
+    boolean hostLock = Jvm.getBoolean(JLBHHostLock.ENABLED_PROPERTY, false);
+    long hostLockTimeoutMillis = JLBHHostLock.defaultTimeoutMillis();
     /**
      * Number of iterations per second to be pushed through the benchmark
      *
@@ -238,6 +240,31 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Hold a host-wide {@link JLBHHostLock} for the whole run, from before {@link JLBHTask#init(JLBH)} until after
+     * {@link JLBHTask#complete()}, so concurrent JLBH runs on one host, in any JVM, queue instead of overlapping.
+     * Defaults to {@code -Djlbh.hostLock}, which is {@code false} when unset.
+     *
+     * @param hostLock {@code true} to serialise this run with other host-locked runs
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
+    public JLBHOptions hostLock(boolean hostLock) {
+        this.hostLock = hostLock;
+        return this;
+    }
+
+    /**
+     * Maximum time to wait for the host lock before {@link JLBH#start()} throws an
+     * {@link IllegalStateException} naming the holder. Defaults to {@code -Djlbh.hostLock.timeoutSecs} (3600 s).
+     *
+     * @param timeoutMillis 0 fails at once if the lock is held; a negative value waits indefinitely
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
+    public JLBHOptions hostLockTimeoutMillis(long timeoutMillis) {
+        this.hostLockTimeoutMillis = timeoutMillis;
+        return this;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("JLBHOptions{");
@@ -254,6 +281,8 @@ public class JLBHOptions {
         sb.append(", latencyDistributor=").append(latencyDistributor);
         sb.append(", jitterAffinity=").append(jitterAffinity);
         sb.append(", timeout=").append(timeout);
+        sb.append(", hostLock=").append(hostLock);
+        sb.append(", hostLockTimeoutMillis=").append(hostLockTimeoutMillis);
         sb.append(", jlbhTask=").append(jlbhTask);
         sb.append(", acquireLock=").append(acquireLock);
         sb.append('}');
