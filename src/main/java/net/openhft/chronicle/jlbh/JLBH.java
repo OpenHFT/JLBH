@@ -229,7 +229,7 @@ public class JLBH implements NanoSampler {
                 for (int i = 0; i < iterations; i++) {
 
                     if (i % 16 == 0 && i % mod == 0 && startTimeNs > lastPrint + length) {
-                        System.out.printf("... run %,d out of %,d%n", i, iterations);
+                        printStream.printf("... run %,d out of %,d%n", i, iterations);
                         lastPrint = startTimeNs;
                         startTimeNs = System.nanoTime();
                     }
@@ -841,7 +841,7 @@ public class JLBH implements NanoSampler {
                     }
 
                     if (i % 16 == 0 && i % mod == 0 && nextInvokeTime > lastPrint + length) {
-                        System.out.printf("... run %,d out of %,d%n", i, iterations);
+                        printStream.printf("... run %,d out of %,d%n", i, iterations);
                         lastPrint = nextInvokeTime;
                     }
                 }
