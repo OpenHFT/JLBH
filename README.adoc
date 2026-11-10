@@ -133,6 +133,23 @@ Histogramming of recorded latencies is precise.
 As specified in the link:src/main/adoc/project-requirements.adoc[jlbh-requirements], JLBH generates high-resolution histograms of at least 35 bits.
 This accuracy retains sub-nanosecond resolution over a wide range, so the reported percentiles closely reflect true end-to-end timings.
 
+=== Host-wide benchmark lock (opt-in)
+
+Benchmarks that share a host disturb each other's results.
+Enable `-Djlbh.hostLock=true`, or `JLBHOptions.hostLock(true)`, so that every such JLBH run on the host, in any JVM, waits for the others.
+The lock is off by default.
+
+* The lock is held from before `JLBHTask.init(JLBH)` until after `JLBHTask.complete()`, and before the `timeout(long)` watchdog starts.
+In `eventLoopHandler(EventLoop)` mode it is released on the event loop thread after the last run, or when the loop stops.
+* Lock file: `-Djlbh.hostLock.file`, else the `JLBH_HOST_LOCK_FILE` environment variable, else `/tmp/jlbh-host.lock`.
+`java.io.tmpdir` is not used, because builds often redirect it per project, which would split the lock.
+* The holder writes `pid=... user=... host=... started=... run=... cmd=...` to `<lock file>.holder`; read that file to see who holds the lock.
+Waiters print `JLBH: waiting for host lock ... held by ...` every `-Djlbh.hostLock.reportSecs` (default 30).
+* `-Djlbh.hostLock.timeoutSecs` (default 3600, `0` fails at once, negative waits indefinitely) or `JLBHOptions.hostLockTimeoutMillis(long)` bounds the wait; on expiry `start()` throws an `IllegalStateException` naming the holder.
+* The OS releases the lock when the holder exits or is killed, so there is no stale lock to clear.
+On Linux it is an fcntl record lock on one byte at offset `1L << 62`, which a script can share with `fcntl.lockf(fd, fcntl.LOCK_EX, 1, 1 << 62)`; it does not interact with `flock(1)`.
+* Within one JVM the lease is not re-entrant: a nested JLBH run with the lock enabled waits for the outer run, and fails when the timeout expires.
+
 == Sample Benchmarks and Tests
 
 The project ships with several example tasks and tests located under `src/test/java/net/openhft/chronicle/jlbh`.
