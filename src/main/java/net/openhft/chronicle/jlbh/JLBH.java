@@ -387,7 +387,7 @@ public class JLBH implements NanoSampler {
             PostWarmupGc.await(printStream, jlbhOptions.gcAfterWarmupTimeoutMS);
         if (jlbhOptions.pauseAfterWarmupMS != 0) {
             printStream.println("Pausing after warmup for " + jlbhOptions.pauseAfterWarmupMS + " ms");
-            Jvm.pause(jlbhOptions.pauseAfterWarmupMS);
+            SettlingPause.await(jlbhOptions.pauseAfterWarmupMS);
         }
         jlbhOptions.jlbhTask.warmedUp();
     }

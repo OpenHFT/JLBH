@@ -89,7 +89,7 @@ The final phase ensures that any resources are properly released:
 == Post-warm-up GC and settling delay (JLBH-4)
 
 By default JLBH finishes scheduling warm-up work and waits for its samples,
-requests `System.gc()`, observes explicit major-GC completion, then waits
+requests `System.gc()`, observes reclamation of a post-warm-up weak marker, then waits
 `pauseAfterWarmupMS` (now 100 ms). The existing `warmedUp()` callback follows;
 measured timing begins afterwards. GC is requested once per benchmark, not once
 per measured run. Both direct and event-loop execution use this order. The loop
@@ -101,36 +101,29 @@ setting both restores the former no-GC/no-pause preparation. Negative pause valu
 are rejected. Keep allocations in the later `warmedUp()` callback in mind: this
 change does not collect objects allocated after the GC gate.
 
-The local candidate supports HotSpot's completed `System.gc()` / `end of major GC`
-notification profile, exercised with Java 21 G1 (non-concurrent explicit GC),
-Serial and Parallel collectors. It records per-collector GC IDs before requesting
-collection, and requires a newer completed explicit major collection plus a
-cleared weak marker created after warm-up. It deliberately does not compare GC
-start timestamps with RuntimeMXBean uptime: their clock origins can differ.
-Notifications and listeners are removed after success, timeout or request failure.
-There is no new collector thread or allocation in measured iterations.
+A weak marker created after warm-up must be enqueued for reclamation after the
+request. This uses the Java reference-queue contract rather than collector-specific
+notification names, which differ between HotSpot and other VMs. The marker remains
+strongly referenced while waiting; its referent does not. There is no new collector
+thread or allocation in measured iterations.
 
-`gcAfterWarmupTimeoutMS` defaults to 10,000 ms and bounds the notification wait
-*after* `System.gc()` returns, not the time inside the VM call. If explicit GC is
-disabled, notifications are unsupported, or completion is not observed, measurement
-is refused with an exception and no result is published. Opt out explicitly when
-that is the intended experiment. Concurrent G1 emits minor/concurrent-pause events
-on the tested JVM; these are not accepted as a completed major collection. Other
-collectors/runtimes require their own completion-profile qualification.
+`gcAfterWarmupTimeoutMS` defaults to 10,000 ms and bounds the reclamation wait
+*after* `System.gc()` returns, not the time inside the VM call. If reclamation is
+not observed, measurement is refused and no result is published. Explicit GC is
+advisory: a VM that ignores it may time out. Opt out explicitly for that experiment.
+The settling pause uses monotonic elapsed time so an early sleep return cannot
+shorten the requested interval. Interruption refuses measurement.
 
-A completed collection is not proof that every object, finaliser, cleaner or
-concurrent VM activity has finished, nor that a future collection cannot occur.
-The marker and notification are completion evidence for this preparation step,
-not a transaction ID linking a GC uniquely to this caller. Concurrent benchmarks
-in one JVM and coalesced GC requests are not a qualified profile. This changes
-benchmark preparation and can change measured results; label the options in
-reports when comparing with older runs. It does not fix JIT, file-growth or OS
-writeback stalls that appeared alongside the missing-GC observation.
+Marker reclamation does not prove a full-heap collection, completion of finalisers,
+cleaners or concurrent collector phases, or absence of future collections. It
+cannot attribute a collection uniquely to this request. Background collection can
+also reclaim the marker. Label these preparation options when comparing results;
+this gate does not address JIT, file-growth or OS writeback stalls.
 
 API references:
 https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/System.html#gc()[System.gc]
 and
-https://docs.oracle.com/en/java/javase/21/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html[completed GC notifications].
+https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/ReferenceQueue.html[reference queues].
 
 === Property defaults and explicit overrides
 

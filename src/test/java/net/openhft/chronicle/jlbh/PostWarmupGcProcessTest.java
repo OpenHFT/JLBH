@@ -25,13 +25,19 @@ class PostWarmupGcProcessTest {
         for (boolean eventLoop : new boolean[]{false, true}) {
             String output = run(0, eventLoop, false, collector);
             assertTrue(output.indexOf("LAST_WARMUP_COMPLETED") < output.indexOf("Requesting post-warmup"), output);
-            int completed = output.indexOf("Post-warmup explicit major GC completion observed");
+            int completed = output.indexOf("Post-warmup GC marker reclamation observed");
             int pause = output.indexOf("Pausing after warmup for 100 ms");
             assertTrue(completed >= 0 && completed < pause, output);
             assertTrue(pause < output.indexOf("WARMED_UP_CALLBACK"), output);
             assertTrue(output.contains("MEASURED=20"), output);
             assertEquals(1, output.split("Requesting post-warmup", -1).length - 1, output);
         }
+    }
+
+    @Test
+    void defaultCollectorReclaimsMarkerInBothExecutionModes() throws Exception {
+        for (boolean eventLoop : new boolean[]{false, true})
+            assertTrue(run(0, eventLoop, false).contains("MEASURED=20"));
     }
 
     @Test
@@ -50,10 +56,9 @@ class PostWarmupGcProcessTest {
     }
 
     @Test
-    void concurrentG1PausesAreNotMistakenForCompletedMajorCollection() throws Exception {
-        String failed = run(1, false, false, "-XX:+UseG1GC", "-XX:+ExplicitGCInvokesConcurrent");
-        assertTrue(failed.contains("GC completion not observed"), failed);
-        assertTrue(failed.contains("REFUSED measured=0 results=0 published=0"), failed);
+    void concurrentG1AlsoReclaimsTheMarker() throws Exception {
+        String output = run(0, false, false, "-XX:+UseG1GC", "-XX:+ExplicitGCInvokesConcurrent");
+        assertTrue(output.contains("MEASURED=20"), output);
     }
 
     private static String run(int expected, boolean eventLoop, boolean optOut, String... flags) throws Exception {

@@ -14,7 +14,7 @@ public class JLBHDeterministicFixtures {
     private final static String expectedOutput = "" +
             "Warm up complete ...\n" +
             "Requesting post-warmup System.gc() and waiting for completion\n" +
-            "Post-warmup explicit major GC completion observed\n" +
+            "Post-warmup GC marker reclamation observed\n" +
             "Pausing after warmup for 100 ms\n" +
             "-------------------------------- BENCHMARK RESULTS (RUN 1) us --------------------------------------\n" +
             "Run time: ...s, distribution: NORMAL\n" +
