@@ -53,22 +53,25 @@ public class ProgressOutputProcess {
                 .jlbhTask(new SamplingTask());
 
         PrintStream originalOut = System.out;
-        System.setOut(new PrintStream(standardOut, true));
-        JLBH jlbh = new JLBH(options, new PrintStream(configured, true), results);
-        try {
-            if (runFromEventLoop) {
-                eventLoop = new MediumEventLoop(null, "el", Pauser.busy(), true, null);
-                eventLoop.start();
-                jlbh.eventLoopHandler(eventLoop);
-                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
-                while (results.get() == null && System.nanoTime() < deadline)
-                    Jvm.pause(50);
-            } else {
-                jlbh.start();
+        try (PrintStream capturedOut = new PrintStream(standardOut, true);
+             PrintStream configuredOut = new PrintStream(configured, true)) {
+            JLBH jlbh = new JLBH(options, configuredOut, results);
+            System.setOut(capturedOut);
+            try {
+                if (runFromEventLoop) {
+                    eventLoop = new MediumEventLoop(null, "el", Pauser.busy(), true, null);
+                    eventLoop.start();
+                    jlbh.eventLoopHandler(eventLoop);
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+                    while (results.get() == null && System.nanoTime() < deadline)
+                        Jvm.pause(50);
+                } else {
+                    jlbh.start();
+                }
+            } finally {
+                jlbh.abort();
+                System.setOut(originalOut);
             }
-        } finally {
-            jlbh.abort();
-            System.setOut(originalOut);
         }
 
         assertNotNull(results.get(), "benchmark did not complete");
