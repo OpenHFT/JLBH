@@ -11,6 +11,7 @@ import java.util.function.IntSupplier;
 
 /** Diagnostic point sample; neither an ownership record nor a benchmark-validity judgement. */
 final class HostSnapshot {
+    private static final String UNKNOWN = "unknown";
     private final long capturedAtMillis;
     private final long javaThreadId;
     private final String loadAverage;
@@ -18,6 +19,8 @@ final class HostSnapshot {
     private final String sampledCpu;
     private final String processId;
 
+    // Thread.threadId() is unavailable on the supported Java 8 baseline.
+    @SuppressWarnings({"deprecation", "java:S1874"})
     private HostSnapshot(String loadAverage, String processors, String sampledCpu, String processId) {
         this.capturedAtMillis = System.currentTimeMillis();
         this.javaThreadId = Thread.currentThread().getId();
@@ -47,18 +50,18 @@ final class HostSnapshot {
     private static String readLoad(DoubleSupplier sensor) {
         try {
             double value = sensor.getAsDouble();
-            return Double.isFinite(value) && value >= 0 ? Double.toString(value) : "unknown";
+            return Double.isFinite(value) && value >= 0 ? Double.toString(value) : UNKNOWN;
         } catch (RuntimeException | LinkageError unavailable) {
-            return "unknown";
+            return UNKNOWN;
         }
     }
 
     private static String readInt(IntSupplier sensor, int minimum) {
         try {
             int value = sensor.getAsInt();
-            return value >= minimum ? Integer.toString(value) : "unknown";
+            return value >= minimum ? Integer.toString(value) : UNKNOWN;
         } catch (RuntimeException | LinkageError unavailable) {
-            return "unknown";
+            return UNKNOWN;
         }
     }
 }

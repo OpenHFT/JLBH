@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Timeout(15)
+// Thread.threadId() is unavailable on the supported Java 8 baseline.
+@SuppressWarnings({"deprecation", "java:S1874"})
 class JLBHHostInfoTest {
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
@@ -35,7 +37,9 @@ class JLBHHostInfoTest {
                 sampledThread.set(Thread.currentThread().getId());
                 benchmark.sample(System.nanoTime() - start);
             }
+            @Override
             public void runComplete() { stream.println("RUN_COMPLETE"); }
+            @Override
             public void complete() { complete.countDown(); }
         };
         long caller = Thread.currentThread().getId();
@@ -73,12 +77,12 @@ class JLBHHostInfoTest {
         };
         JLBHOptions options = options(broken);
         assertFalse(options.recordHostInfo);
-        assertThrows(IllegalStateException.class,
-                () -> new JLBH(options, new PrintStream(output), null).start());
+        JLBH disabled = new JLBH(options, new PrintStream(output), null);
+        assertThrows(IllegalStateException.class, disabled::start);
         assertFalse(output.toString().contains("Host: "));
         options.recordHostInfo(true);
-        assertThrows(IllegalStateException.class,
-                () -> new JLBH(options, new PrintStream(output), null).start());
+        JLBH enabled = new JLBH(options, new PrintStream(output), null);
+        assertThrows(IllegalStateException.class, enabled::start);
         assertTrue(output.toString().contains("phase=before-init"));
         assertFalse(output.toString().contains("phase=run-end"));
         assertSame(options, options.recordHostInfo(false));

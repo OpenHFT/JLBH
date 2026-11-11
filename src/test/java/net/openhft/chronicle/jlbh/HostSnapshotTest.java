@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Exercise the same Java 8-compatible thread identity API as the implementation.
+@SuppressWarnings({"deprecation", "java:S1874"})
 class HostSnapshotTest {
     @Test
     void preservesValidZeroLoadAndCpuWithoutConfusingThemWithUnknown() {
