@@ -188,7 +188,7 @@ public class JLBHOptions {
     /**
      * Request System.gc() after warm-up and await reclamation of a weak marker before
      * the post-warm-up pause. Enabled by default. Disable explicitly for experiments
-     * that must retain warm-up garbage or JVMs without supported GC notifications.
+     * that must retain warm-up garbage or JVMs that ignore explicit GC requests.
      *
      * @param disabled true to skip both request and wait; overrides jlbh.disableGcAfterWarmup (default false)
      * @return this options instance
@@ -199,7 +199,7 @@ public class JLBHOptions {
     }
 
     /**
-     * Bound the notification wait after System.gc() returns. This does not bound time
+     * Bound the marker reclamation wait after System.gc() returns. This does not bound time
      * spent inside System.gc(). Failure to observe completion refuses measurement.
      *
      * @param timeoutMS positive milliseconds; defaults to 10,000
