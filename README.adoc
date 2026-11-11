@@ -247,3 +247,9 @@ Start with your production rate and tune to study latency trade-offs.
 
 The code is licensed under the terms described in the link:LICENSE.adoc[Apache 2.0 License].
 Releases are available on link:https://github.com/OpenHFT/JLBH/releases[GitHub].
+
+== Tail-latency advisory
+
+Completed runs report only the largest end-to-end percentile ratio exceeding its
+threshold. The advisory is enabled by default and otherwise stays silent. See
+link:docs/tail-latency-advisory.adoc[thresholds, interpretation and the disable option].
