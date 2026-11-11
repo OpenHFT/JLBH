@@ -186,7 +186,7 @@ public class JLBHOptions {
     }
 
     /**
-     * Request System.gc() after warm-up and await a completed explicit major GC before
+     * Request System.gc() after warm-up and await reclamation of a weak marker before
      * the post-warm-up pause. Enabled by default. Disable explicitly for experiments
      * that must retain warm-up garbage or JVMs without supported GC notifications.
      *
