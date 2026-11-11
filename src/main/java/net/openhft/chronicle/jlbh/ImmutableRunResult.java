@@ -25,6 +25,16 @@ import static net.openhft.chronicle.jlbh.JLBHResult.RunResult.Percentile.*;
  */
 final class ImmutableRunResult implements JLBHResult.RunResult {
 
+    /**
+     * Percentiles in the order {@code Histogram.percentilesFor(long)} produces them; that
+     * array is always a prefix of this order followed by the worst value. Higher
+     * percentiles produced for 30 million or more samples have no constant and are omitted.
+     */
+    private static final Percentile[] HISTOGRAM_ORDER = {
+            PERCENTILE_50TH, PERCENTILE_90TH, PERCENTILE_99TH, PERCENTILE_99_7TH,
+            PERCENTILE_99_9TH, PERCENTILE_99_97TH, PERCENTILE_99_99TH,
+            PERCENTILE_99_997TH, PERCENTILE_99_999TH};
+
     private final Map<Percentile, Duration> percentiles;
 
     /**
@@ -39,21 +49,9 @@ final class ImmutableRunResult implements JLBHResult.RunResult {
 
     private static Map<Percentile, Duration> asMap(double[] percentiles) {
         final Map<Percentile, Duration> data = new EnumMap<>(Percentile.class);
-        // TODO: duplicate of knowledge with Histogram.percentilesFor()
-        data.put(PERCENTILE_50TH, durationOf(percentiles[0]));
-        data.put(PERCENTILE_90TH, durationOf(percentiles[1]));
-        data.put(PERCENTILE_99TH, durationOf(percentiles[2]));
-        if (percentiles.length > 4) {
-            data.put(PERCENTILE_99_7TH, durationOf(percentiles[3]));
-        }
-        if (percentiles.length > 5) {
-            data.put(PERCENTILE_99_9TH, durationOf(percentiles[4]));
-        }
-        if (percentiles.length > 6) {
-            data.put(PERCENTILE_99_97TH, durationOf(percentiles[5]));
-        }
-        if (percentiles.length > 7) {
-            data.put(PERCENTILE_99_99TH, durationOf(percentiles[6]));
+        final int measured = Math.min(percentiles.length - 1, HISTOGRAM_ORDER.length);
+        for (int i = 0; i < measured; i++) {
+            data.put(HISTOGRAM_ORDER[i], durationOf(percentiles[i]));
         }
         data.put(WORST, durationOf(percentiles[percentiles.length - 1]));
         return unmodifiableMap(data);
