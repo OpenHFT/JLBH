@@ -3,89 +3,45 @@
  */
 package net.openhft.chronicle.jlbh;
 
-import net.openhft.chronicle.core.Jvm;
-import net.openhft.chronicle.core.io.Closeable;
-import net.openhft.chronicle.core.threads.EventLoop;
-import net.openhft.chronicle.threads.MediumEventLoop;
-import net.openhft.chronicle.threads.Pauser;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.parallel.ResourceLock;
-import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-/**
- * Progress lines are only printed once a run has lasted more than five seconds, so each case
- * runs a single seven second run. The test replaces {@link System#out}.
- */
-@ResourceLock(Resources.SYSTEM_OUT)
+/** Contains a stuck benchmark even if its scheduling thread ignores interruption. */
 class JLBHProgressOutputTest {
-    private EventLoop eventLoop;
-
-    @AfterEach
-    void after() {
-        Closeable.closeQuietly(eventLoop);
-        eventLoop = null;
-    }
-
     @ParameterizedTest(name = "event loop {0}")
     @ValueSource(booleans = {false, true})
-    @Timeout(60)
-    void progressLinesGoToTheConfiguredPrintStream(boolean runFromEventLoop) {
-        ByteArrayOutputStream configured = new ByteArrayOutputStream();
-        ByteArrayOutputStream standardOut = new ByteArrayOutputStream();
-        JLBHResultConsumer results = JLBHResultConsumer.newThreadSafeInstance();
-        JLBHOptions options = new JLBHOptions()
-                .warmUpIterations(1_000)
-                .iterations(7_000)
-                .throughput(1_000)
-                .runs(1)
-                .recordOSJitter(false)
-                .jlbhTask(new SamplingTask());
-
-        PrintStream originalOut = System.out;
-        System.setOut(new PrintStream(standardOut, true));
+    void progressLinesGoToTheConfiguredPrintStream(boolean eventLoop) throws Exception {
+        List<String> command = new ArrayList<>();
+        command.add(Paths.get(System.getProperty("java.home"), "bin", "java").toString());
+        for (String argument : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            if (!argument.startsWith("-javaagent:") && !argument.startsWith("-agentlib:"))
+                command.add(argument);
+        }
+        command.add("-cp");
+        command.add(System.getProperty("surefire.test.class.path", System.getProperty("java.class.path")));
+        command.add(ProgressOutputProcess.class.getName());
+        command.add(Boolean.toString(eventLoop));
+        Path log = Files.createTempFile("jlbh-progress-", ".log");
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(log.toFile()).start();
         try {
-            JLBH jlbh = new JLBH(options, new PrintStream(configured, true), results);
-            if (runFromEventLoop) {
-                eventLoop = new MediumEventLoop(null, "el", Pauser.busy(), true, null);
-                eventLoop.start();
-                jlbh.eventLoopHandler(eventLoop);
-                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
-                while (results.get() == null && System.nanoTime() < deadline)
-                    Jvm.pause(50);
-            } else {
-                jlbh.start();
-            }
+            boolean exited = process.waitFor(30, TimeUnit.SECONDS);
+            String output = new String(Files.readAllBytes(log), StandardCharsets.UTF_8);
+            assertTrue(exited, "Progress child timed out: " + output);
+            assertEquals(0, process.exitValue(), output);
+            assertTrue(output.contains("progress routing verified"), output);
         } finally {
-            System.setOut(originalOut);
-        }
-
-        assertNotNull(results.get(), "benchmark did not complete");
-        assertTrue(configured.toString().contains(",000 out of 7,000"), configured.toString());
-        assertFalse(standardOut.toString().contains("... run "), standardOut.toString());
-    }
-
-    private static final class SamplingTask implements JLBHTask {
-        private JLBH jlbh;
-
-        @Override
-        public void init(JLBH jlbh) {
-            this.jlbh = jlbh;
-        }
-
-        @Override
-        public void run(long startTimeNs) {
-            jlbh.sample(System.nanoTime() - startTimeNs);
+            process.destroyForcibly();
+            assertTrue(process.waitFor(5, TimeUnit.SECONDS), "Progress child did not stop");
+            Files.deleteIfExists(log);
         }
     }
 }
