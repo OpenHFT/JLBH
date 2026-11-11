@@ -354,6 +354,7 @@ public class JLBH implements NanoSampler {
      * scheduling jitter.
      */
     private void initStartOSJitterMonitor() {
+        recordHostInfo("before-init", 0);
         jlbhOptions.jlbhTask.init(this);
         if (jlbhOptions.recordOSJitter) {
             osJitterMonitor.setDaemon(true);
@@ -367,6 +368,11 @@ public class JLBH implements NanoSampler {
             jlbhOptions.jlbhTask.run(System.nanoTime());
         }
         return warmupStart;
+    }
+
+    private void recordHostInfo(String phase, int run) {
+        if (jlbhOptions.recordHostInfo)
+            printStream.println(HostSnapshot.capture().line(phase, run));
     }
 
     private void endOfAllRuns() {
@@ -407,6 +413,7 @@ public class JLBH implements NanoSampler {
         }
 
         long totalRunTime = System.currentTimeMillis() - runStart;
+        recordHostInfo("run-end", run + 1);
 
         percentileRuns.add(endToEndHistogram.getPercentiles());
 
