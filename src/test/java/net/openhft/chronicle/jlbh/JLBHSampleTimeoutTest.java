@@ -93,7 +93,7 @@ class JLBHSampleTimeoutTest {
     void abortBeforeStartDoesNotThrow() {
         JLBH jlbh = new JLBH(options(new SamplingTask(0), 1, 1, 10_000, 1), silent(), null);
 
-        jlbh.abort();
+        assertDoesNotThrow(jlbh::abort);
     }
 
     private static JLBHOptions options(JLBHTask task, int warmUp, int iterations, int throughput, int runs) {
@@ -122,10 +122,12 @@ class JLBHSampleTimeoutTest {
     private static final class NoSampleTask implements JLBHTask {
         @Override
         public void init(JLBH jlbh) {
+            // Deliberately no setup: this task exercises a sample stall.
         }
 
         @Override
         public void run(long startTimeNs) {
+            // Deliberately omit sample() so the watchdog must abort the run.
         }
     }
 

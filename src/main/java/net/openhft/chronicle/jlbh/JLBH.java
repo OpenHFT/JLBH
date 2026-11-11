@@ -231,6 +231,8 @@ public class JLBH implements NanoSampler {
         }
     }
 
+    // Preserve the existing pacing loop: extracting watchdog cleanup must not change benchmark timing.
+    @SuppressWarnings("java:S3776")
     private void runBenchmark() {
         initStartOSJitterMonitor();
         long warmupStart = warmup();
@@ -441,6 +443,8 @@ public class JLBH implements NanoSampler {
      * @param runStart wall clock time when the run started, used to measure the
      *                 total run duration
      */
+    // Only the benchmark thread increments runsCompleted; the watchdog only reads it.
+    @SuppressWarnings("java:S3078")
     private void endOfRun(int run, long runStart) {
         while (!abortTestRun.get() && endToEndHistogram.totalCount() < jlbhOptions.iterations) {
             Thread.yield();
@@ -518,7 +522,8 @@ public class JLBH implements NanoSampler {
                 }
             }
         } catch (InterruptedException e) {
-            // stopped by stopTimeoutChecker()
+            // stopTimeoutChecker interrupts this dedicated thread; preserve the signal on exit.
+            Thread.currentThread().interrupt();
         }
     }
 
