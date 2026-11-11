@@ -30,6 +30,7 @@ public class JLBHOptions {
     long iterations = 100_000;
     JLBHTask jlbhTask;
     int pauseAfterWarmupMS = Math.toIntExact(durationDefault("jlbh.pauseAfterWarmupMS", 100L, 0));
+    boolean disableTailLatencyAdvisory = Jvm.getBoolean("jlbh.disableTailLatencyAdvisory");
     boolean disableGcAfterWarmup = Jvm.getBoolean("jlbh.disableGcAfterWarmup");
     long gcAfterWarmupTimeoutMS = durationDefault("jlbh.gcAfterWarmupTimeoutMS", 10_000L, 1);
     @NotNull
@@ -37,6 +38,16 @@ public class JLBHOptions {
     boolean jitterAffinity;
     Supplier<AffinityLock> acquireLock = Affinity::acquireLock;
     long timeout;
+    /**
+     * Suppress the post-run tail-ratio advisory. The default comes from
+     * jlbh.disableTailLatencyAdvisory (false when unset); this setter overrides it.
+     * No advisory is emitted unless a supported ratio strictly exceeds its threshold.
+     */
+    public JLBHOptions disableTailLatencyAdvisory(boolean disable) {
+        this.disableTailLatencyAdvisory = disable;
+        return this;
+    }
+
     /**
      * Number of iterations per second to be pushed through the benchmark
      *
