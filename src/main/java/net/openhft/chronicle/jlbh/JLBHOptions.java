@@ -29,7 +29,9 @@ public class JLBHOptions {
     int runs = 3;
     long iterations = 100_000;
     JLBHTask jlbhTask;
-    int pauseAfterWarmupMS = 0;
+    int pauseAfterWarmupMS = Math.toIntExact(durationDefault("jlbh.pauseAfterWarmupMS", 100L, 0));
+    boolean disableGcAfterWarmup = Jvm.getBoolean("jlbh.disableGcAfterWarmup");
+    long gcAfterWarmupTimeoutMS = durationDefault("jlbh.gcAfterWarmupTimeoutMS", 10_000L, 1);
     @NotNull
     SKIP_FIRST_RUN skipFirstRun = SKIP_FIRST_RUN.NOT_SET;
     boolean jitterAffinity;
@@ -170,14 +172,43 @@ public class JLBHOptions {
     }
 
     /**
-     * Option to set a pause after the warmup is complete
+     * Pause after warm-up GC completion and before the warmedUp callback and measurement.
      *
-     * @param pauseMS pause in ms default to 0
+     * @param pauseMS non-negative pause in ms; defaults to 100, zero disables only the pause
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
     @NotNull
     public JLBHOptions pauseAfterWarmupMS(int pauseMS) {
+        if (pauseMS < 0)
+            throw new IllegalArgumentException("pauseAfterWarmupMS must be non-negative");
         this.pauseAfterWarmupMS = pauseMS;
+        return this;
+    }
+
+    /**
+     * Request System.gc() after warm-up and await reclamation of a weak marker before
+     * the post-warm-up pause. Enabled by default. Disable explicitly for experiments
+     * that must retain warm-up garbage or JVMs that ignore explicit GC requests.
+     *
+     * @param disabled true to skip both request and wait; overrides jlbh.disableGcAfterWarmup (default false)
+     * @return this options instance
+     */
+    public JLBHOptions disableGcAfterWarmup(boolean disabled) {
+        this.disableGcAfterWarmup = disabled;
+        return this;
+    }
+
+    /**
+     * Bound the marker reclamation wait after System.gc() returns. This does not bound time
+     * spent inside System.gc(). Failure to observe completion refuses measurement.
+     *
+     * @param timeoutMS positive milliseconds; defaults to 10,000
+     * @return this options instance
+     */
+    public JLBHOptions gcAfterWarmupTimeoutMS(long timeoutMS) {
+        if (timeoutMS <= 0)
+            throw new IllegalArgumentException("gcAfterWarmupTimeoutMS must be positive");
+        this.gcAfterWarmupTimeoutMS = timeoutMS;
         return this;
     }
 
@@ -238,6 +269,13 @@ public class JLBHOptions {
         return this;
     }
 
+    private static long durationDefault(String property, long fallback, long minimum) {
+        long value = Jvm.getLong(property, fallback);
+        if (value < minimum)
+            throw new IllegalArgumentException(property + " must be >= " + minimum);
+        return value;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("JLBHOptions{");
@@ -245,6 +283,8 @@ public class JLBHOptions {
         sb.append(", iterations=").append(iterations);
         sb.append(", warmUpIterations=").append(warmUpIterations);
         sb.append(", pauseAfterWarmupMS=").append(pauseAfterWarmupMS);
+        sb.append(", disableGcAfterWarmup=").append(disableGcAfterWarmup);
+        sb.append(", gcAfterWarmupTimeoutMS=").append(gcAfterWarmupTimeoutMS);
         sb.append(", accountForCoordinatedOmission=").append(accountForCoordinatedOmission);
         sb.append(", skipFirstRun=").append(skipFirstRun);
         sb.append(", recordOSJitter=").append(recordOSJitter);

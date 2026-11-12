@@ -39,8 +39,9 @@ Before any measurements are formally recorded, the harness executes a warm-up ph
 ** The primary goal is to allow the Java Virtual Machine (JVM) to perform Just-In-Time (JIT) compilation and optimize the benchmarked code paths.
 ** It also helps in bringing caches to a "warm" state and letting the system reach a more stable performance profile.
 * **Sample Discarding**: Latency samples generated during the warmup phase are usually recorded into the histograms but are *not* part of the final reported results. The histograms are reset after this phase.
-* **Task Notification**: After all warmup iterations are complete, the `JLBHTask.warmedUp()` method is called.
-* **Optional Pause**: If `JLBHOptions.pauseAfterWarmupMS` is greater than zero, JLBH will pause for the specified duration before proceeding to the execution phase.
+* **GC Preparation**: By default, request `System.gc()` after warm-up and await the supported completion evidence described below. Disable only with `disableGcAfterWarmup(true)`.
+* **Settling Pause**: Wait `pauseAfterWarmupMS` after GC completion (100 ms by default; zero disables only this pause).
+* **Task Notification**: Invoke `JLBHTask.warmedUp()` after preparation and before measured iterations.
 
 == 3. Execution (Measurement Runs)
 
@@ -83,3 +84,69 @@ The final phase ensures that any resources are properly released:
 * **Task Cleanup**: The `JLBHTask.complete()` method is called, allowing the user's benchmark task to perform any necessary cleanup (e.g., closing files, releasing network connections).
 * **OS Jitter Monitor**: If the `OSJitterMonitor` thread was started, it is signaled to terminate.
 * **Affinity Release**: If a CPU affinity lock was acquired by JLBH at the start, it is released.
+
+
+== Post-warm-up GC and settling delay (JLBH-4)
+
+By default JLBH finishes scheduling warm-up work and waits for its samples,
+requests `System.gc()`, observes reclamation of a post-warm-up weak marker, then waits
+`pauseAfterWarmupMS` (now 100 ms). The existing `warmedUp()` callback follows;
+measured timing begins afterwards. GC is requested once per benchmark, not once
+per measured run. Both direct and event-loop execution use this order. The loop
+is not given a measurement handler until the gate succeeds.
+
+Set `disableGcAfterWarmup(true)` to skip the request and wait explicitly. This does not
+disable the 100 ms pause. Set `pauseAfterWarmupMS(0)` to disable just the pause;
+setting both restores the former no-GC/no-pause preparation. Negative pause values
+are rejected. Keep allocations in the later `warmedUp()` callback in mind: this
+change does not collect objects allocated after the GC gate.
+
+A weak marker created after warm-up must be enqueued for reclamation after the
+request. This uses the Java reference-queue contract rather than collector-specific
+notification names, which differ between HotSpot and other VMs. The marker remains
+strongly referenced while waiting; its referent does not. There is no new collector
+thread or allocation in measured iterations.
+
+`gcAfterWarmupTimeoutMS` defaults to 10,000 ms and bounds the reclamation wait
+*after* `System.gc()` returns, not the time inside the VM call. If reclamation is
+not observed, measurement is refused and no result is published. Explicit GC is
+advisory: a VM that ignores it may time out. Opt out explicitly for that experiment.
+The settling pause uses monotonic elapsed time so an early sleep return cannot
+shorten the requested interval. Interruption refuses measurement.
+
+Marker reclamation does not prove a full-heap collection, completion of finalisers,
+cleaners or concurrent collector phases, or absence of future collections. It
+cannot attribute a collection uniquely to this request. Background collection can
+also reclaim the marker. Label these preparation options when comparing results;
+this gate does not address JIT, file-growth or OS writeback stalls.
+
+API references:
+https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/System.html#gc()[System.gc]
+and
+https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/ReferenceQueue.html[reference queues].
+
+=== Property defaults and explicit overrides
+
+Each options instance reads these defaults through Chronicle Core's `Jvm` helpers:
+
+[cols="2,1,2",options="header"]
+|===
+|System property |Unset default |Reader
+|`jlbh.disableGcAfterWarmup` |false (GC enabled) |`Jvm.getBoolean`
+|`jlbh.gcAfterWarmupTimeoutMS` |10000 ms |`Jvm.getLong`
+|`jlbh.pauseAfterWarmupMS` |100 ms |`Jvm.getLong`
+|===
+
+`disableGcAfterWarmup(true)` opts out of GC and its completion wait, leaving the
+pause independent. Setting it to false explicitly enables GC even when the system
+property disables it. Explicit timeout/pause setters override property defaults.
+A negative pause or non-positive completion timeout refuses options construction.
+The pause property is read as a long and checked for exact conversion to the
+existing int range; overflow is rejected rather than truncated.
+
+Event-loop preparation uses a failure flag and finally cleanup: failure during
+handler registration or warm-up terminates the jitter monitor for any throwable,
+including Errors, while preserving the original failure.
+
+The jitter monitor is marked running before Thread.start, so an immediate
+preparation failure cannot be undone by a later-starting monitor thread.
