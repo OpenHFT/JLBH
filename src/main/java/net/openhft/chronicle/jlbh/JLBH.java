@@ -468,6 +468,11 @@ public class JLBH implements NanoSampler {
         printStream.println("Target throughput:" + jlbhOptions.throughput + "/" + timeUnitToString(jlbhOptions.throughputTimeUnit) + " = 1 message every " + (latencyBetweenTasks / 1000) + "us");
         printStream.printf("%-48s", format("End to End: (%,d)", endToEndHistogram.totalCount()));
         printStream.println(endToEndHistogram.toMicrosFormat());
+        if (!jlbhOptions.disableTailLatencyAdvisory && !abortTestRun.get()
+                && endToEndHistogram.totalCount() >= jlbhOptions.iterations) {
+            TailLatencyAdvisory.report(endToEndHistogram, run + 1, printStream);
+        }
+
 
         if (additionHistograms.size() > 0) {
             additionHistograms.forEach((key, value) -> {
