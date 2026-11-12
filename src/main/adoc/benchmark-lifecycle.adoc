@@ -42,6 +42,12 @@ Before any measurements are formally recorded, the harness executes a warm-up ph
 * **Task Notification**: After all warmup iterations are complete, the `JLBHTask.warmedUp()` method is called.
 * **Optional Pause**: If `JLBHOptions.pauseAfterWarmupMS` is greater than zero, JLBH will pause for the specified duration before proceeding to the execution phase.
 
+A `warmUpIterations(0)` configuration skips warm-up invocations in both direct and
+event-loop modes. It still follows the normal post-warm-up pause and invokes
+`JLBHTask.warmedUp()` once before the first measured invocation. Measured samples
+are retained from the first invocation. Negative warm-up counts are rejected by
+`warmUpIterations(int)` before the harness starts any workers.
+
 == 3. Execution (Measurement Runs)
 
 This is the core phase where timed iterations are performed and latency data is collected. This phase consists of one or more "runs" (as configured by `JLBHOptions.runs`):
