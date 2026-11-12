@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
-@Timeout(40)
+// The longest case starts four JVMs; each has a separate startup/exit budget.
+@Timeout(300)
 class PostWarmupGcProcessTest {
     @ParameterizedTest
     @ValueSource(strings = {"-XX:+UseG1GC", "-XX:+UseSerialGC", "-XX:+UseParallelGC"})
@@ -77,17 +78,35 @@ class PostWarmupGcProcessTest {
         command.add(Boolean.toString(eventLoop));
         command.add(Boolean.toString(optOut));
         command.add(Boolean.toString(expected != 0));
-        Path log = Files.createTempFile("jlbh-gc-", ".log");
+        Path logDirectory = Paths.get("target", "gc-process-logs");
+        Files.createDirectories(logDirectory);
+        Path log = Files.createTempFile(logDirectory, "jlbh-gc-", ".log");
         Process process = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        boolean passed = false;
         try {
-            assertTrue(process.waitFor(15, TimeUnit.SECONDS), "child timed out: " + log);
+            // The probe can legitimately spend 10 s observing GC and 5 s waiting
+            // for the event loop, in addition to JVM startup and shutdown.
+            boolean exited = process.waitFor(60, TimeUnit.SECONDS);
+            assertTrue(exited, () -> "child timed out; retained log: " + log + "\n" + readOutput(log));
             String output = new String(Files.readAllBytes(log), StandardCharsets.UTF_8);
             assertEquals(expected, process.exitValue(), output);
+            passed = true;
             return output;
         } finally {
             process.destroyForcibly();
-            process.waitFor(5, TimeUnit.SECONDS);
-            Files.deleteIfExists(log);
+            assertTrue(process.waitFor(5, TimeUnit.SECONDS), "child did not stop; log: " + log);
+            if (passed)
+                Files.deleteIfExists(log);
+            else
+                System.err.println("GC child output retained at " + log + "\n" + readOutput(log));
+        }
+    }
+
+    private static String readOutput(Path log) {
+        try {
+            return new String(Files.readAllBytes(log), StandardCharsets.UTF_8);
+        } catch (java.io.IOException failure) {
+            return "Unable to read child output: " + failure;
         }
     }
 }
