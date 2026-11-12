@@ -110,13 +110,18 @@ public class JLBHOptions {
 
     /**
      * Determines how many warmup iterations to perform.
-     * Note: warmup iterations are continuous.
+     * Warm-up iterations are continuous. Zero skips warm-up invocations;
+     * the normal post-warm-up pause and task notification still occur before
+     * measurement, in both direct and event-loop modes.
      *
-     * @param warmUp Defaults to 10,000
+     * @param warmUp non-negative number of warm-up invocations
+     * @throws IllegalArgumentException if the count is negative
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
     @NotNull
     public JLBHOptions warmUpIterations(int warmUp) {
+        if (warmUp < 0)
+            throw new IllegalArgumentException("warmUpIterations must be non-negative: " + warmUp);
         this.warmUpIterations = warmUp;
         return this;
     }
