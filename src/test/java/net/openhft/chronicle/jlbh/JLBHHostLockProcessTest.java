@@ -39,9 +39,27 @@ class JLBHHostLockProcessTest {
     private final List<Child> children = new ArrayList<>();
 
     @AfterEach
-    void destroyChildren() {
+    void destroyChildren() throws InterruptedException {
         for (Child child : children)
             child.process.destroyForcibly();
+        // @TempDir cleanup must not race a still-running holder or its output reader.
+        for (Child child : children)
+            child.waitFor(10);
+    }
+
+    @Test
+    @Timeout(60)
+    void cleanupWaitsForTheHolderAndOutputReader() throws Exception {
+        Child holder = start(folder.resolve("host.lock").toFile(), 60_000, 60);
+        assertNotNull(holder.awaitLine(INIT, 30), holder.output());
+        destroyChildren();
+        assertFalse(holder.process.isAlive());
+        assertFalse(holder.reader.isAlive());
+        try (java.util.stream.Stream<Path> files = Files.list(folder)) {
+            for (Path file : (Iterable<Path>) files::iterator)
+                Files.delete(file);
+        }
+        Files.delete(folder);
     }
 
     @Test
@@ -167,6 +185,7 @@ class JLBHHostLockProcessTest {
         int waitFor(long seconds) throws InterruptedException {
             assertTrue(process.waitFor(seconds, TimeUnit.SECONDS), "child did not exit\n" + output);
             reader.join(TimeUnit.SECONDS.toMillis(5));
+            assertFalse(reader.isAlive(), "child output reader did not stop\n" + output);
             return process.exitValue();
         }
 
