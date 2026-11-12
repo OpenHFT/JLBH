@@ -35,6 +35,21 @@ public class JLBHOptions {
     boolean jitterAffinity;
     Supplier<AffinityLock> acquireLock = Affinity::acquireLock;
     long timeout;
+    boolean recordHostInfo = Jvm.getBoolean("jlbh.recordHostInfo");
+    /**
+     * Opt in to diagnostic host snapshots before task initialisation and after each run.
+     * Records go to the configured PrintStream; result objects and CSV are unchanged.
+     * Sensors are sampled outside measured iterations and may report unknown. A snapshot
+     * is context, not proof of an idle host or stable CPU placement. Disabled by default.
+     *
+     * @param recordHostInfo whether to collect and print host context; overrides jlbh.recordHostInfo (default false)
+     * @return this options instance
+     */
+    public JLBHOptions recordHostInfo(boolean recordHostInfo) {
+        this.recordHostInfo = recordHostInfo;
+        return this;
+    }
+
     /**
      * Number of iterations per second to be pushed through the benchmark
      *
@@ -224,6 +239,11 @@ public class JLBHOptions {
      * If no additional samples are recorded within the specified number of
      * milliseconds the running benchmark is aborted. A value of {@code 0}
      * disables the timeout check.
+     * <p>
+     * Progress is checked every ten seconds from the start of {@link JLBH#start()},
+     * so an abort can come up to ten seconds after the timeout has elapsed. The end of a
+     * run also counts as progress. The check stops when {@link JLBH#start()} returns and is
+     * not applied by {@link JLBH#eventLoopHandler}.
      *
      * @param timeout timeout in milliseconds
      * @return Instance of the JLBHOptions to be used in the builder pattern.
