@@ -85,6 +85,14 @@ public class JLBH implements NanoSampler {
     //Use non-atomic when so thread synchronisation is necessary
     private boolean warmedUp;
     private volatile Thread testThread;
+    // Incremented by endOfRun so the sample-timeout watchdog sees the per-run reset of
+    // noResultsReturned as progress rather than as a stall.
+    private volatile int runsCompleted;
+    private final Object sampleTimeoutLock = new Object();
+    // Guarded by sampleTimeoutLock; once set the watchdog no longer aborts.
+    private boolean sampleTimeoutStopped;
+    @Nullable
+    private Thread sampleTimeoutChecker;
 
     /**
      * Creates a benchmark instance using the supplied options.  The provided
@@ -185,11 +193,14 @@ public class JLBH implements NanoSampler {
      * {@link #start()} to exit. The thread executing the benchmark is also
      * interrupted, so any code waiting or blocking on that thread may fail with
      * {@link InterruptedException}. The interrupted status of the test thread is
-     * cleared when {@link #start()} finishes.
+     * cleared when {@link #start()} finishes. Calling it before {@link #start()} is safe;
+     * no measured run is then executed.
      */
     public void abort() {
         abortTestRun.set(true);
-        testThread.interrupt();
+        final Thread thread = testThread;
+        if (thread != null)
+            thread.interrupt();
     }
 
     /**
@@ -210,9 +221,19 @@ public class JLBH implements NanoSampler {
      * the result consumer.</p>
      */
     public void start() {
-        startTimeoutCheckerIfRequired();
-
         this.testThread = Thread.currentThread();
+        startTimeoutCheckerIfRequired();
+        try {
+            runBenchmark();
+        } finally {
+            // also covers an exception from init or warm-up
+            stopTimeoutChecker();
+        }
+    }
+
+    // Preserve the existing pacing loop: extracting watchdog cleanup must not change benchmark timing.
+    @SuppressWarnings("java:S3776")
+    private void runBenchmark() {
         initStartOSJitterMonitor();
         long warmupStart = warmup();
         int interruptCheckThrottle = 0;
@@ -284,6 +305,8 @@ public class JLBH implements NanoSampler {
                 endOfRun(run, runStart);
             }
         } finally {
+            // no timeout abort while results are reported or after start() returns
+            stopTimeoutChecker();
             endOfAllRuns();
 
             osJitterMonitor.terminate();
@@ -321,10 +344,29 @@ public class JLBH implements NanoSampler {
 
     private void startTimeoutCheckerIfRequired() {
         if (jlbhOptions.timeout > 0) {
-            Thread sampleTimeoutChecker = new Thread(this::checkSampleTimeout);
-            sampleTimeoutChecker.setDaemon(true);
-            sampleTimeoutChecker.start();
+            synchronized (sampleTimeoutLock) {
+                sampleTimeoutStopped = false;
+            }
+            Thread checker = new Thread(this::checkSampleTimeout, "jlbh-sample-timeout");
+            checker.setDaemon(true);
+            sampleTimeoutChecker = checker;
+            checker.start();
         }
+    }
+
+    /**
+     * Stop the sample-timeout watchdog, if running. After this returns the watchdog can no
+     * longer abort the benchmark or interrupt the test thread. Safe to call more than once.
+     */
+    private void stopTimeoutChecker() {
+        final Thread checker = sampleTimeoutChecker;
+        if (checker == null)
+            return;
+        sampleTimeoutChecker = null;
+        synchronized (sampleTimeoutLock) {
+            sampleTimeoutStopped = true;
+        }
+        checker.interrupt();
     }
 
     private void waitForWarmupToComplete(long warmupStart) {
@@ -407,6 +449,8 @@ public class JLBH implements NanoSampler {
      * @param runStart wall clock time when the run started, used to measure the
      *                 total run duration
      */
+    // Only the benchmark thread increments runsCompleted; the watchdog only reads it.
+    @SuppressWarnings("java:S3078")
     private void endOfRun(int run, long runStart) {
         while (!abortTestRun.get() && endToEndHistogram.totalCount() < jlbhOptions.iterations) {
             Thread.yield();
@@ -444,28 +488,49 @@ public class JLBH implements NanoSampler {
         jlbhOptions.jlbhTask.runComplete();
 
         noResultsReturned = 0;
+        runsCompleted++;
         additionHistograms.values().forEach(Histogram::reset);
         endToEndHistogram.reset();
         osJitterMonitor.reset();
     }
 
+    /**
+     * Watchdog loop: every ten seconds, abort if neither the sample count nor the run count has
+     * changed for longer than {@link JLBHOptions#timeout(long)}. Progress is measured from when the
+     * watchdog starts, using {@link System#nanoTime()}. A change in either direction counts as
+     * progress because {@link #endOfRun(int, long)} resets the sample count. Exits when
+     * interrupted by {@link #stopTimeoutChecker()}.
+     */
     private void checkSampleTimeout() {
-        long previousSampleCount = 0;
-        long previousSampleTime = 0;
+        final long timeoutNs = TimeUnit.MILLISECONDS.toNanos(jlbhOptions.timeout);
+        int previousRuns = runsCompleted;
+        long previousSampleCount = noResultsReturned;
+        long previousProgressNs = System.nanoTime();
 
-        while (true) {
-            Jvm.pause(TimeUnit.SECONDS.toMillis(10));
+        try {
+            while (true) {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(10));
 
-            if (previousSampleCount < noResultsReturned) {
-                previousSampleCount = noResultsReturned;
-                previousSampleTime = System.currentTimeMillis();
-            } else {
-                if (previousSampleTime < (System.currentTimeMillis() - jlbhOptions.timeout)) {
-                    printStream.println("Sample timed out. Aborting test...");
-                    abort();
-                    break;
+                final int runs = runsCompleted;
+                final long sampleCount = noResultsReturned;
+                final long now = System.nanoTime();
+                if (runs != previousRuns || sampleCount != previousSampleCount) {
+                    previousRuns = runs;
+                    previousSampleCount = sampleCount;
+                    previousProgressNs = now;
+                } else if (now - previousProgressNs > timeoutNs) {
+                    synchronized (sampleTimeoutLock) {
+                        if (!sampleTimeoutStopped) {
+                            printStream.println("Sample timed out. Aborting test...");
+                            abort();
+                        }
+                    }
+                    return;
                 }
             }
+        } catch (InterruptedException e) {
+            // stopTimeoutChecker interrupts this dedicated thread; preserve the signal on exit.
+            Thread.currentThread().interrupt();
         }
     }
 

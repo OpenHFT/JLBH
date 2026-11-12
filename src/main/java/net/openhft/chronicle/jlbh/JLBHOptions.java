@@ -239,6 +239,11 @@ public class JLBHOptions {
      * If no additional samples are recorded within the specified number of
      * milliseconds the running benchmark is aborted. A value of {@code 0}
      * disables the timeout check.
+     * <p>
+     * Progress is checked every ten seconds from the start of {@link JLBH#start()},
+     * so an abort can come up to ten seconds after the timeout has elapsed. The end of a
+     * run also counts as progress. The check stops when {@link JLBH#start()} returns and is
+     * not applied by {@link JLBH#eventLoopHandler}.
      *
      * @param timeout timeout in milliseconds
      * @return Instance of the JLBHOptions to be used in the builder pattern.
