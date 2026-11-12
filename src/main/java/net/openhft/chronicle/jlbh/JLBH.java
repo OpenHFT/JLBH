@@ -85,6 +85,7 @@ public class JLBH implements NanoSampler {
     //Use non-atomic when so thread synchronisation is necessary
     private boolean warmedUp;
     private volatile Thread testThread;
+    private volatile JLBHHostLock hostLease;
     // Incremented by endOfRun so the sample-timeout watchdog sees the per-run reset of
     // noResultsReturned as progress rather than as a stall.
     private volatile int runsCompleted;
@@ -219,15 +220,40 @@ public class JLBH implements NanoSampler {
      * in preparation for the next run.
      * After the final run {@link #endOfAllRuns()} outputs the summary and calls
      * the result consumer.</p>
+     *
+     * <p>When {@link JLBHOptions#hostLock(boolean)} is enabled, the host lock is acquired first, before the
+     * sample timeout watchdog starts, and released after the run, including when the run throws.</p>
+     *
+     * @throws IllegalStateException if the host lock is enabled and cannot be acquired in time
      */
     public void start() {
         this.testThread = Thread.currentThread();
-        startTimeoutCheckerIfRequired();
+        acquireHostLeaseIfEnabled();
         try {
-            runBenchmark();
+            startTimeoutCheckerIfRequired();
+            try {
+                runBenchmark();
+            } finally {
+                // also covers an exception from init or warm-up
+                stopTimeoutChecker();
+            }
         } finally {
-            // also covers an exception from init or warm-up
-            stopTimeoutChecker();
+            releaseHostLease();
+        }
+    }
+
+    private void acquireHostLeaseIfEnabled() {
+        if (jlbhOptions.hostLock)
+            hostLease = JLBHHostLock.acquire("JLBH " + jlbhOptions.jlbhTask.getClass().getName(),
+                    jlbhOptions.hostLockTimeoutMillis, printStream);
+    }
+
+    // may be called from any thread, more than once; the lease releases only once
+    private void releaseHostLease() {
+        JLBHHostLock lease = hostLease;
+        if (lease != null) {
+            hostLease = null;
+            lease.close();
         }
     }
 
@@ -532,6 +558,11 @@ public class JLBH implements NanoSampler {
      * {@link EventLoop}. The warmup and benchmark handlers are registered with
      * the supplied event loop so that all work executes on that loop's thread.
      * The caller is expected to manage the lifecycle of the event loop itself.
+     * <p>
+     * When {@link JLBHOptions#hostLock(boolean)} is enabled, the host lock is
+     * acquired on the calling thread before {@link JLBHTask#init(JLBH)} and
+     * released on the event loop thread after the last run, or when the loop
+     * finishes the handler.
      *
      * @param eventLoop the loop to attach the JLBH handlers to
      * @throws UnsupportedOperationException if coordinated omission accounting is disabled
@@ -539,11 +570,20 @@ public class JLBH implements NanoSampler {
     public void eventLoopHandler(@NotNull EventLoop eventLoop) {
         if (!jlbhOptions.accountForCoordinatedOmission)
             throw new UnsupportedOperationException();
-        initStartOSJitterMonitor();
-        eventLoop.addHandler(new WarmupHandler());
-        Jvm.pause(100);
-        waitForWarmupToComplete(System.currentTimeMillis());
-        eventLoop.addHandler(new JLBHEventHandler());
+        acquireHostLeaseIfEnabled();
+        boolean handedToEventLoop = false;
+        try {
+            initStartOSJitterMonitor();
+            eventLoop.addHandler(new WarmupHandler());
+            Jvm.pause(100);
+            waitForWarmupToComplete(System.currentTimeMillis());
+            eventLoop.addHandler(new JLBHEventHandler());
+            handedToEventLoop = true;
+        } finally {
+            // otherwise the event loop thread releases the lease after the last run, or when the loop stops
+            if (!handedToEventLoop)
+                releaseHostLease();
+        }
     }
 
     private void consumeResults() {
@@ -916,13 +956,22 @@ public class JLBH implements NanoSampler {
                     resetTime();
                     waitingForEndOfRun = false;
                     if (run == jlbhOptions.runs) {
-                        endOfAllRuns();
+                        try {
+                            endOfAllRuns();
+                        } finally {
+                            releaseHostLease();
+                        }
                         throw new InvalidEventHandlerException();
                     }
                 }
             }
 
             return busy;
+        }
+
+        @Override
+        public void loopFinished() {
+            releaseHostLease();
         }
     }
 
