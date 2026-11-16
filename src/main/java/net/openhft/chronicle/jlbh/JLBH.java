@@ -241,40 +241,12 @@ public class JLBH implements NanoSampler {
 
                     } else {
                         final long latencyBetweenTasks = latencyDistributor.apply(this.latencyBetweenTasks);
-                        if (jlbhOptions.accountForCoordinatedOmission) {
-                            startTimeNs += latencyBetweenTasks;
-                            final long now = System.nanoTime();
-                            if (now < startTimeNs) {
-                                long millis = (startTimeNs - now) / 1000000 - 2;
-                                if (millis > 0) {
-                                    Jvm.pause(millis);
-                                }
-                                // account for jitter in Thread.sleep() and wait until a fixed point in time
-                                startTimeNs = busyWaitUntil(startTimeNs);
-                            }
-
-                        } else {
-                            if (latencyBetweenTasks > 2e6) {
-                                long end = System.nanoTime() + latencyBetweenTasks;
-                                Jvm.pause(latencyBetweenTasks / 1_000_000 - 1);
-                                // account for jitter in Thread.sleep() and wait until a fixed point in time
-                                startTimeNs = busyWaitUntil(startTimeNs);
-
-                            } else {
-                                startTimeNs += latencyBetweenTasks - 14;
-                                long nowNS = System.nanoTime();
-                                if (startTimeNs < nowNS + TIME_CALL_NANO_TIME) {
-                                    startTimeNs = nowNS;
-                                } else {
-                                    // account for jitter in Thread.sleep() and wait until a fixed point in time
-                                    startTimeNs = busyWaitUntil(startTimeNs);
-                                }
-                            }
-                        }
+                        startTimeNs = nextTaskStartTime(startTimeNs, latencyBetweenTasks);
                     }
 
                     if ((interruptCheckThrottle = (interruptCheckThrottle + 1) & interruptCheckThrottleMask) == 0
                             && testThread.isInterrupted()) {
+                        abortTestRun.set(true);
                         break;
                     }
 
@@ -284,16 +256,40 @@ public class JLBH implements NanoSampler {
                 endOfRun(run, runStart);
             }
         } finally {
-            endOfAllRuns();
-
-            osJitterMonitor.terminate();
-            //noinspection ResultOfMethodCallIgnored
-            Thread.interrupted(); // Reset thread interrupted status.
-            Jvm.pause(5);
-            if (lock != null)
-                lock.release();
-            Jvm.pause(5);
+            try {
+                endOfAllRuns();
+            } finally {
+                osJitterMonitor.terminate();
+                //noinspection ResultOfMethodCallIgnored
+                Thread.interrupted(); // Reset thread interrupted status.
+                Jvm.pause(5);
+                if (lock != null)
+                    lock.release();
+                Jvm.pause(5);
+            }
         }
+    }
+
+    // Keep pacing decisions outside the iteration loop so both timing modes have explicit deadlines.
+    private long nextTaskStartTime(long previousStart, long interval) {
+        if (jlbhOptions.accountForCoordinatedOmission) {
+            long deadline = previousStart + interval;
+            long now = System.nanoTime();
+            if (now >= deadline)
+                return deadline;
+            long millis = (deadline - now) / 1_000_000 - 2;
+            if (millis > 0)
+                Jvm.pause(millis);
+            return busyWaitUntil(deadline);
+        }
+        if (interval > 2_000_000) {
+            long deadline = System.nanoTime() + interval;
+            Jvm.pause(interval / 1_000_000 - 1);
+            return busyWaitUntil(deadline);
+        }
+        long deadline = previousStart + interval - 14;
+        long now = System.nanoTime();
+        return deadline < now + TIME_CALL_NANO_TIME ? now : busyWaitUntil(deadline);
     }
 
     /**
@@ -403,8 +399,13 @@ public class JLBH implements NanoSampler {
      */
     private void endOfRun(int run, long runStart) {
         while (!abortTestRun.get() && endToEndHistogram.totalCount() < jlbhOptions.iterations) {
+            if (Thread.currentThread().isInterrupted())
+                break;
             Thread.yield();
         }
+        // Also stop subsequent runs if interruption arrived with the final sample.
+        if (Thread.currentThread().isInterrupted())
+            abortTestRun.set(true);
 
         long totalRunTime = System.currentTimeMillis() - runStart;
 
