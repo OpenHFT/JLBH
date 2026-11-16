@@ -246,6 +246,7 @@ public class JLBH implements NanoSampler {
 
                     if ((interruptCheckThrottle = (interruptCheckThrottle + 1) & interruptCheckThrottleMask) == 0
                             && testThread.isInterrupted()) {
+                        abortTestRun.set(true);
                         break;
                     }
 
@@ -398,8 +399,13 @@ public class JLBH implements NanoSampler {
      */
     private void endOfRun(int run, long runStart) {
         while (!abortTestRun.get() && endToEndHistogram.totalCount() < jlbhOptions.iterations) {
+            if (Thread.currentThread().isInterrupted())
+                break;
             Thread.yield();
         }
+        // Also stop subsequent runs if interruption arrived with the final sample.
+        if (Thread.currentThread().isInterrupted())
+            abortTestRun.set(true);
 
         long totalRunTime = System.currentTimeMillis() - runStart;
 
