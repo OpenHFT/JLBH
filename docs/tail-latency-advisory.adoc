@@ -1,0 +1,55 @@
+= Post-run tail-latency advisory
+
+The advisory is enabled by default. Each completed measured run can emit one
+line to the configured JLBH output stream, describing the largest qualifying
+end-to-end latency ratio:
+
+[cols="1,1",options="header"]
+|===
+|Ratio |Strict trigger
+|P99 / P50 |> 5
+|P99.7 / P97 |> 10
+|P99.9 / P99 |> 10
+|P99.97 / P99.7 |> 10
+|P99.99 / P99.9 |> 10
+|===
+
+Compare raw ratios, not the ratio divided by its threshold. Equal ratios prefer
+the higher numerator percentile. A ratio equal to its threshold does not trigger.
+The line includes the one-based run number, actual sample count, chosen ratio,
+threshold and numerator/denominator values in nanoseconds. Ratios are printed
+without rounding them down to their threshold. The advisory explicitly states:
+"This tail discontinuity is probably worth triaging/investigating."
+Treat this as a prompt to examine the workload and runtime evidence, not a
+diagnosis of the cause or a benchmark failure.
+
+[source,shell]
+----
+java -Djlbh.disableTailLatencyAdvisory=true ...
+----
+
+`jlbh.disableTailLatencyAdvisory` is read through `Jvm.getBoolean` when options
+are constructed. Unset or false leaves the advisory enabled; true disables it.
+The explicit `JLBHOptions.disableTailLatencyAdvisory(boolean)` setter overrides
+that default. There is no advisory output when disabled or when no ratio triggers.
+Existing benchmark tables and other diagnostics are unaffected.
+
+The checks use `Histogram.percentile` on the completed end-to-end histogram,
+including requested percentiles that are not columns in the ordinary summary.
+An empty histogram or a non-positive/non-finite percentile pair cannot yield an
+advisory for that pair. Other valid pairs are still checked. Ratios use the
+histogram's quantised values; small samples do not establish statistically stable
+tail estimates. This is a descriptive check with no statistical confidence claim
+or additional minimum-sample gate. It does not label a silent run healthy.
+
+Aborted/incomplete runs produce no completed-run advisory. Warm-up samples,
+additional probes and OS-jitter histograms are outside this bounded check. The
+advisory runs after measurement and before histogram reset; it does not collect
+samples, change preparation or percentile results, request another GC, retry a
+run, discard data or modify any machine-readable result schema. It does not
+diagnose the cause of a long tail. Throughput and per-run GC diagnostics remain
+separate possible extensions.
+
+A numerator percentile equal to the histogram maximum (P100) is excluded before ranking.
+This also excludes percentiles quantised into the maximum bucket. A lower qualifying
+ratio can still be reported; if none remains, the advisory is silent.
