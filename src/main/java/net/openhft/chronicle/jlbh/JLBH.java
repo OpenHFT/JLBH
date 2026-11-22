@@ -429,6 +429,12 @@ public class JLBH implements NanoSampler {
      */
     private void initStartOSJitterMonitor() {
         recordHostInfo("before-init", 0);
+
+        // An empty warm-up cannot publish completion through sample().
+        if (jlbhOptions.warmUpIterations == 0) {
+            warmedUp = true;
+            warmUpComplete.set(true);
+        }
         jlbhOptions.jlbhTask.init(this);
         if (jlbhOptions.recordOSJitter) {
             osJitterMonitor.setDaemon(true);
