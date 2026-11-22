@@ -260,6 +260,14 @@ Override this with `warmUpIterations(int)` if needed.
 Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns.
 Start with your production rate and tune to study latency trade-offs.
 
+With coordinated omission accounting disabled, intervals above 2 ms sleep and then spin until
+the newly calculated deadline. They must not start early by spinning on the previous start time.
+If final result reporting throws, `start()` still stops its jitter monitor and releases its affinity reservation.
+`BenchmarkLifecycleBoundaryTest` covers these timing and cleanup contracts (FIX-292).
+An interrupted run also stops waiting for unfinished samples and does not begin another run.
+`InterruptedRunCleanupTest` checks interruption during task issuance, during sample drain and with the final sample;
+`start()` clears the interrupt as it finishes cleanup.
+
 == Licensing and Release Information
 
 The code is licensed under the terms described in the link:LICENSE.adoc[Apache 2.0 License].
