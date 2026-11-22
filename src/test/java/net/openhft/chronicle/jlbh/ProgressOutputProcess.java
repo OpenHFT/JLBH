@@ -50,6 +50,7 @@ public class ProgressOutputProcess {
                 .throughput(1_000)
                 .runs(1)
                 .recordOSJitter(false)
+                .disableGcAfterWarmup(true) // This probe verifies output routing, not GC completion.
                 .jlbhTask(new SamplingTask());
 
         PrintStream originalOut = System.out;
