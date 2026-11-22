@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -204,27 +205,35 @@ class JLBHHostLockTest {
         eventLoop = new MediumEventLoop(null, "host-lock-el", Pauser.busy(), true, null);
         eventLoop.start();
         CompletableFuture<Thread> completedOn = new CompletableFuture<>();
+        CountDownLatch allowCompletion = new CountDownLatch(1);
         AtomicReference<String> recordAtComplete = new AtomicReference<>();
         SamplingTask task = new SamplingTask() {
             @Override
             public void complete() {
                 recordAtComplete.set(JLBHHostLock.readHolder(JLBHHostLock.holderFile(lockFile())));
                 completedOn.complete(Thread.currentThread());
+                try {
+                    if (!allowCompletion.await(30, TimeUnit.SECONDS))
+                        throw new AssertionError("Caller did not inspect the handed-over lease");
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError("Interrupted before the caller inspected the lease", e);
+                }
             }
         };
-        new JLBH(options(task).hostLock(true), out, null).eventLoopHandler(eventLoop);
-        // the lease is handed to the loop, not released when eventLoopHandler returns
-        String recordAfterHandOver = JLBHHostLock.readHolder(JLBHHostLock.holderFile(lockFile()));
-
-        Thread loopThread;
         try {
-            loopThread = completedOn.get(30, TimeUnit.SECONDS);
+            new JLBH(options(task).hostLock(true), out, null).eventLoopHandler(eventLoop);
+            // A short run may already be in complete(); hold its lease until this observation.
+            String recordAfterHandOver = JLBHHostLock.readHolder(JLBHHostLock.holderFile(lockFile()));
+            Thread loopThread = completedOn.get(30, TimeUnit.SECONDS);
+            assertNotSame(Thread.currentThread(), loopThread);
+            assertTrue(recordAfterHandOver.contains("run=JLBH "), recordAfterHandOver);
+            assertTrue(recordAtComplete.get().contains("run=JLBH "), recordAtComplete.get());
         } catch (TimeoutException e) {
             throw new AssertionError(log.toString(), e);
+        } finally {
+            allowCompletion.countDown();
         }
-        assertNotSame(Thread.currentThread(), loopThread);
-        assertTrue(recordAfterHandOver.contains("run=JLBH "), recordAfterHandOver);
-        assertTrue(recordAtComplete.get().contains("run=JLBH "), recordAtComplete.get());
         // the lease is released just after complete() on the loop thread
         JLBHHostLock next = acquire("after event loop run", 10_000);
         next.close();
