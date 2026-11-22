@@ -5,21 +5,25 @@ package net.openhft.chronicle.jlbh;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 public class OptionsPropertyTest {
-    @Test void unsetTrueFalseAndBuilderOverride() throws Exception {
-        run("DEFAULT=false");
-        run("DEFAULT=true", "-Djlbh.recordHostInfo=true");
-        run("DEFAULT=false", "-Djlbh.recordHostInfo=false");
+    @Test void propertyDefaultsAndExplicitOverrides() throws Exception {
+        run("DEFAULT=false,100,10000");
+        run("DEFAULT=true,250,1234", "-Djlbh.disableGcAfterWarmup=true", "-Djlbh.pauseAfterWarmupMS=250", "-Djlbh.gcAfterWarmupTimeoutMS=1234");
+        run("DEFAULT=false,0,10000", "-Djlbh.disableGcAfterWarmup=false", "-Djlbh.pauseAfterWarmupMS=0");
+    }
+    @Test void invalidDurationsRefuseConstruction() throws Exception {
+        run("INVALID", "-Djlbh.pauseAfterWarmupMS=-1");
+        run("INVALID", "-Djlbh.gcAfterWarmupTimeoutMS=0");
     }
     public static void main(String[] args) {
-        JLBHOptions options = new JLBHOptions();
-        System.out.println("DEFAULT=" + options.recordHostInfo);
-        options.recordHostInfo(!options.recordHostInfo);
-        if (options.recordHostInfo == new JLBHOptions().recordHostInfo) throw new AssertionError("override");
-        String line = HostSnapshot.capture().line("probe", 0);
-        int pid = net.openhft.affinity.Affinity.getAffinityImpl().getProcessId();
-        if (!line.contains("process_id=" + pid + " ")) throw new AssertionError(line);
-        String vmPid = java.lang.management.ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-        if (!vmPid.equals(Integer.toString(pid))) throw new AssertionError("PID mismatch: " + pid);
+        try {
+            JLBHOptions options = new JLBHOptions();
+            System.out.println("DEFAULT=" + options.disableGcAfterWarmup + "," + options.pauseAfterWarmupMS + "," + options.gcAfterWarmupTimeoutMS);
+            options.disableGcAfterWarmup(false).pauseAfterWarmupMS(5).gcAfterWarmupTimeoutMS(20);
+            if (options.disableGcAfterWarmup || options.pauseAfterWarmupMS != 5 || options.gcAfterWarmupTimeoutMS != 20) throw new AssertionError("override");
+        } catch (IllegalArgumentException expected) {
+            System.out.println("INVALID");
+            System.exit(2);
+        }
     }
     private static String run(String expected, String... properties) throws Exception {
         java.util.List<String> command = new java.util.ArrayList<>();
