@@ -154,3 +154,39 @@ The ultimate goal of benchmarking is to gain insights that can lead to improveme
 * **Capacity Planning**: Determine the throughput your system can handle while meeting latency SLOs.
 * **Regression Testing**: Integrate JLBH benchmarks into your CI/CD pipeline to catch performance regressions automatically.
 * **Understand Trade-offs**: Use JLBH to explore the impact of different configurations, algorithms, or architectural choices on the latency profile.
+
+
+== Optional host context (JLBH-2)
+
+Use `new JLBHOptions().recordHostInfo(true)` to retain diagnostic context in the
+configured `PrintStream`. `Jvm.getBoolean("jlbh.recordHostInfo")` supplies the
+default: unset means false; `-Djlbh.recordHostInfo=true` enables it. The builder
+method explicitly overrides this default. No host sensors are read
+when disabled. It does not change `JLBHResult` or the CSV columns.
+
+A `Host: schema=1` record is emitted before task `init`, and after each measured
+run has drained its samples (or been aborted), after the run duration is taken.
+`phase=before-init run=0` describes the caller before warm-up, not the first timed
+iteration. `phase=run-end run=N` uses one-based run numbers. Both `start()` and
+`eventLoopHandler()` use these boundaries. In event-loop mode the initial record
+is on the registering thread; run-end records are on the loop thread. A run-end
+record alone does not establish successful completion. If initialisation fails,
+the before-init record may be the only record. Preserve it with the failure log.
+
+Fields are the epoch-millisecond capture timestamp (after the sensor reads),
+Java thread ID, `process_id` from `Affinity.getAffinityImpl().getProcessId()`, the OS bean's one-minute system load average, the JVM's available
+processor count, and the current CPU sampled through Affinity. The readings are
+sequential, not an atomic host snapshot. Load average is not CPU utilisation;
+processor count can reflect container/JVM restrictions. `sampled_cpu` is not a
+binding assertion and cannot establish where earlier iterations executed.
+Negative, non-finite, unsupported or failed sensor readings are `unknown`, never
+substituted with zero. Each sensor failure is isolated from the other readings.
+No process names, command lines, user identities or hostnames are captured.
+
+These records support later investigation of missing environmental context;
+they cannot reconstruct old runs, detect every competing workload or certify a
+quiet host. Collection and printing occur outside timed iterations but still
+perturb the process and inter-run spacing. Host-lock wait, per-run start records,
+process enumeration, CPU governor/isolation details and a versioned public
+result/CSV metadata API are deferred. No timing bound is promised for sensors or
+the configured output stream. Keep this option off for unchanged output.
