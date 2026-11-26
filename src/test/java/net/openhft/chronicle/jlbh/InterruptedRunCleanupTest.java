@@ -24,6 +24,7 @@ class InterruptedRunCleanupTest {
             JLBH harness;
             boolean warmed;
             public void init(JLBH value) { harness = value; }
+            @Override
             public void warmedUp() { warmed = true; }
             public void run(long start) {
                 if (warmed && calls.incrementAndGet() == (atEnd ? iterations : 1)) {
