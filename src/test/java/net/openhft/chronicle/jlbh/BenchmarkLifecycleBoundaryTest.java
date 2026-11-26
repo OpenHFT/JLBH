@@ -22,6 +22,7 @@ class BenchmarkLifecycleBoundaryTest {
                     JLBH harness;
                     boolean warmed;
                     public void init(JLBH jlbh) { harness = jlbh; }
+                    @Override
                     public void warmedUp() { warmed = true; }
                     public void run(long start) {
                         if (warmed) { starts.add(start); assertTrue(start <= System.nanoTime()); }
@@ -50,6 +51,7 @@ class BenchmarkLifecycleBoundaryTest {
             JLBH harness;
             boolean warmed;
             public void init(JLBH jlbh) { harness = jlbh; }
+            @Override
             public void warmedUp() { warmed = true; }
             public void run(long start) {
                 if (warmed) timestamps.add(start);
