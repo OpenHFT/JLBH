@@ -90,6 +90,10 @@ This is useful when investigating latency spikes caused by kernel activity, but 
 Disable it via `recordOSJitter(false)` when you want to avoid the extra monitoring.
 The feature is listed in the requirements specification around lines 52 and 56 of `project-requirements.adoc`.
 
+=== Asynchronous request/reply workloads
+
+For a paced workload with replies on other threads, see link:src/main/adoc/async-request-reply.adoc[Measure asynchronous request/reply latency across clients].
+
 === Adding custom probes
 
 JLBH lets you time additional stages of your benchmark using `addProbe(String)`.
