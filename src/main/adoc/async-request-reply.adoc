@@ -1,0 +1,54 @@
+= Measure asynchronous request/reply latency across clients
+:sectnums:
+
+Choose the event that completes one unit of work. For an order acknowledgement benchmark this might be the first decoded acknowledgement matching the order ID on the originating session.
+For a business transaction with multiple replies, specify which reply is terminal. Measure both ends of the interval on the driver JVM's monotonic clock.
+
+== Pace the total workload
+
+[source,java]
+----
+JLBHOptions options = new JLBHOptions()
+        .accountForCoordinatedOmission(true)
+        .throughput(20_000)
+        .warmUpIterations(100_000)
+        .iterations(100_000)
+        .runs(5)
+        .timeout(15_000)
+        .jlbhTask(task);
+new JLBH(options).start();
+----
+
+This offers one iteration every 50 microseconds during measurement. With one pacer alternating between two ready clients, each client gets 10,000 requests/s. A run offers five seconds of traffic at the target rate. Slow completions can extend its wall time.
+The sample-progress timeout is in milliseconds. With the default timeout disabled, a missing or rejected completion can leave the driver waiting. After a timeout JLBH can print a partial result and return normally. Make the application fail the run if its completion counts or session checks fail, including during shutdown.
+Use the same total offered load for a single-client comparison. Warm-up iterations can arrive much faster than the target rate, so allow the consumer to make progress during warm-up too.
+
+In `JLBHTask.run(long startTimeNS)`, select the client, allocate a unique request ID and register its intended start and client *before* sending. A reply can arrive before the send call returns.
+In the completion callback, capture `System.nanoTime()` immediately. For a matching first completion, record `jlbh.sample(completedNS - startTimeNS)`.
+This includes time spent waiting to dispatch a late iteration. You can also record actual dispatch time to distinguish scheduling lag from service time.
+If callbacks arrive on different threads, give sampling a single writer or serialise the writes. Timestamp completion before queuing it for that writer. Record any client-specific probe before the end-to-end sample that completes the iteration.
+
+== Decide whether a run counts
+
+* Track submitted, refused, missing, duplicate, unknown and wrong-client replies. Retain completed IDs through transport shutdown so that a duplicate arriving after the expected sample count still invalidates the run.
+* Before timing, alternate ten requests across the two clients. Check five valid completions per client. In separate checks route a reply to the wrong client and deliver an extra reply during shutdown. Both runs should fail the application's correctness check.
+* Report each client's p99.9 and the combined p99.9 for each measured run. Calculate the combined percentile from all accepted samples. Averaging client percentiles gives a different statistic. At the target rate the combined population here is 100,000 and each client contributes 50,000. JLBH includes p99.9 in its summary, result API and CSV at 100,000 samples per histogram. At 50,000, read each client's p99.9 from its per-run console line, or record a percentile from that client's own samples. An absent summary value means unavailable.
+* If startup latency matters, insert a reproducible quiet period between fully drained workloads and record the first request on each client. Report it alongside the whole-window percentile and the measured idle period's duration. Measure from the last warm-up completion to the first measured dispatch as well. Waiting for asynchronous warm-up samples can introduce an additional gap even with no deliberate pause. A handful of slow first requests can fall outside p99.9. Record idle CPU as well when comparing wait strategies.
+
+Keep the timing and correctness results for each run together. Report an incomplete population explicitly if a timeout or a disconnect prevents the expected completions.
+
+== Diagnose a tail with synchronous callers
+
+With a fixed worker pool per client, an on-time offer can wait behind earlier
+requests. Use one monotonic clock in the driver. Record the intended start, offer
+to the pool, worker dispatch, entry to the request route, correlated callback,
+return to the caller and completion of validation. Include the session and request
+ID. Buffer the timestamps and write them after measurement.
+
+For the slowest scheduled completions, identify the intervals dominated by waiting
+for a worker. For each interval, inspect the *other requests* occupying that
+client's workers at the time. Time before their callbacks includes the route,
+transport and peer. Time between callback and caller return includes waking the
+waiting worker. To compare a bounded asynchronous route, retain the same offer
+grid, completion condition, in-flight limit and stopped-store checks. Report that
+API as a separate benchmark.
