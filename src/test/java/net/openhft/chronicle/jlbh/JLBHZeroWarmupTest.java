@@ -35,6 +35,9 @@ class JLBHZeroWarmupTest {
         for (String argument : ManagementFactory.getRuntimeMXBean().getInputArguments())
             if (!argument.startsWith("-agentlib:jdwp"))
                 command.add(argument);
+        // Warm-up accounting must not depend on GC completion or settling delays.
+        command.add("-Djlbh.disableGcAfterWarmup=true");
+        command.add("-Djlbh.pauseAfterWarmupMS=0");
         command.add("-cp");
         command.add(System.getProperty("java.class.path"));
         command.add(Probe.class.getName());
