@@ -36,3 +36,19 @@ If callbacks arrive on different threads, give sampling a single writer or seria
 * If startup latency matters, insert a reproducible quiet period between fully drained workloads and record the first request on each client. Report it alongside the whole-window percentile and the measured idle period's duration. Measure from the last warm-up completion to the first measured dispatch as well. Waiting for asynchronous warm-up samples can introduce an additional gap even with no deliberate pause. A handful of slow first requests can fall outside p99.9. Record idle CPU as well when comparing wait strategies.
 
 Keep the timing and correctness results for each run together. Report an incomplete population explicitly if a timeout or a disconnect prevents the expected completions.
+
+== Diagnose a tail with synchronous callers
+
+With a fixed worker pool per client, an on-time offer can wait behind earlier
+requests. Use one monotonic clock in the driver. Record the intended start, offer
+to the pool, worker dispatch, entry to the request route, correlated callback,
+return to the caller and completion of validation. Include the session and request
+ID. Buffer the timestamps and write them after measurement.
+
+For the slowest scheduled completions, identify the intervals dominated by waiting
+for a worker. For each interval, inspect the *other requests* occupying that
+client's workers at the time. Time before their callbacks includes the route,
+transport and peer. Time between callback and caller return includes waking the
+waiting worker. To compare a bounded asynchronous route, retain the same offer
+grid, completion condition, in-flight limit and stopped-store checks. Report that
+API as a separate benchmark.
