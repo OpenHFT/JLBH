@@ -90,6 +90,10 @@ This is useful when investigating latency spikes caused by kernel activity, but 
 Disable it via `recordOSJitter(false)` when you want to avoid the extra monitoring.
 The feature is listed in the requirements specification around lines 52 and 56 of `project-requirements.adoc`.
 
+=== Asynchronous request/reply workloads
+
+For a paced workload with replies on other threads, see link:src/main/adoc/async-request-reply.adoc[Measure asynchronous request/reply latency across clients].
+
 === Adding custom probes
 
 JLBH lets you time additional stages of your benchmark using `addProbe(String)`.
@@ -132,6 +136,23 @@ CPU affinity can be configured using the OpenHFT Affinity library as noted in th
 Histogramming of recorded latencies is precise.
 As specified in the link:src/main/adoc/project-requirements.adoc[jlbh-requirements], JLBH generates high-resolution histograms of at least 35 bits.
 This accuracy retains sub-nanosecond resolution over a wide range, so the reported percentiles closely reflect true end-to-end timings.
+
+=== Host-wide benchmark lock (opt-in)
+
+Benchmarks that share a host disturb each other's results.
+Enable `-Djlbh.hostLock=true`, or `JLBHOptions.hostLock(true)`, so that every such JLBH run on the host, in any JVM, waits for the others.
+The lock is off by default.
+
+* The lock is held from before `JLBHTask.init(JLBH)` until after `JLBHTask.complete()`, and before the `timeout(long)` watchdog starts.
+In `eventLoopHandler(EventLoop)` mode it is released on the event loop thread after the last run, or when the loop stops.
+* Lock file: `-Djlbh.hostLock.file`, else the `JLBH_HOST_LOCK_FILE` environment variable, else `/tmp/jlbh-host.lock`.
+`java.io.tmpdir` is not used, because builds often redirect it per project, which would split the lock.
+* The holder writes `pid=... user=... host=... started=... run=... cmd=...` to `<lock file>.holder`; read that file to see who holds the lock.
+Waiters print `JLBH: waiting for host lock ... held by ...` every `-Djlbh.hostLock.reportSecs` (default 30).
+* `-Djlbh.hostLock.timeoutSecs` (default 3600, `0` fails at once, negative waits indefinitely) or `JLBHOptions.hostLockTimeoutMillis(long)` bounds the wait; on expiry `start()` throws an `IllegalStateException` naming the holder.
+* The OS releases the lock when the holder exits or is killed, so there is no stale lock to clear.
+On Linux it is an fcntl record lock on one byte at offset `1L << 62`, which a script can share with `fcntl.lockf(fd, fcntl.LOCK_EX, 1, 1 << 62)`; it does not interact with `flock(1)`.
+* Within one JVM the lease is not re-entrant: a nested JLBH run with the lock enabled waits for the outer run, and fails when the timeout expires.
 
 == Sample Benchmarks and Tests
 
@@ -243,7 +264,21 @@ Override this with `warmUpIterations(int)` if needed.
 Configure the target rate using `throughput(int, TimeUnit)` and optionally a `LatencyDistributor` for bursty patterns.
 Start with your production rate and tune to study latency trade-offs.
 
+With coordinated omission accounting disabled, intervals above 2 ms sleep and then spin until
+the newly calculated deadline. They must not start early by spinning on the previous start time.
+If final result reporting throws, `start()` still stops its jitter monitor and releases its affinity reservation.
+`BenchmarkLifecycleBoundaryTest` covers these timing and cleanup contracts (FIX-292).
+An interrupted run also stops waiting for unfinished samples and does not begin another run.
+`InterruptedRunCleanupTest` checks interruption during task issuance, during sample drain and with the final sample;
+`start()` clears the interrupt as it finishes cleanup.
+
 == Licensing and Release Information
 
 The code is licensed under the terms described in the link:LICENSE.adoc[Apache 2.0 License].
 Releases are available on link:https://github.com/OpenHFT/JLBH/releases[GitHub].
+
+== Tail-latency advisory
+
+Completed runs report only the largest end-to-end percentile ratio exceeding its
+threshold. The advisory is enabled by default and otherwise stays silent. See
+link:docs/tail-latency-advisory.adoc[thresholds, interpretation and the disable option].

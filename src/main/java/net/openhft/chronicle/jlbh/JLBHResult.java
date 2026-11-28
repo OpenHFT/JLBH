@@ -119,6 +119,7 @@ public interface JLBHResult {
          * {@link Percentile#PERCENTILE_99_9TH 99.9th},
          * {@link Percentile#PERCENTILE_99_97TH 99.97th},
          * {@link Percentile#PERCENTILE_99_99TH 99.99th},
+         * {@link Percentile#PERCENTILE_99_997TH 99.997th},
          * {@link Percentile#PERCENTILE_99_999TH 99.999th}, and
          * {@link Percentile#WORST WORST} for the highest latency.</p>
          *
@@ -200,6 +201,8 @@ public interface JLBHResult {
             PERCENTILE_99_97TH,
             /** 99.99th percentile. */
             PERCENTILE_99_99TH,
+            /** 99.997th percentile. */
+            PERCENTILE_99_997TH,
             /** 99.999th percentile. */
             PERCENTILE_99_999TH,
             /** Highest (worst) observed latency. */

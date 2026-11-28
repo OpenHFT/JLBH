@@ -29,12 +29,43 @@ public class JLBHOptions {
     int runs = 3;
     long iterations = 100_000;
     JLBHTask jlbhTask;
-    int pauseAfterWarmupMS = 0;
+    int pauseAfterWarmupMS = Math.toIntExact(durationDefault("jlbh.pauseAfterWarmupMS", 100L, 0));
+    boolean disableTailLatencyAdvisory = Jvm.getBoolean("jlbh.disableTailLatencyAdvisory");
+    boolean disableGcAfterWarmup = Jvm.getBoolean("jlbh.disableGcAfterWarmup");
+    long gcAfterWarmupTimeoutMS = durationDefault("jlbh.gcAfterWarmupTimeoutMS", 10_000L, 1);
     @NotNull
     SKIP_FIRST_RUN skipFirstRun = SKIP_FIRST_RUN.NOT_SET;
     boolean jitterAffinity;
     Supplier<AffinityLock> acquireLock = Affinity::acquireLock;
     long timeout;
+    boolean hostLock = Jvm.getBoolean(JLBHHostLock.ENABLED_PROPERTY, false);
+    long hostLockTimeoutMillis = JLBHHostLock.defaultTimeoutMillis();
+
+    boolean recordHostInfo = Jvm.getBoolean("jlbh.recordHostInfo");
+    /**
+     * Opt in to diagnostic host snapshots before task initialisation and after each run.
+     * Records go to the configured PrintStream; result objects and CSV are unchanged.
+     * Sensors are sampled outside measured iterations and may report unknown. A snapshot
+     * is context, not proof of an idle host or stable CPU placement. Disabled by default.
+     *
+     * @param recordHostInfo whether to collect and print host context; overrides jlbh.recordHostInfo (default false)
+     * @return this options instance
+     */
+    public JLBHOptions recordHostInfo(boolean recordHostInfo) {
+        this.recordHostInfo = recordHostInfo;
+        return this;
+    }
+
+    /**
+     * Suppress the post-run tail-ratio advisory. The default comes from
+     * jlbh.disableTailLatencyAdvisory (false when unset); this setter overrides it.
+     * No advisory is emitted unless a supported ratio strictly exceeds its threshold.
+     */
+    public JLBHOptions disableTailLatencyAdvisory(boolean disable) {
+        this.disableTailLatencyAdvisory = disable;
+        return this;
+    }
+
     /**
      * Number of iterations per second to be pushed through the benchmark
      *
@@ -110,13 +141,18 @@ public class JLBHOptions {
 
     /**
      * Determines how many warmup iterations to perform.
-     * Note: warmup iterations are continuous.
+     * Warm-up iterations are continuous. Zero skips warm-up invocations;
+     * the normal post-warm-up pause and task notification still occur before
+     * measurement, in both direct and event-loop modes.
      *
-     * @param warmUp Defaults to 10,000
+     * @param warmUp non-negative number of warm-up invocations
+     * @throws IllegalArgumentException if the count is negative
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
     @NotNull
     public JLBHOptions warmUpIterations(int warmUp) {
+        if (warmUp < 0)
+            throw new IllegalArgumentException("warmUpIterations must be non-negative: " + warmUp);
         this.warmUpIterations = warmUp;
         return this;
     }
@@ -170,14 +206,43 @@ public class JLBHOptions {
     }
 
     /**
-     * Option to set a pause after the warmup is complete
+     * Pause after warm-up GC completion and before the warmedUp callback and measurement.
      *
-     * @param pauseMS pause in ms default to 0
+     * @param pauseMS non-negative pause in ms; defaults to 100, zero disables only the pause
      * @return Instance of the JLBHOptions to be used in the builder pattern.
      */
     @NotNull
     public JLBHOptions pauseAfterWarmupMS(int pauseMS) {
+        if (pauseMS < 0)
+            throw new IllegalArgumentException("pauseAfterWarmupMS must be non-negative");
         this.pauseAfterWarmupMS = pauseMS;
+        return this;
+    }
+
+    /**
+     * Request System.gc() after warm-up and await reclamation of a weak marker before
+     * the post-warm-up pause. Enabled by default. Disable explicitly for experiments
+     * that must retain warm-up garbage or JVMs that ignore explicit GC requests.
+     *
+     * @param disabled true to skip both request and wait; overrides jlbh.disableGcAfterWarmup (default false)
+     * @return this options instance
+     */
+    public JLBHOptions disableGcAfterWarmup(boolean disabled) {
+        this.disableGcAfterWarmup = disabled;
+        return this;
+    }
+
+    /**
+     * Bound the marker reclamation wait after System.gc() returns. This does not bound time
+     * spent inside System.gc(). Failure to observe completion refuses measurement.
+     *
+     * @param timeoutMS positive milliseconds; defaults to 10,000
+     * @return this options instance
+     */
+    public JLBHOptions gcAfterWarmupTimeoutMS(long timeoutMS) {
+        if (timeoutMS <= 0)
+            throw new IllegalArgumentException("gcAfterWarmupTimeoutMS must be positive");
+        this.gcAfterWarmupTimeoutMS = timeoutMS;
         return this;
     }
 
@@ -224,6 +289,11 @@ public class JLBHOptions {
      * If no additional samples are recorded within the specified number of
      * milliseconds the running benchmark is aborted. A value of {@code 0}
      * disables the timeout check.
+     * <p>
+     * Progress is checked every ten seconds from the start of {@link JLBH#start()},
+     * so an abort can come up to ten seconds after the timeout has elapsed. The end of a
+     * run also counts as progress. The check stops when {@link JLBH#start()} returns and is
+     * not applied by {@link JLBH#eventLoopHandler}.
      *
      * @param timeout timeout in milliseconds
      * @return Instance of the JLBHOptions to be used in the builder pattern.
@@ -233,6 +303,38 @@ public class JLBHOptions {
         return this;
     }
 
+    /**
+     * Hold a host-wide {@link JLBHHostLock} for the whole run, from before {@link JLBHTask#init(JLBH)} until after
+     * {@link JLBHTask#complete()}, so concurrent JLBH runs on one host, in any JVM, queue instead of overlapping.
+     * Defaults to {@code -Djlbh.hostLock}, which is {@code false} when unset.
+     *
+     * @param hostLock {@code true} to serialise this run with other host-locked runs
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
+    public JLBHOptions hostLock(boolean hostLock) {
+        this.hostLock = hostLock;
+        return this;
+    }
+
+    /**
+     * Maximum time to wait for the host lock before {@link JLBH#start()} throws an
+     * {@link IllegalStateException} naming the holder. Defaults to {@code -Djlbh.hostLock.timeoutSecs} (3600 s).
+     *
+     * @param timeoutMillis 0 fails at once if the lock is held; a negative value waits indefinitely
+     * @return Instance of the JLBHOptions to be used in the builder pattern.
+     */
+    public JLBHOptions hostLockTimeoutMillis(long timeoutMillis) {
+        this.hostLockTimeoutMillis = timeoutMillis;
+        return this;
+    }
+
+    private static long durationDefault(String property, long fallback, long minimum) {
+        long value = Jvm.getLong(property, fallback);
+        if (value < minimum)
+            throw new IllegalArgumentException(property + " must be >= " + minimum);
+        return value;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("JLBHOptions{");
@@ -240,6 +342,8 @@ public class JLBHOptions {
         sb.append(", iterations=").append(iterations);
         sb.append(", warmUpIterations=").append(warmUpIterations);
         sb.append(", pauseAfterWarmupMS=").append(pauseAfterWarmupMS);
+        sb.append(", disableGcAfterWarmup=").append(disableGcAfterWarmup);
+        sb.append(", gcAfterWarmupTimeoutMS=").append(gcAfterWarmupTimeoutMS);
         sb.append(", accountForCoordinatedOmission=").append(accountForCoordinatedOmission);
         sb.append(", skipFirstRun=").append(skipFirstRun);
         sb.append(", recordOSJitter=").append(recordOSJitter);
@@ -249,6 +353,8 @@ public class JLBHOptions {
         sb.append(", latencyDistributor=").append(latencyDistributor);
         sb.append(", jitterAffinity=").append(jitterAffinity);
         sb.append(", timeout=").append(timeout);
+        sb.append(", hostLock=").append(hostLock);
+        sb.append(", hostLockTimeoutMillis=").append(hostLockTimeoutMillis);
         sb.append(", jlbhTask=").append(jlbhTask);
         sb.append(", acquireLock=").append(acquireLock);
         sb.append('}');
